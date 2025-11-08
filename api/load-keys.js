@@ -16,19 +16,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'User ID required' });
   }
 
-  try {
-    const keysString = await redis.get(`user:${userId}:keys`);
+try {
+  const keys = await redis.get(`user:${userId}:keys`);
 
-    if (!keysString) {
-      return res.status(200).json({ 
-        alphaVantage: '', 
-        finnhub: '', 
-        newsApi: '' 
-      });
-    }
+  if (!keys) {
+    return res.status(200).json({ 
+      alphaVantage: '', 
+      finnhub: '', 
+      newsApi: '' 
+    });
+  }
 
-    const keys = JSON.parse(keysString);
-    res.status(200).json(keys);
+  res.status(200).json(keys);
+
   } catch (error) {
     console.error('Load keys error:', error);
     res.status(500).json({ error: 'Failed to load keys', details: error.message });

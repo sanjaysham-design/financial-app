@@ -22,11 +22,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID required' });
     }
 
-    await redis.set(`user:${userId}:keys`, JSON.stringify({
+    await redis.set(`user:${userId}:keys`, {
       alphaVantage,
       finnhub,
       newsApi
-    }));
+    });
 
     res.status(200).json({ success: true });
   } catch (error) {
