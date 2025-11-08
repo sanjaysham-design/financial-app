@@ -21,10 +21,33 @@ export default async function handler(req, res) {
     }
     
     const response = await fetch(url);
-    const data = await response.json();
+    const text = await response.text();
+    
+    // Check if response is valid JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error('Finnhub response:', text);
+      return res.status(500).json({ 
+        error: 'Invalid response from Finnhub API',
+        details: text.substring(0, 100)
+      });
+    }
+    
+    // Check for API errors
+    if (data.error) {
+      return res.status(400).json({ 
+        error: 'Finnhub API error',
+        details: data.error
+      });
+    }
+    
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch sentiment data' });
+    res.status(500).json({ 
+      error: 'Failed to fetch sentiment data',
+      details: error.message
+    });
   }
 }
-```
