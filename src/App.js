@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
 
 function FinancialApp() {
   const [activeTab, setActiveTab] = useState('screener');
