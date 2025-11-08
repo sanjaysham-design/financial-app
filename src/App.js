@@ -2,6 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
 
 function FinancialApp() {
+ const getUserId = function() {
+    let userId = localStorage.getItem('financialAppUserId');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('financialAppUserId', userId);
+    }
+    return userId;
+  };
+
+  const userId = getUserId();
+
+  useEffect(function() {
+    async function loadKeys() {
+      try {
+        const response = await fetch(`/api/load-keys?userId=${userId}`);
+        const data = await response.json();
+        if (data && !data.error) {
+          setApiKeys(data);
+        }
+      } catch (err) {
+        console.error('Failed to load keys:', err);
+      }
+    }
+    loadKeys();
+  }, [userId]);
+
+  async function saveKeys(newKeys) {
+    try {
+      await fetch('/api/save-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId,
+          alphaVantage: newKeys.alphaVantage,
+          finnhub: newKeys.finnhub,
+          newsApi: newKeys.newsApi
+        })
+      });
+    } catch (err) {
+      console.error('Failed to save keys:', err);
+    }
+  }
+  
   const [activeTab, setActiveTab] = useState('screener');
   const [stockTicker, setStockTicker] = useState('');
   const [sentimentTicker, setSentimentTicker] = useState('');
