@@ -44,7 +44,7 @@ function FinancialApp() {
       console.error('Failed to save keys:', err);
     }
   }
-  
+
   const [activeTab, setActiveTab] = useState('screener');
   const [stockTicker, setStockTicker] = useState('');
   const [sentimentTicker, setSentimentTicker] = useState('');
@@ -417,7 +417,11 @@ function FinancialApp() {
                 <input
                   type="text"
                   value={apiKeys.alphaVantage}
-                  onChange={function(e) { setApiKeys({...apiKeys, alphaVantage: e.target.value}); }}
+                  onChange={function(e) { 
+                    const newKeys = {...apiKeys, alphaVantage: e.target.value};
+                    setApiKeys(newKeys);
+                    saveKeys(newKeys);
+                  }}
                   placeholder="Enter Alpha Vantage API key"
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
@@ -434,7 +438,11 @@ function FinancialApp() {
                 <input
                   type="text"
                   value={apiKeys.finnhub}
-                  onChange={function(e) { setApiKeys({...apiKeys, finnhub: e.target.value}); }}
+                  onChange={function(e) { 
+                    const newKeys = {...apiKeys, finnhub: e.target.value};
+                    setApiKeys(newKeys);
+                    saveKeys(newKeys);
+                  }}
                   placeholder="Enter Finnhub API key"
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
@@ -451,7 +459,11 @@ function FinancialApp() {
                 <input
                   type="text"
                   value={apiKeys.newsApi}
-                  onChange={function(e) { setApiKeys({...apiKeys, newsApi: e.target.value}); }}
+                  onChange={function(e) { 
+                    const newKeys = {...apiKeys, newsApi: e.target.value};
+                    setApiKeys(newKeys);
+                    saveKeys(newKeys);
+                  }}
                   placeholder="Enter News API key"
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
