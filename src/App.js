@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Newspaper, Target, Search, Loader } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
 
 function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
   const [technicalData, setTechnicalData] = useState(null);
+  const [showSROverlay, setShowSROverlay] = useState(true);
+  const [showSRShade, setShowSRShade] = useState(true);
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
     finnhub: '',
@@ -154,10 +156,17 @@ function FinancialApp() {
         const deathCross = ma50[ma50.length - 1] < ma200[ma200.length - 1] && 
                         ma50[ma50.length - 2] >= ma200[ma200.length - 2];
 
+        // compute nearest support (highest < price) and nearest resistance (lowest > price)
+        const numericSupports = pivots.filter(p => p.type === 'support').map(p => p.price).sort((a,b) => a - b);
+        const numericResistances = pivots.filter(p => p.type === 'resistance').map(p => p.price).sort((a,b) => a - b);
+        const nearestSupport = numericSupports.filter(s => s < currentPrice).pop() || null;
+        const nearestResistance = numericResistances.find(r => r > currentPrice) || null;
+
         setTechnicalData({
           chartData,
           pivots,
           currentPrice: currentPrice.toFixed(2),
+          srBand: (nearestSupport !== null && nearestResistance !== null) ? { low: nearestSupport, high: nearestResistance } : null,
           analysis: {
             shortTerm: {
               trend: shortTermTrend,
@@ -324,6 +333,16 @@ function FinancialApp() {
                     {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
                     Analyze
                   </button>
+                  <div className="flex items-center gap-3 ml-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-300">
+                      <input type="checkbox" checked={showSROverlay} onChange={(e) => setShowSROverlay(e.target.checked)} className="w-4 h-4" />
+                      Show S/R
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-300">
+                      <input type="checkbox" checked={showSRShade} onChange={(e) => setShowSRShade(e.target.checked)} className="w-4 h-4" />
+                      Shade S/R band
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -344,7 +363,7 @@ function FinancialApp() {
                     <div className="h-96 mt-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={technicalData.chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={true} horizontal={true} />
                           <XAxis 
                             dataKey="date" 
                             stroke="#9CA3AF"
@@ -387,6 +406,18 @@ function FinancialApp() {
                             dot={false}
                             name="200 MA"
                           />
+                            {/* Support/resistance overlays (conditionally rendered) */}
+                            {showSROverlay && technicalData.analysis.signals.supports.map((level, idx) => (
+                              <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
+                            ))}
+                            {showSROverlay && technicalData.analysis.signals.resistances.map((level, idx) => (
+                              <ReferenceLine key={`res-${idx}`} y={Number(level)} stroke="#EF4444" strokeDasharray="4 4" label={{ value: `R ${level}`, position: 'right', fill: '#EF4444' }} />
+                            ))}
+
+                            {/* Shade between nearest support and resistance (if available) */}
+                            {showSRShade && technicalData.srBand && (
+                              <ReferenceArea y1={technicalData.srBand.low} y2={technicalData.srBand.high} strokeOpacity={0} fill="rgba(99,102,241,0.06)" />
+                            )}
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
