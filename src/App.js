@@ -412,9 +412,7 @@ function FinancialApp() {
                   placeholder="Loading..."
                   className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
                 />
-                  placeholder="Enter Finnhub API key"
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                />
+                
                 <p className="text-xs text-slate-500 mt-1">Used for: Buy/Sell Sentiment</p>
               </div>
 
@@ -432,9 +430,7 @@ function FinancialApp() {
                   placeholder="Loading..."
                   className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
                 />
-                  placeholder="Enter News API key"
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                />
+                
                 <p className="text-xs text-slate-500 mt-1">Used for: Market News</p>
               </div>
             </div>
