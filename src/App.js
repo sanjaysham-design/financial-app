@@ -294,10 +294,22 @@ function FinancialApp() {
             ma200: ma200[i] ? Number(ma200[i].toFixed(2)) : null
           };
         });
+        // debug: log last few points so it's easy to inspect in browser console
+        try {
+          // eslint-disable-next-line no-console
+          console.debug('timeSeriesData sample (last 5):', timeSeriesData.slice(-5));
+          // eslint-disable-next-line no-console
+          console.debug('ma50 last values:', ma50.slice(-5));
+          // eslint-disable-next-line no-console
+          console.debug('ma200 last values:', ma200.slice(-5));
+        } catch (e) {}
 
         const currentPrice = closesDesc[0];
         const support = findSupportLevels(closesDesc);
         const resistance = findResistanceLevels(closesDesc);
+
+        const displayCount = Math.min(250, timeSeriesData.length);
+        const displaySeries = timeSeriesData.slice(-displayCount);
 
         setChartAnalysis({
           ticker: stockTicker.toUpperCase(),
@@ -308,7 +320,8 @@ function FinancialApp() {
           trend: closesDesc[0] > (closesDesc[20] || closesDesc[0]) ? 'Bullish' : 'Bearish',
           signals: generateSignals(closesDesc, support, resistance),
           recommendation: generateRecommendation(currentPrice, support, resistance),
-          timeSeriesData: timeSeriesData
+          timeSeriesData: timeSeriesData,
+          displaySeries: displaySeries
         });
       } else {
         setError('Could not fetch data. Check ticker symbol or API limit.');
@@ -388,20 +401,40 @@ function FinancialApp() {
                   {/* Price series with moving averages */}
                   {chartAnalysis.timeSeriesData && (
                     <div className="bg-slate-800 rounded p-4 mb-4">
-                      <h4 className="text-sm font-semibold text-blue-400 mb-3">Price & Moving Averages (50 / 200)</h4>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-blue-400">Price & Moving Averages (50 / 200)</h4>
+                        <div className="text-sm text-slate-300">
+                          {/* show latest MA values if available */}
+                          {chartAnalysis.displaySeries && chartAnalysis.displaySeries.length > 0 ? (
+                            (() => {
+                              const last = chartAnalysis.displaySeries[chartAnalysis.displaySeries.length - 1];
+                              return (
+                                <div className="flex gap-4">
+                                  <div>MA(50): <span className="font-semibold text-emerald-400">{last.ma50 ? '$' + last.ma50 : 'n/a'}</span></div>
+                                  <div>MA(200): <span className="font-semibold text-orange-400">{last.ma200 ? '$' + last.ma200 : 'n/a'}</span></div>
+                                  <div>Close: <span className="font-semibold text-blue-400">${last.close}</span></div>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <span>MA values not available</span>
+                          )}
+                        </div>
+                      </div>
+
                       <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartAnalysis.timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <LineChart data={chartAnalysis.displaySeries || chartAnalysis.timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                          <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                          <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} tickFormatter={function(d) { try { return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch (e) { return d; } }} />
                           <YAxis stroke="#94a3b8" domain={["dataMin", "dataMax"]} />
                           <Tooltip
                             contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
                             formatter={function(value) { return ['$' + value, '']; }}
                           />
                           <Legend />
-                          <Line type="monotone" dataKey="close" stroke="#3b82f6" dot={false} name="Close" />
-                          <Line type="monotone" dataKey="ma50" stroke="#10b981" dot={false} name="MA (50)" />
-                          <Line type="monotone" dataKey="ma200" stroke="#f97316" dot={false} name="MA (200)" />
+                          <Line type="monotone" dataKey="close" stroke="#3b82f6" dot={false} name="Close" strokeWidth={2} />
+                          <Line type="monotone" dataKey="ma50" stroke="#10b981" dot={false} name="MA (50)" strokeWidth={2} connectNulls={false} />
+                          <Line type="monotone" dataKey="ma200" stroke="#f97316" dot={false} name="MA (200)" strokeWidth={2} connectNulls={false} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
