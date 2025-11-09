@@ -19,7 +19,225 @@ function FinancialApp() {
   const [chartAnalysis, setChartAnalysis] = useState(null);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
 
-  // Your other functions here...
+  const tabs = [
+    { id: 'news', name: 'Market News', icon: Newspaper },
+    { id: 'screener', name: 'Stock Screener', icon: TrendingUp },
+    { id: 'sectors', name: 'Sector Trends', icon: BarChart3 },
+    { id: 'charts', name: 'Technical Analysis', icon: Target }
+  ];
+
+  // Helper function to analyze sentiment
+  function analyzeSentiment(text) {
+    const positive = ['gains', 'surge', 'profit', 'growth', 'strong', 'positive'];
+    const negative = ['loss', 'decline', 'fall', 'weak', 'concern', 'risk'];
+
+    const lowerText = (text || '').toLowerCase();
+    const posCount = positive.filter(word => lowerText.includes(word)).length;
+    const negCount = negative.filter(word => lowerText.includes(word)).length;
+
+    if (posCount > negCount) return 'positive';
+    if (negCount > posCount) return 'negative';
+    return 'neutral';
+  }
+
+  // Helper function to fetch news
+  const fetchNewsWithKey = useCallback(async function(newsApiKey) {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/news?apikey=' + newsApiKey);
+      const data = await response.json();
+      
+      if (data.articles) {
+        const formattedNews = data.articles.map(article => ({
+          headline: article.title,
+          impact: 'Market Moving',
+          summary: article.description || '',
+          url: article.url || '',
+          implications: 'Analyze based on content and market context',
+          sentiment: analyzeSentiment(article.title + ' ' + article.description)
+        }));
+        setNewsStories(formattedNews);
+      }
+    } catch (err) {
+      setError('Error fetching news: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load default API keys and news on mount
+  useEffect(function() {
+    async function loadDefaultKeysAndNews() {
+      try {
+        const response = await fetch('/api/default-keys');
+        const data = await response.json();
+        if (data && !data.error) {
+          setApiKeys(data);
+          if (data.newsApi) {
+            fetchNewsWithKey(data.newsApi);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load default keys:', err);
+      }
+    }
+    loadDefaultKeysAndNews();
+  }, [fetchNewsWithKey]);
+
+  // Prepare news cards component
+  const newsCards = newsStories.map((story, idx) => {
+    let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
+    if (story.sentiment === 'positive') {
+      sentimentClass = 'bg-emerald-500/20 text-emerald-400';
+    } else if (story.sentiment === 'negative') {
+      sentimentClass = 'bg-red-500/20 text-red-400';
+    }
+    
+    return (
+      <div key={idx} className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors">
+        <div className="flex justify-between items-start mb-2">
+          <a
+            href={story.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-lg font-bold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors"
+          >
+            {story.headline}
+          </a>
+          <span className={'px-3 py-1 rounded-full text-xs font-semibold ml-4 ' + sentimentClass}>
+            {story.sentiment}
+          </span>
+        </div>
+        
+        <p className="text-slate-300 mb-3">{story.summary}</p>
+        
+        <div className="bg-slate-800 rounded p-3">
+          <p className="text-sm font-semibold text-blue-400 mb-1">Investment Implications:</p>
+          <p className="text-sm text-slate-300">{story.implications}</p>
+        </div>
+      </div>
+    );
+  });
+
+  function findSupportLevels(prices) {
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort((a, b) => a - b);
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
+  }
+
+  function findResistanceLevels(prices) {
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort((a, b) => b - a);
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
+  }
+
+  function identifyPattern(prices) {
+    return prices[0] > prices[prices.length - 1] ? 'Ascending' : 'Descending' + ' Channel';
+  }
+
+  function generateSignals(prices, support, resistance) {
+    return [
+      'Current price relative to 50-day range',
+      'Support levels identified at $' + support.join(', $'),
+      'Resistance levels at $' + resistance.join(', $'),
+      'Momentum indicators suggest ' + (prices[0] > prices[10] ? 'bullish' : 'bearish') + ' bias'
+    ];
+  }
+
+  function generateRecommendation(current, support, resistance) {
+    return 'Consider entry near $' + support[0] + '. Target $' + resistance[0] + ' on breakout. Stop loss below $' + support[1] + '.';
+  }
+
+  async function analyzeChartData() {
+    if (!stockTicker || !apiKeys.alphaVantage || !apiKeys.finnhub) {
+      setError('Please enter a ticker and configure API keys');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    setSentimentTicker(stockTicker);
+    
+    try {
+      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
+      const data = await response.json();
+      
+      if (data['Time Series (Daily)']) {
+        const timeSeries = data['Time Series (Daily)'];
+        const datesDesc = Object.keys(timeSeries).slice(0, 500);
+        const closesDesc = datesDesc.map(date => parseFloat(timeSeries[date]['4. close']));
+        
+        const currentPrice = closesDesc[0];
+        const support = findSupportLevels(closesDesc);
+        const resistance = findResistanceLevels(closesDesc);
+
+        setChartAnalysis({
+          ticker: stockTicker.toUpperCase(),
+          currentPrice: currentPrice.toFixed(2),
+          support,
+          resistance,
+          pattern: identifyPattern(closesDesc),
+          trend: closesDesc[0] > (closesDesc[20] || closesDesc[0]) ? 'Bullish' : 'Bearish',
+          signals: generateSignals(closesDesc, support, resistance),
+          recommendation: generateRecommendation(currentPrice, support, resistance)
+        });
+
+        // Also fetch sentiment data
+        const [recResponse, newsResponse] = await Promise.all([
+          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=recommendation'),
+          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=news')
+        ]);
+        
+        if (recResponse.ok && newsResponse.ok) {
+          const [recData, newsData] = await Promise.all([
+            recResponse.json(),
+            newsResponse.json()
+          ]);
+          
+          if (recData && recData.length > 0) {
+            const latest = recData[0];
+            const totalRatings = latest.buy + latest.hold + latest.sell;
+            const buyScore = (latest.buy / totalRatings) * 100;
+            
+            let overall = 'HOLD';
+            if (buyScore > 60) overall = 'BUY';
+            else if (buyScore < 40) overall = 'SELL';
+            
+            const bullishPercent = newsData.sentiment ? newsData.sentiment.bullishPercent : 50;
+            const sentimentScore = newsData.sentiment ? newsData.sentiment.sentiment : 0;
+            
+            setSentimentAnalysis({
+              ticker: stockTicker.toUpperCase(),
+              overall,
+              confidence: Math.round(buyScore),
+              breakdown: [
+                { source: 'Social Media', score: Math.round(bullishPercent), trend: 'Based on news sentiment analysis' },
+                { source: 'Analyst Ratings', score: Math.round(buyScore), trend: latest.buy + ' Buy, ' + latest.hold + ' Hold, ' + latest.sell + ' Sell' },
+                { source: 'Institutional Activity', score: buyScore > 50 ? 75 : 45, trend: 'Derived from analyst consensus' },
+                { source: 'News Sentiment', score: Math.round(sentimentScore * 100), trend: sentimentScore > 0 ? 'Positive coverage' : 'Mixed coverage' }
+              ],
+              rationale: 'Analyst consensus shows ' + overall + ' rating with ' + latest.buy + ' buy recommendations vs ' + latest.sell + ' sell recommendations.',
+              risks: 'Market conditions and company-specific events could impact performance. Always conduct your own research.'
+            });
+          }
+        } else {
+          setError('Failed to fetch sentiment data. Please try again.');
+        }
+      } else {
+        setError('Could not fetch data. Check ticker symbol or API limit.');
+      }
+    } catch (err) {
+      setError('Error analyzing chart: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Render function
   return (
