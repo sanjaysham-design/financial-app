@@ -15,7 +15,6 @@ function FinancialApp() {
   const [error, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
   const [chartAnalysis, setChartAnalysis] = useState(null);
-  const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
 
   const tabs = [
     { id: 'news', name: 'Market News', icon: Newspaper },
@@ -150,9 +149,9 @@ function FinancialApp() {
         const shortTermTrend = currentPrice > lastMA50 ? 'bullish' : 'bearish';
         const longTermTrend = currentPrice > lastMA200 ? 'bullish' : 'bearish';
         const goldCross = ma50[ma50.length - 1] > ma200[ma200.length - 1] && 
-                         ma50[ma50.length - 2] <= ma200[ma200.length - 2];
+                       ma50[ma50.length - 2] <= ma200[ma200.length - 2];
         const deathCross = ma50[ma50.length - 1] < ma200[ma200.length - 1] && 
-                          ma50[ma50.length - 2] >= ma200[ma200.length - 2];
+                        ma50[ma50.length - 2] >= ma200[ma200.length - 2];
 
         setTechnicalData({
           chartData,
@@ -187,7 +186,7 @@ function FinancialApp() {
           currentPrice: currentPrice.toFixed(2),
           trend: shortTermTrend,
           support: pivots.filter(p => p.type === 'support').slice(-3).map(p => p.price.toFixed(2)),
-          resistance: pivots.filter(p => p.type === 'resistance').slice(-3).map(p => p.price.toFixed(2)),
+          resistance: pivots.filter(p => p.type === 'resistance').slice(-3).map(p => p.price.toFixed(2))
         });
       } else {
         setError('Could not fetch data. Check ticker symbol or API limit.');
@@ -431,29 +430,6 @@ function FinancialApp() {
                       </div>
                     </div>
                   </div>
-
-                  {sentimentAnalysis && (
-                    <div className="bg-slate-700 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-blue-400 mb-3">Market Sentiment</h4>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {sentimentAnalysis.breakdown.map((item, idx) => (
-                          <div key={idx} className="bg-slate-800 p-3 rounded">
-                            <div className="flex justify-between items-center mb-2">
-                              <p className="text-sm font-semibold text-slate-300">{item.source}</p>
-                              <span className="text-sm font-bold text-emerald-400">{item.score}%</span>
-                            </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2">
-                              <div
-                                className="bg-emerald-400 h-2 rounded-full"
-                                style={{ width: `${item.score}%` }}
-                              ></div>
-                            </div>
-                            <p className="text-xs text-slate-400 mt-1">{item.trend}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
