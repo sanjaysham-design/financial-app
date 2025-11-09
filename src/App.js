@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function FinancialApp() {
   // State declarations
   const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
-  const [sentimentTicker, setSentimentTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
     finnhub: '',
@@ -14,7 +12,6 @@ function FinancialApp() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [screenedStocks, setScreenedStocks] = useState([]);
   const [newsStories, setNewsStories] = useState([]);
   const [chartAnalysis, setChartAnalysis] = useState(null);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
@@ -138,7 +135,8 @@ function FinancialApp() {
   }
 
   function identifyPattern(prices) {
-    return prices[0] > prices[prices.length - 1] ? 'Ascending' : 'Descending' + ' Channel';
+    const direction = prices[0] > prices[prices.length - 1] ? 'Ascending' : 'Descending';
+    return `${direction} Channel`;
   }
 
   function generateSignals(prices, support, resistance) {
@@ -162,7 +160,6 @@ function FinancialApp() {
     
     setLoading(true);
     setError('');
-    setSentimentTicker(stockTicker);
     
     try {
       const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
