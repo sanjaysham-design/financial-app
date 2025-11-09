@@ -3,13 +3,17 @@ import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCirc
 
 function FinancialApp() {
 
-  useEffect(function() {
+useEffect(function() {
   async function loadDefaultKeys() {
     try {
       const response = await fetch('/api/default-keys');
       const data = await response.json();
       if (data && !data.error) {
         setApiKeys(data);
+        // Auto-load news after keys are loaded
+        if (data.newsApi) {
+          fetchNewsWithKey(data.newsApi);
+        }
       }
     } catch (err) {
       console.error('Failed to load default keys:', err);
@@ -19,7 +23,7 @@ function FinancialApp() {
 }, []);
 
 
-  const [activeTab, setActiveTab] = useState('screener');
+  const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
   const [sentimentTicker, setSentimentTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
@@ -27,18 +31,18 @@ function FinancialApp() {
     finnhub: '',
     newsApi: ''
   });
-  const [showApiSetup, setShowApiSetup] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [screenedStocks, setScreenedStocks] = useState([]);
   const [newsStories, setNewsStories] = useState([]);
   const [chartAnalysis, setChartAnalysis] = useState(null);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   const tabs = [
+    { id: 'news', name: 'Market News', icon: Newspaper },
     { id: 'screener', name: 'Stock Screener', icon: TrendingUp },
     { id: 'sectors', name: 'Sector Trends', icon: BarChart3 },
-    { id: 'news', name: 'Market News', icon: Newspaper },
     { id: 'charts', name: 'Chart Patterns', icon: Target },
     { id: 'sentiment', name: 'Buy/Sell Sentiment', icon: DollarSign }
   ];
@@ -115,11 +119,44 @@ function FinancialApp() {
     return 'neutral';
   }
 
-  async function fetchNews() {
-    if (!apiKeys.newsApi) {
-      setError('Please enter News API key');
-      return;
+async function fetchNewsWithKey(newsApiKey) {
+  setLoading(true);
+  setError('');
+  
+  try {
+    const response = await fetch(`/api/news?apikey=${newsApiKey}`);
+    const data = await response.json();
+    
+    if (data.articles) {
+      const formattedNews = [];
+      for (let i = 0; i < data.articles.length; i++) {
+        const article = data.articles[i];
+        formattedNews.push({
+          headline: article.title,
+          impact: 'Market Moving',
+          summary: article.description || '',
+          url: article.url || '',
+          implications: 'Analyze based on content and market context',
+          sentiment: analyzeSentiment(article.title + ' ' + article.description)
+        });
+      }
+      setNewsStories(formattedNews);
     }
+  } catch (err) {
+    setError('Error fetching news: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function fetchNews() {
+  if (!apiKeys.newsApi) {
+    setError('Please enter News API key');
+    return;
+  }
+  
+  fetchNewsWithKey(apiKeys.newsApi);
+}
     
     setLoading(true);
     setError('');
@@ -311,15 +348,40 @@ function FinancialApp() {
     );
   });
 
-  const newsCards = newsStories.map(function(story, idx) {
-    let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
-    if (story.sentiment === 'positive') {
-      sentimentClass = 'bg-emerald-500/20 text-emerald-400';
-    } else if (story.sentiment === 'negative') {
-      sentimentClass = 'bg-red-500/20 text-red-400';
-    }
+const newsCards = newsStories.map(function(story, idx) {
+  let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
+  if (story.sentiment === 'positive') {
+    sentimentClass = 'bg-emerald-500/20 text-emerald-400';
+  } else if (story.sentiment === 'negative') {
+    sentimentClass = 'bg-red-500/20 text-red-400';
+  }
+  
+  return (
+    <div key={idx} className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors">
+      <div className="flex justify-between items-start mb-2">
+        <h3 
+          className="text-lg font-bold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors"
+          onClick={function() { setSelectedArticle(story); }}
+        >
+          {story.headline}
+        </h3>
+        <span className={'px-3 py-1 rounded-full text-xs font-semibold ml-4 ' + sentimentClass}>
+          {story.impact}
+        </span>
+      </div>
+      
+      <p className="text-slate-300 mb-3">{story.summary}</p>
+      
+      <div className="bg-slate-800 rounded p-3">
+        <p className="text-sm font-semibold text-blue-400 mb-1">Investment Implications:</p>
+        <p className="text-sm text-slate-300">{story.implications}</p>
+      </div>
+    </div>
+  );
+});
     
     return (
+
       <div key={idx} className="bg-slate-700 rounded-lg p-4">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-bold flex-1">{story.headline}</h3>
@@ -351,8 +413,57 @@ function FinancialApp() {
   }) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <div className="max-w-7xl mx-auto p-6">
+  <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="max-w-7xl mx-auto p-6">
+
+      {selectedArticle && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full border border-slate-700 my-8">
+            <div className="p-6 border-b border-slate-700 flex justify-between items-start">
+              <h2 className="text-2xl font-bold text-blue-400 flex-1 pr-4">
+                {selectedArticle.headline}
+              </h2>
+              <button
+                onClick={function() { setSelectedArticle(null); }}
+                className="text-slate-400 hover:text-white text-2xl font-bold leading-none"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-slate-300 mb-4">{selectedArticle.summary}</p>
+              
+              <div className="bg-slate-700 rounded p-4 mb-4">
+                <p className="text-sm font-semibold text-blue-400 mb-2">Investment Implications:</p>
+                <p className="text-sm text-slate-300">{selectedArticle.implications}</p>
+              </div>
+
+              {selectedArticle.url && (
+                <div className="border-t border-slate-700 pt-4">
+                  <iframe
+                    src={selectedArticle.url}
+                    className="w-full h-96 rounded-lg border border-slate-600"
+                    title="Article Content"
+                    sandbox="allow-same-origin allow-scripts"
+                  />
+                  
+                    href={selectedArticle.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+                  >
+                    Open in New Tab →
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <header className="mb-8"></header>
+        
         <header className="mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -361,87 +472,8 @@ function FinancialApp() {
               </h1>
               <p className="text-slate-400">Comprehensive market insights and stock analysis tools</p>
             </div>
-            <button
-              onClick={function() { setShowApiSetup(!showApiSetup); }}
-              className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              {showApiSetup ? 'Hide' : 'Show'} API Setup
-            </button>
           </div>
         </header>
-
-        {showApiSetup && (
-          <div className="bg-slate-800 rounded-xl shadow-2xl p-6 mb-6 border border-slate-700">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <AlertCircle className="text-blue-400" />
-              API Configuration
-            </h3>
-            <p className="text-slate-400 text-sm mb-4">
-              Enter your API keys to enable live data. Keys are stored in your browser session only.
-            </p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Alpha Vantage API Key
-                  <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-2 text-xs">
-                    (Get free key)
-                  </a>
-                </label>
-              <input
-                type="text"
-                value={apiKeys.alphaVantage}
-                readOnly
-                placeholder="Loading..."
-                className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
-              />
-                <p className="text-xs text-slate-500 mt-1">Used for: Stock Screener, Chart Patterns</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Finnhub API Key
-                  <a href="https://finnhub.io/register" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-2 text-xs">
-                    (Get free key)
-                  </a>
-                </label>
-               <input
-                  type="text"
-                  value={apiKeys.finnhub}
-                  readOnly
-                  placeholder="Loading..."
-                  className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
-                />
-                
-                <p className="text-xs text-slate-500 mt-1">Used for: Buy/Sell Sentiment</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  News API Key
-                  <a href="https://newsapi.org/register" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-2 text-xs">
-                    (Get free key)
-                  </a>
-                </label>
-                <input
-                  type="text"
-                  value={apiKeys.newsApi}
-                  readOnly
-                  placeholder="Loading..."
-                  className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
-                />
-                
-                <p className="text-xs text-slate-500 mt-1">Used for: Market News</p>
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
-              <p className="text-xs text-yellow-300">
-                <strong>Note:</strong> API keys are managed by the app administrator and work for all users automatically. No login or configuration needed!
-              </p>
-            </div>
-          </div>
-        )}
 
         {error && (
           <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
@@ -516,30 +548,14 @@ function FinancialApp() {
 
           {activeTab === 'news' && (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2">
-                    <Newspaper className="text-blue-400" />
-                    Market News Filter
-                  </h2>
-                  <p className="text-slate-400 text-sm">Top market-moving stories</p>
-                </div>
-                <button
-                  onClick={fetchNews}
-                  disabled={!apiKeys.newsApi || loading}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
-                >
-                  {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
-                  Fetch News
-                </button>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Newspaper className="text-blue-400" />
+                  Market News Filter
+                </h2>
+                <p className="text-slate-400 text-sm">Top market-moving stories - automatically updated</p>
               </div>
-              
-              {!apiKeys.newsApi && (
-                <div className="bg-slate-700 rounded-lg p-8 text-center">
-                  <AlertCircle className="mx-auto mb-3 text-yellow-400" size={48} />
-                  <p className="text-slate-300">Configure News API key above to fetch market news</p>
-                </div>
-              )}
+          
 
               {newsStories.length > 0 && (
                 <div className="space-y-4">{newsCards}</div>
