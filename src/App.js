@@ -83,7 +83,7 @@ function FinancialApp() {
   const [newsStories, setNewsStories] = useState([]);
   const [chartAnalysis, setChartAnalysis] = useState(null);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
-  const [selectedArticle, setSelectedArticle] = useState(null);
+  // selectedArticle removed: articles will open directly in a new window
 
   const tabs = [
     { id: 'news', name: 'Market News', icon: Newspaper },
@@ -388,12 +388,14 @@ function FinancialApp() {
     return (
       <div key={idx} className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors">
         <div className="flex justify-between items-start mb-2">
-          <h3 
+          <a
+            href={story.url || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-lg font-bold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors"
-            onClick={function() { setSelectedArticle(story); }}
           >
             {story.headline}
-          </h3>
+          </a>
           <span className={'px-3 py-1 rounded-full text-xs font-semibold ml-4 ' + sentimentClass}>
             {story.impact}
           </span>
@@ -413,51 +415,7 @@ function FinancialApp() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <div className="max-w-7xl mx-auto p-6">
 
-        {selectedArticle && (
-          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full border border-slate-700 my-8">
-              <div className="p-6 border-b border-slate-700 flex justify-between items-start">
-                <h2 className="text-2xl font-bold text-blue-400 flex-1 pr-4">
-                  {selectedArticle.headline}
-                </h2>
-                <button
-                  onClick={function() { setSelectedArticle(null); }}
-                  className="text-slate-400 hover:text-white text-2xl font-bold leading-none"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="p-6">
-                <p className="text-slate-300 mb-4">{selectedArticle.summary}</p>
-                
-                <div className="bg-slate-700 rounded p-4 mb-4">
-                  <p className="text-sm font-semibold text-blue-400 mb-2">Investment Implications:</p>
-                  <p className="text-sm text-slate-300">{selectedArticle.implications}</p>
-                </div>
-
-                {selectedArticle.url && (
-                  <div className="border-t border-slate-700 pt-4">
-                    <iframe
-                      src={selectedArticle.url}
-                      className="w-full h-96 rounded-lg border border-slate-600"
-                      title="Article Content"
-                      sandbox="allow-same-origin allow-scripts"
-                    />
-                    <a
-                      href={selectedArticle.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
-                    >
-                      Open in New Tab →
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Articles open in a new tab directly; modal/overlay removed */}
 
         <header className="mb-8">
           <div>
