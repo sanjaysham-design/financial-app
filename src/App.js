@@ -736,7 +736,7 @@ return (
                 <BarChart
                   layout="vertical"
                   data={[
-                    { name: 'Confidence', value: sentimentAnalysis.confidence, fill: sentimentAnalysis.confidence > 70 ? '#10b981' : sentimentAnalysis.confidence > 40 ? '#f59e0b' : '#ef4444' }
+                    { name: 'Confidence', value: sentimentAnalysis.confidence }
                   ]}
                   margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
                 >
@@ -745,13 +745,13 @@ return (
                   <YAxis type="category" dataKey="name" stroke="#94a3b8" />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
-                    formatter={(value) => `${value}%`}
+                    formatter={function(value) { return value + '%'; }}
                   />
-                  <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                    {[{ name: 'Confidence', value: sentimentAnalysis.confidence, fill: sentimentAnalysis.confidence > 70 ? '#10b981' : sentimentAnalysis.confidence > 40 ? '#f59e0b' : '#ef4444' }].map((entry, index) => (
-                      <Bar key={index} dataKey="value" fill={entry.fill} />
-                    ))}
-                  </Bar>
+                  <Bar 
+                    dataKey="value" 
+                    radius={[0, 8, 8, 0]} 
+                    fill={sentimentAnalysis.confidence > 70 ? '#10b981' : sentimentAnalysis.confidence > 40 ? '#f59e0b' : '#ef4444'}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
