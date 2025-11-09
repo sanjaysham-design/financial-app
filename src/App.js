@@ -11,8 +11,6 @@ function FinancialApp() {
     return userId;
   };
 
-  const userId = getUserId();
-
   useEffect(function() {
   async function loadDefaultKeys() {
     try {
