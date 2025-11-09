@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Newspaper, Target, Search, Loader, Info } from 'lucide-react';
+import { Newspaper, Target, Search, Loader } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
 
 function FinancialApp() {
@@ -358,21 +358,6 @@ function FinancialApp() {
                         (chartAnalysis.trend === 'bullish' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400')}>
                         {chartAnalysis.trend.toUpperCase()}
                       </span>
-                    </div>
-
-                    {/* Small legend explaining shaded S/R band */}
-                    <div className="flex items-center gap-3 mt-2 text-sm text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <span style={{ width: 14, height: 12, display: 'inline-block', background: 'rgba(99,102,241,0.16)', border: '1px solid rgba(99,102,241,0.22)', borderRadius: 2 }} />
-                        <div>
-                          <div className="font-medium text-slate-200">S/R Band</div>
-                          <div className="text-xs text-slate-400">Shaded area shows nearest support and resistance — range where price may bounce or breakout</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center ml-4 text-slate-400">
-                        <Info size={14} className="mr-1" />
-                        <span className="text-xs">Toggle visibility with the checkboxes</span>
-                      </div>
                     </div>
 
                     <div className="h-96 mt-4">
