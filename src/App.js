@@ -2,14 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
 
 function FinancialApp() {
- const getUserId = function() {
-    let userId = localStorage.getItem('financialAppUserId');
-    if (!userId) {
-      userId = 'user_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('financialAppUserId', userId);
-    }
-    return userId;
-  };
 
   useEffect(function() {
   async function loadDefaultKeys() {
