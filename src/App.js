@@ -8,6 +8,7 @@ function FinancialApp() {
   const [technicalData, setTechnicalData] = useState(null);
   const [showSROverlay, setShowSROverlay] = useState(true);
   const [showSRShade, setShowSRShade] = useState(true);
+  const [chartWindow, setChartWindow] = useState(200); // days to display: 200 (default), 30, 10, 1
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
     finnhub: '',
@@ -137,13 +138,17 @@ function FinancialApp() {
         const ma200 = calculateMA(closePrices, 200);
         const pivots = findSupportResistance(closePrices);
 
-        const chartData = prices.map((point, idx) => ({
+        const chartDataFull = prices.map((point, idx) => ({
           date: new Date(point.date).toLocaleDateString(),
           price: point.price,
           ma50: ma50[idx],
           ma200: ma200[idx],
           volume: point.volume
         }));
+
+        // slice the displayed chart data according to selected window (last N days)
+        const displayCount = Math.min(chartWindow, chartDataFull.length);
+        const chartData = chartDataFull.slice(chartDataFull.length - displayCount);
 
         const currentPrice = closePrices[closePrices.length - 1];
         const lastMA50 = ma50[ma50.length - 1];
@@ -333,6 +338,15 @@ function FinancialApp() {
                     {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
                     Analyze
                   </button>
+                  <div className="ml-3">
+                    <label className="text-xs text-slate-400 mr-2">View:</label>
+                    <select value={chartWindow} onChange={(e) => setChartWindow(Number(e.target.value))} className="bg-slate-700 text-sm text-white px-2 py-1 rounded">
+                      <option value={200}>200 days</option>
+                      <option value={30}>30 days</option>
+                      <option value={10}>10 days</option>
+                      <option value={1}>1 day</option>
+                    </select>
+                  </div>
                   <div className="flex items-center gap-3 ml-4">
                     <label className="flex items-center gap-2 text-sm text-slate-300">
                       <input type="checkbox" checked={showSROverlay} onChange={(e) => setShowSROverlay(e.target.checked)} className="w-4 h-4" />
