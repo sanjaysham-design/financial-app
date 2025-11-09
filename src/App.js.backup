@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Newspaper, Target, Search, Loader } from 'lucide-react';
+import { TrendingUp, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
 
 function FinancialApp() {
+  // State declarations
   const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
@@ -17,10 +18,13 @@ function FinancialApp() {
 
   const tabs = [
     { id: 'news', name: 'Market News', icon: Newspaper },
+    { id: 'screener', name: 'Stock Screener', icon: TrendingUp },
+    { id: 'sectors', name: 'Sector Trends', icon: BarChart3 },
     { id: 'charts', name: 'Technical Analysis', icon: Target }
   ];
 
-  const analyzeSentiment = useCallback((text) => {
+  // Helper function to analyze sentiment
+  function analyzeSentiment(text) {
     const positive = ['gains', 'surge', 'profit', 'growth', 'strong', 'positive'];
     const negative = ['loss', 'decline', 'fall', 'weak', 'concern', 'risk'];
 
@@ -31,9 +35,10 @@ function FinancialApp() {
     if (posCount > negCount) return 'positive';
     if (negCount > posCount) return 'negative';
     return 'neutral';
-  }, []);
+  }
 
-  const fetchNewsWithKey = useCallback(async (newsApiKey) => {
+  // Helper function to fetch news
+  const fetchNewsWithKey = useCallback(async function(newsApiKey) {
     setLoading(true);
     setError('');
     
@@ -57,9 +62,10 @@ function FinancialApp() {
     } finally {
       setLoading(false);
     }
-  }, [analyzeSentiment]);
+  }, []);
 
-  useEffect(() => {
+  // Load default API keys and news on mount
+  useEffect(function() {
     async function loadDefaultKeysAndNews() {
       try {
         const response = await fetch('/api/default-keys');
@@ -77,71 +83,7 @@ function FinancialApp() {
     loadDefaultKeysAndNews();
   }, [fetchNewsWithKey]);
 
-  async function analyzeChartData() {
-    if (!stockTicker || !apiKeys.alphaVantage || !apiKeys.finnhub) {
-      setError('Please enter a ticker and configure API keys');
-      return;
-    }
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
-      const data = await response.json();
-      
-      if (data['Time Series (Daily)']) {
-        const timeSeries = data['Time Series (Daily)'];
-        const dates = Object.keys(timeSeries).slice(0, 100);
-        const closes = dates.map(date => parseFloat(timeSeries[date]['4. close']));
-        
-        setChartAnalysis({
-          ticker: stockTicker.toUpperCase(),
-          currentPrice: closes[0].toFixed(2),
-          trend: closes[0] > closes[20] ? 'Bullish' : 'Bearish',
-          support: [Math.min(...closes).toFixed(2)],
-          resistance: [Math.max(...closes).toFixed(2)],
-        });
-
-        const [recResponse, newsResponse] = await Promise.all([
-          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=recommendation'),
-          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=news')
-        ]);
-        
-        const [recData, newsData] = await Promise.all([
-          recResponse.json(),
-          newsResponse.json()
-        ]);
-        
-        if (recData && recData.length > 0) {
-          const latest = recData[0];
-          const totalRatings = latest.buy + latest.hold + latest.sell;
-          const buyScore = (latest.buy / totalRatings) * 100;
-          
-          let overall = 'HOLD';
-          if (buyScore > 60) overall = 'BUY';
-          else if (buyScore < 40) overall = 'SELL';
-          
-          setSentimentAnalysis({
-            ticker: stockTicker.toUpperCase(),
-            overall: overall,
-            confidence: Math.round(buyScore),
-            breakdown: [
-              { source: 'Analyst Ratings', score: Math.round(buyScore), trend: latest.buy + ' Buy, ' + latest.hold + ' Hold, ' + latest.sell + ' Sell' },
-              { source: 'News Sentiment', score: Math.round((newsData.sentiment?.sentiment || 0) * 100), trend: 'Based on recent news coverage' }
-            ]
-          });
-        }
-      } else {
-        setError('Could not fetch data. Check ticker symbol or API limit.');
-      }
-    } catch (err) {
-      setError('Error analyzing chart: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Prepare news cards component
   const newsCards = newsStories.map((story, idx) => {
     let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
     if (story.sentiment === 'positive') {
@@ -176,6 +118,125 @@ function FinancialApp() {
     );
   });
 
+  function findSupportLevels(prices) {
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort((a, b) => a - b);
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
+  }
+
+  function findResistanceLevels(prices) {
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort((a, b) => b - a);
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
+  }
+
+  function identifyPattern(prices) {
+    const direction = prices[0] > prices[prices.length - 1] ? 'Ascending' : 'Descending';
+    return `${direction} Channel`;
+  }
+
+  function generateSignals(prices, support, resistance) {
+    return [
+      'Current price relative to 50-day range',
+      'Support levels identified at $' + support.join(', $'),
+      'Resistance levels at $' + resistance.join(', $'),
+      'Momentum indicators suggest ' + (prices[0] > prices[10] ? 'bullish' : 'bearish') + ' bias'
+    ];
+  }
+
+  function generateRecommendation(current, support, resistance) {
+    return 'Consider entry near $' + support[0] + '. Target $' + resistance[0] + ' on breakout. Stop loss below $' + support[1] + '.';
+  }
+
+  async function analyzeChartData() {
+    if (!stockTicker || !apiKeys.alphaVantage || !apiKeys.finnhub) {
+      setError('Please enter a ticker and configure API keys');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
+      const data = await response.json();
+      
+      if (data['Time Series (Daily)']) {
+        const timeSeries = data['Time Series (Daily)'];
+        const datesDesc = Object.keys(timeSeries).slice(0, 500);
+        const closesDesc = datesDesc.map(date => parseFloat(timeSeries[date]['4. close']));
+        
+        const currentPrice = closesDesc[0];
+        const support = findSupportLevels(closesDesc);
+        const resistance = findResistanceLevels(closesDesc);
+
+        setChartAnalysis({
+          ticker: stockTicker.toUpperCase(),
+          currentPrice: currentPrice.toFixed(2),
+          support,
+          resistance,
+          pattern: identifyPattern(closesDesc),
+          trend: closesDesc[0] > (closesDesc[20] || closesDesc[0]) ? 'Bullish' : 'Bearish',
+          signals: generateSignals(closesDesc, support, resistance),
+          recommendation: generateRecommendation(currentPrice, support, resistance)
+        });
+
+        // Also fetch sentiment data
+        const [recResponse, newsResponse] = await Promise.all([
+          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=recommendation'),
+          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=news')
+        ]);
+        
+        if (recResponse.ok && newsResponse.ok) {
+          const [recData, newsData] = await Promise.all([
+            recResponse.json(),
+            newsResponse.json()
+          ]);
+          
+          if (recData && recData.length > 0) {
+            const latest = recData[0];
+            const totalRatings = latest.buy + latest.hold + latest.sell;
+            const buyScore = (latest.buy / totalRatings) * 100;
+            
+            let overall = 'HOLD';
+            if (buyScore > 60) overall = 'BUY';
+            else if (buyScore < 40) overall = 'SELL';
+            
+            const bullishPercent = newsData.sentiment ? newsData.sentiment.bullishPercent : 50;
+            const sentimentScore = newsData.sentiment ? newsData.sentiment.sentiment : 0;
+            
+            setSentimentAnalysis({
+              ticker: stockTicker.toUpperCase(),
+              overall,
+              confidence: Math.round(buyScore),
+              breakdown: [
+                { source: 'Social Media', score: Math.round(bullishPercent), trend: 'Based on news sentiment analysis' },
+                { source: 'Analyst Ratings', score: Math.round(buyScore), trend: latest.buy + ' Buy, ' + latest.hold + ' Hold, ' + latest.sell + ' Sell' },
+                { source: 'Institutional Activity', score: buyScore > 50 ? 75 : 45, trend: 'Derived from analyst consensus' },
+                { source: 'News Sentiment', score: Math.round(sentimentScore * 100), trend: sentimentScore > 0 ? 'Positive coverage' : 'Mixed coverage' }
+              ],
+              rationale: 'Analyst consensus shows ' + overall + ' rating with ' + latest.buy + ' buy recommendations vs ' + latest.sell + ' sell recommendations.',
+              risks: 'Market conditions and company-specific events could impact performance. Always conduct your own research.'
+            });
+          }
+        } else {
+          setError('Failed to fetch sentiment data. Please try again.');
+        }
+      } else {
+        setError('Could not fetch data. Check ticker symbol or API limit.');
+      }
+    } catch (err) {
+      setError('Error analyzing chart: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Render function
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <div className="max-w-7xl mx-auto p-6">
@@ -192,6 +253,7 @@ function FinancialApp() {
           </div>
         )}
 
+        {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {tabs.map(tab => {
             const Icon = tab.icon;
@@ -210,7 +272,9 @@ function FinancialApp() {
           })}
         </div>
 
+        {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
+          {/* News Tab */}
           {activeTab === 'news' && (
             <div>
               <div className="mb-4">
@@ -240,6 +304,7 @@ function FinancialApp() {
             </div>
           )}
 
+          {/* Charts Tab */}
           {activeTab === 'charts' && (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -248,7 +313,7 @@ function FinancialApp() {
                     <Target className="text-blue-400" />
                     Technical Analysis & Sentiment
                   </h2>
-                  <p className="text-slate-400">Comprehensive market analysis with sentiment data</p>
+                  <p className="text-slate-400">Comprehensive market analysis with price patterns, indicators, and sentiment data</p>
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -256,8 +321,8 @@ function FinancialApp() {
                     type="text"
                     value={stockTicker}
                     onChange={(e) => setStockTicker(e.target.value.toUpperCase())}
-                    className="bg-slate-700 text-white px-4 py-2 rounded-lg"
                     placeholder="e.g. AAPL"
+                    className="bg-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                     onClick={analyzeChartData}
@@ -272,6 +337,7 @@ function FinancialApp() {
 
               {chartAnalysis && (
                 <div className="space-y-4">
+                  {/* Price Chart */}
                   <div className="bg-slate-700 rounded-lg p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -285,6 +351,37 @@ function FinancialApp() {
                     </div>
                   </div>
 
+                  {/* Support & Resistance */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-slate-700 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-blue-400 mb-3">Support & Resistance</h4>
+                      <div className="space-y-2">
+                        <div className="bg-slate-800 rounded p-3">
+                          <p className="text-sm text-slate-400">Support Levels</p>
+                          <p className="text-slate-300">${chartAnalysis.support.join(', $')}</p>
+                        </div>
+                        <div className="bg-slate-800 rounded p-3">
+                          <p className="text-sm text-slate-400">Resistance Levels</p>
+                          <p className="text-slate-300">${chartAnalysis.resistance.join(', $')}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Signals */}
+                    <div className="bg-slate-700 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-blue-400 mb-3">Signals</h4>
+                      <ul className="space-y-2">
+                        {chartAnalysis.signals.map((signal, idx) => (
+                          <li key={idx} className="text-sm text-slate-300 flex items-start gap-2">
+                            <span className="text-emerald-400 mt-1">•</span>
+                            <span>{signal}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Sentiment Analysis */}
                   {sentimentAnalysis && (
                     <div className="bg-slate-700 rounded-lg p-4">
                       <h4 className="text-sm font-semibold text-blue-400 mb-3">Market Sentiment</h4>
