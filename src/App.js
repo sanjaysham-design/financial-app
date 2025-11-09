@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Newspaper, Target, Search, Loader } from 'lucide-react';
+import { Newspaper, Target, Search, Loader, Info } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
 
 function FinancialApp() {
@@ -162,6 +162,21 @@ function FinancialApp() {
         const nearestSupport = numericSupports.filter(s => s < currentPrice).pop() || null;
         const nearestResistance = numericResistances.find(r => r > currentPrice) || null;
 
+        // build strength counts for S/R levels (group by rounded price)
+        const groupCounts = (arr) => {
+          const counts = {};
+          arr.forEach(p => {
+            const key = Number(p).toFixed(2);
+            counts[key] = (counts[key] || 0) + 1;
+          });
+          return Object.keys(counts).map(k => ({ price: k, count: counts[k] }));
+        };
+
+        const rawSupports = pivots.filter(p => p.type === 'support').map(p => p.price);
+        const rawResistances = pivots.filter(p => p.type === 'resistance').map(p => p.price);
+        const supportLevels = groupCounts(rawSupports).sort((a,b) => b.count - a.count || a.price - b.price);
+        const resistanceLevels = groupCounts(rawResistances).sort((a,b) => b.count - a.count || a.price - b.price);
+
         setTechnicalData({
           chartData,
           pivots,
@@ -185,8 +200,8 @@ function FinancialApp() {
             signals: {
               goldCross,
               deathCross,
-              supports: pivots.filter(p => p.type === 'support').slice(-3).map(p => p.price.toFixed(2)),
-              resistances: pivots.filter(p => p.type === 'resistance').slice(-3).map(p => p.price.toFixed(2))
+              supports: supportLevels.slice(0,5),
+              resistances: resistanceLevels.slice(0,5)
             }
           }
         });
@@ -360,6 +375,21 @@ function FinancialApp() {
                       </span>
                     </div>
 
+                    {/* Small legend explaining shaded S/R band */}
+                    <div className="flex items-center gap-3 mt-2 text-sm text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <span style={{ width: 14, height: 12, display: 'inline-block', background: 'rgba(99,102,241,0.16)', border: '1px solid rgba(99,102,241,0.22)', borderRadius: 2 }} />
+                        <div>
+                          <div className="font-medium text-slate-200">S/R Band</div>
+                          <div className="text-xs text-slate-400">Shaded area shows nearest support and resistance — range where price may bounce or breakout</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center ml-4 text-slate-400">
+                        <Info size={14} className="mr-1" />
+                        <span className="text-xs">Toggle visibility with the checkboxes</span>
+                      </div>
+                    </div>
+
                     <div className="h-96 mt-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={technicalData.chartData}>
@@ -407,16 +437,50 @@ function FinancialApp() {
                             name="200 MA"
                           />
                             {/* Support/resistance overlays (conditionally rendered) */}
-                            {showSROverlay && technicalData.analysis.signals.supports.map((level, idx) => (
-                              <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
-                            ))}
-                            {showSROverlay && technicalData.analysis.signals.resistances.map((level, idx) => (
-                              <ReferenceLine key={`res-${idx}`} y={Number(level)} stroke="#EF4444" strokeDasharray="4 4" label={{ value: `R ${level}`, position: 'right', fill: '#EF4444' }} />
-                            ))}
+                            {showSROverlay && technicalData.analysis.signals.supports.map((level, idx) => {
+                              const price = Number(level.price);
+                              const strength = Math.max(1, level.count);
+                              const strokeWidth = 1 + Math.min(strength - 1, 4);
+                              const strokeOpacity = Math.min(0.35 + strength * 0.12, 0.9);
+                              return (
+                                <ReferenceLine
+                                  key={`sup-${idx}`}
+                                  y={price}
+                                  stroke="#10B981"
+                                  strokeDasharray="4 4"
+                                  strokeWidth={strokeWidth}
+                                  strokeOpacity={strokeOpacity}
+                                  label={{ value: `S ${level.price} (${level.count})`, position: 'right', fill: '#10B981' }}
+                                />
+                              );
+                            })}
+                            {showSROverlay && technicalData.analysis.signals.resistances.map((level, idx) => {
+                              const price = Number(level.price);
+                              const strength = Math.max(1, level.count);
+                              const strokeWidth = 1 + Math.min(strength - 1, 4);
+                              const strokeOpacity = Math.min(0.35 + strength * 0.12, 0.9);
+                              return (
+                                <ReferenceLine
+                                  key={`res-${idx}`}
+                                  y={price}
+                                  stroke="#EF4444"
+                                  strokeDasharray="4 4"
+                                  strokeWidth={strokeWidth}
+                                  strokeOpacity={strokeOpacity}
+                                  label={{ value: `R ${level.price} (${level.count})`, position: 'right', fill: '#EF4444' }}
+                                />
+                              );
+                            })}
 
                             {/* Shade between nearest support and resistance (if available) */}
                             {showSRShade && technicalData.srBand && (
-                              <ReferenceArea y1={technicalData.srBand.low} y2={technicalData.srBand.high} strokeOpacity={0} fill="rgba(99,102,241,0.06)" />
+                              <ReferenceArea
+                                y1={technicalData.srBand.low}
+                                y2={technicalData.srBand.high}
+                                stroke="rgba(99,102,241,0.22)"
+                                strokeOpacity={0.35}
+                                fill="rgba(99,102,241,0.16)"
+                              />
                             )}
                         </LineChart>
                       </ResponsiveContainer>
@@ -444,7 +508,7 @@ function FinancialApp() {
                         <div className="flex gap-2">
                           {technicalData.analysis.signals.supports.map((level, idx) => (
                             <span key={idx} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm">
-                              ${level}
+                              ${level.price} <span className="text-xs text-slate-400 ml-2">({level.count})</span>
                             </span>
                           ))}
                         </div>
@@ -455,7 +519,7 @@ function FinancialApp() {
                         <div className="flex gap-2">
                           {technicalData.analysis.signals.resistances.map((level, idx) => (
                             <span key={idx} className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
-                              ${level}
+                              ${level.price} <span className="text-xs text-slate-400 ml-2">({level.count})</span>
                             </span>
                           ))}
                         </div>
