@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
@@ -258,25 +258,57 @@ function FinancialApp() {
       
       if (data['Time Series (Daily)']) {
         const timeSeries = data['Time Series (Daily)'];
-        const dates = Object.keys(timeSeries).slice(0, 50);
-        const prices = [];
-        for (let i = 0; i < dates.length; i++) {
-          prices.push(parseFloat(timeSeries[dates[i]]['4. close']));
+        // collect a larger history so we can compute 50- and 200-day moving averages
+        const allDates = Object.keys(timeSeries);
+        const sliceCount = Math.min(allDates.length, 500); // cap to 500 for performance
+        const datesDesc = allDates.slice(0, sliceCount); // most recent first
+        const closesDesc = datesDesc.map(function(d) { return parseFloat(timeSeries[d]['4. close']); });
+
+        // Prepare chronological arrays (oldest -> newest) for moving average calculations and charting
+        const datesChron = datesDesc.slice().reverse();
+        const closesChron = closesDesc.slice().reverse();
+
+        function computeMA(arr, period) {
+          const out = new Array(arr.length).fill(null);
+          let sum = 0;
+          for (let i = 0; i < arr.length; i++) {
+            sum += arr[i];
+            if (i >= period) {
+              sum -= arr[i - period];
+            }
+            if (i >= period - 1) {
+              out[i] = sum / period;
+            }
+          }
+          return out;
         }
-        
-        const currentPrice = prices[0];
-        const support = findSupportLevels(prices);
-        const resistance = findResistanceLevels(prices);
-        
+
+        const ma50 = computeMA(closesChron, 50);
+        const ma200 = computeMA(closesChron, 200);
+
+        const timeSeriesData = closesChron.map(function(close, i) {
+          return {
+            date: datesChron[i],
+            close: Number(close.toFixed(2)),
+            ma50: ma50[i] ? Number(ma50[i].toFixed(2)) : null,
+            ma200: ma200[i] ? Number(ma200[i].toFixed(2)) : null
+          };
+        });
+
+        const currentPrice = closesDesc[0];
+        const support = findSupportLevels(closesDesc);
+        const resistance = findResistanceLevels(closesDesc);
+
         setChartAnalysis({
           ticker: stockTicker.toUpperCase(),
           currentPrice: currentPrice.toFixed(2),
           support: support,
           resistance: resistance,
-          pattern: identifyPattern(prices),
-          trend: prices[0] > prices[20] ? 'Bullish' : 'Bearish',
-          signals: generateSignals(prices, support, resistance),
-          recommendation: generateRecommendation(currentPrice, support, resistance)
+          pattern: identifyPattern(closesDesc),
+          trend: closesDesc[0] > (closesDesc[20] || closesDesc[0]) ? 'Bullish' : 'Bearish',
+          signals: generateSignals(closesDesc, support, resistance),
+          recommendation: generateRecommendation(currentPrice, support, resistance),
+          timeSeriesData: timeSeriesData
         });
       } else {
         setError('Could not fetch data. Check ticker symbol or API limit.');
@@ -353,6 +385,28 @@ function FinancialApp() {
           </div>
         </div>
         
+                  {/* Price series with moving averages */}
+                  {chartAnalysis.timeSeriesData && (
+                    <div className="bg-slate-800 rounded p-4 mb-4">
+                      <h4 className="text-sm font-semibold text-blue-400 mb-3">Price & Moving Averages (50 / 200)</h4>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartAnalysis.timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                          <YAxis stroke="#94a3b8" domain={["dataMin", "dataMax"]} />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                            formatter={function(value) { return ['$' + value, '']; }}
+                          />
+                          <Legend />
+                          <Line type="monotone" dataKey="close" stroke="#3b82f6" dot={false} name="Close" />
+                          <Line type="monotone" dataKey="ma50" stroke="#10b981" dot={false} name="MA (50)" />
+                          <Line type="monotone" dataKey="ma200" stroke="#f97316" dot={false} name="MA (200)" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <div className="bg-slate-800 rounded p-2">
             <p className="text-xs text-slate-400">P/E Ratio</p>
