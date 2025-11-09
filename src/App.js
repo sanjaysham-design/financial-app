@@ -649,6 +649,65 @@ function FinancialApp() {
                     type="text"
                     value={stockTicker}
                     onChange={function(e) { setStockTicker(e.target.value.toUpperCase()); }}
+                    className="bg-slate-700 text-white px-4 py-2 rounded-lg flex-1"
+                    placeholder="e.g. AAPL"
+                  />
+                  <button
+                    onClick={analyzeChartData}
+                    disabled={loading}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                  >
+                    {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
+                    Analyze
+                  </button>
+                </div>
+              </div>
+
+              {chartAnalysis && (
+                <div>
+                  {/* Price series with moving averages */}
+                  <div className="bg-slate-800 rounded p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-blue-400">Price & Moving Averages (50 / 200)</h4>
+                      <div className="text-sm text-slate-300">
+                        {chartAnalysis.displaySeries && chartAnalysis.displaySeries.length > 0 ? (
+                          <div className="flex gap-4">
+                            <div>MA(50): <span className="font-semibold text-emerald-400">${chartAnalysis.displaySeries[chartAnalysis.displaySeries.length - 1].ma50?.toFixed(2) || 'n/a'}</span></div>
+                            <div>MA(200): <span className="font-semibold text-orange-400">${chartAnalysis.displaySeries[chartAnalysis.displaySeries.length - 1].ma200?.toFixed(2) || 'n/a'}</span></div>
+                            <div>Close: <span className="font-semibold text-blue-400">${chartAnalysis.displaySeries[chartAnalysis.displaySeries.length - 1].close}</span></div>
+                          </div>
+                        ) : (
+                          <span>MA values not available</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={chartAnalysis.displaySeries || chartAnalysis.timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} tickFormatter={function(d) { try { return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch (e) { return d; } }} />
+                        <YAxis stroke="#94a3b8" domain={["dataMin", "dataMax"]} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                          formatter={function(value) { return ['$' + value, '']; }}
+                        />
+                        <Legend />
+                        <Line type="monotone" dataKey="close" stroke="#3b82f6" dot={false} name="Close" strokeWidth={2} />
+                        <Line type="monotone" dataKey="ma50" stroke="#10b981" dot={false} name="MA (50)" strokeWidth={2} connectNulls={true} />
+                        <Line type="monotone" dataKey="ma200" stroke="#f97316" dot={false} name="MA (200)" strokeWidth={2} connectNulls={true} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Enter Stock Ticker</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={stockTicker}
+                    onChange={function(e) { setStockTicker(e.target.value.toUpperCase()); }}
                     placeholder="e.g., AAPL"
                     className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                   />
