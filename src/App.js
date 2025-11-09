@@ -14,36 +14,20 @@ function FinancialApp() {
   const userId = getUserId();
 
   useEffect(function() {
-    async function loadKeys() {
-      try {
-        const response = await fetch(`/api/load-keys?userId=${userId}`);
-        const data = await response.json();
-        if (data && !data.error) {
-          setApiKeys(data);
-        }
-      } catch (err) {
-        console.error('Failed to load keys:', err);
-      }
-    }
-    loadKeys();
-  }, [userId]);
-
-  async function saveKeys(newKeys) {
+  async function loadDefaultKeys() {
     try {
-      await fetch('/api/save-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId,
-          alphaVantage: newKeys.alphaVantage,
-          finnhub: newKeys.finnhub,
-          newsApi: newKeys.newsApi
-        })
-      });
+      const response = await fetch('/api/default-keys');
+      const data = await response.json();
+      if (data && !data.error) {
+        setApiKeys(data);
+      }
     } catch (err) {
-      console.error('Failed to save keys:', err);
+      console.error('Failed to load default keys:', err);
     }
   }
+  loadDefaultKeys();
+}, []);
+
 
   const [activeTab, setActiveTab] = useState('screener');
   const [stockTicker, setStockTicker] = useState('');
@@ -414,17 +398,13 @@ function FinancialApp() {
                     (Get free key)
                   </a>
                 </label>
-                <input
-                  type="text"
-                  value={apiKeys.alphaVantage}
-                  onChange={function(e) { 
-                    const newKeys = {...apiKeys, alphaVantage: e.target.value};
-                    setApiKeys(newKeys);
-                    saveKeys(newKeys);
-                  }}
-                  placeholder="Enter Alpha Vantage API key"
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                />
+              <input
+                type="text"
+                value={apiKeys.alphaVantage}
+                readOnly
+                placeholder="Loading..."
+                className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
+              />
                 <p className="text-xs text-slate-500 mt-1">Used for: Stock Screener, Chart Patterns</p>
               </div>
 
@@ -435,14 +415,13 @@ function FinancialApp() {
                     (Get free key)
                   </a>
                 </label>
-                <input
+               <input
                   type="text"
                   value={apiKeys.finnhub}
-                  onChange={function(e) { 
-                    const newKeys = {...apiKeys, finnhub: e.target.value};
-                    setApiKeys(newKeys);
-                    saveKeys(newKeys);
-                  }}
+                  readOnly
+                  placeholder="Loading..."
+                  className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
+                />
                   placeholder="Enter Finnhub API key"
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
@@ -459,11 +438,10 @@ function FinancialApp() {
                 <input
                   type="text"
                   value={apiKeys.newsApi}
-                  onChange={function(e) { 
-                    const newKeys = {...apiKeys, newsApi: e.target.value};
-                    setApiKeys(newKeys);
-                    saveKeys(newKeys);
-                  }}
+                  readOnly
+                  placeholder="Loading..."
+                  className="w-full bg-slate-600 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 cursor-not-allowed"
+                />
                   placeholder="Enter News API key"
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
@@ -473,7 +451,7 @@ function FinancialApp() {
 
             <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
               <p className="text-xs text-yellow-300">
-                <strong>Note:</strong> API keys are sent to serverless functions that proxy the requests. Never expose API keys in frontend code in production.
+                <strong>Note:</strong> API keys are managed by the app administrator and work for all users automatically. No login or configuration needed!
               </p>
             </div>
           </div>
