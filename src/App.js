@@ -4,7 +4,7 @@ import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCirc
 function FinancialApp() {
 
 useEffect(function() {
-  async function loadDefaultKeys() {
+  async function loadDefaultKeysAndNews() {
     try {
       const response = await fetch('/api/default-keys');
       const data = await response.json();
@@ -12,14 +12,14 @@ useEffect(function() {
         setApiKeys(data);
         // Auto-load news after keys are loaded
         if (data.newsApi) {
-          fetchNewsWithKey(data.newsApi);
+          await fetchNewsWithKey(data.newsApi);
         }
       }
     } catch (err) {
       console.error('Failed to load default keys:', err);
     }
   }
-  loadDefaultKeys();
+  loadDefaultKeysAndNews();
 }, []);
 
 
