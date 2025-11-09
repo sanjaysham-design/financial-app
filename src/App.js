@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
-// main component
 function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
@@ -86,20 +86,20 @@ function FinancialApp() {
     }
   }
 
-  const analyzeSentiment = useCallback(function (text) {
+  function analyzeSentiment(text) {
     const positive = ['gains', 'surge', 'profit', 'growth', 'strong', 'positive'];
     const negative = ['loss', 'decline', 'fall', 'weak', 'concern', 'risk'];
 
-    const lowerText = (text || '').toLowerCase();
+    const lowerText = text.toLowerCase();
     const posCount = positive.filter(word => lowerText.includes(word)).length;
     const negCount = negative.filter(word => lowerText.includes(word)).length;
 
     if (posCount > negCount) return 'positive';
     if (negCount > posCount) return 'negative';
     return 'neutral';
-  }, []);
+  }
 
-  const fetchNewsWithKey = useCallback(async function (newsApiKey) {
+  async function fetchNewsWithKey(newsApiKey) {
     setLoading(true);
     setError('');
 
@@ -127,27 +127,46 @@ function FinancialApp() {
     } finally {
       setLoading(false);
     }
-  }, [analyzeSentiment]);
+  }
 
-  useEffect(function () {
-    async function loadDefaultKeysAndNews() {
-      try {
-        const response = await fetch('/api/default-keys');
-        const data = await response.json();
-        if (data && !data.error) {
-          setApiKeys(data);
-          // Auto-load news after keys are loaded
-          if (data.newsApi) {
-            fetchNewsWithKey(data.newsApi);
-          }
+  async function fetchNewsWithKey(newsApiKey) {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/news?apikey=${newsApiKey}`);
+      const data = await response.json();
+
+      if (data.articles) {
+        const formattedNews = [];
+        for (let i = 0; i < data.articles.length; i++) {
+          const article = data.articles[i];
+          formattedNews.push({
+            headline: article.title,
+            impact: 'Market Moving',
+            summary: article.description || '',
+            url: article.url || '',
+            implications: 'Analyze based on content and market context',
+            sentiment: analyzeSentiment(article.title + ' ' + article.description)
+          });
         }
-      } catch (err) {
-        console.error('Failed to load default keys:', err);
+        setNewsStories(formattedNews);
       }
+    } catch (err) {
+      setError('Error fetching news: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    loadDefaultKeysAndNews();
-  }, [fetchNewsWithKey]);
+  }
 
+  async function fetchNews() {
+    if (!apiKeys.newsApi) {
+      setError('Please enter News API key');
+      return;
+    }
+
+    await fetchNewsWithKey(apiKeys.newsApi);
+  }
 
   function findSupportLevels(prices) {
     const sorted = prices.slice().sort(function (a, b) { return a - b; });
@@ -342,7 +361,26 @@ function FinancialApp() {
       </div>
     );
   });
- 
+
+  return (
+
+    <div key={idx} className="bg-slate-700 rounded-lg p-4">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="text-lg font-bold flex-1">{story.headline}</h3>
+        <span className={'px-3 py-1 rounded-full text-xs font-semibold ml-4 ' + sentimentClass}>
+          {story.impact}
+        </span>
+      </div>
+
+      <p className="text-slate-300 mb-3">{story.summary}</p>
+
+      <div className="bg-slate-800 rounded p-3">
+        <p className="text-sm font-semibold text-blue-400 mb-1">Investment Implications:</p>
+        <p className="text-sm text-slate-300">{story.implications}</p>
+      </div>
+    </div>
+  );
+});
 
 const sentimentBreakdown = sentimentAnalysis ? sentimentAnalysis.breakdown.map(function (item, idx) {
   return (
@@ -392,14 +430,13 @@ return (
                     sandbox="allow-same-origin allow-scripts"
                   />
 
-                  <a
-                    href={selectedArticle.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+                  href={selectedArticle.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors"
                   >
-                    Open in New Tab →
-                  </a>
+                  Open in New Tab →
+                </a>
                 </div>
               )}
           </div>
@@ -556,6 +593,34 @@ return (
                 </span>
               </div>
 
+              {/* Price Chart */}
+              <div className="bg-slate-800 rounded p-4 mb-4">
+                <h4 className="text-sm font-semibold text-blue-400 mb-3">Price Levels Visualization</h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <AreaChart
+                    data={[
+                      { level: 'Support 2', value: parseFloat(chartAnalysis.support[1]), type: 'support' },
+                      { level: 'Support 1', value: parseFloat(chartAnalysis.support[0]), type: 'support' },
+                      { level: 'Current', value: parseFloat(chartAnalysis.currentPrice), type: 'current' },
+                      { level: 'Resistance 1', value: parseFloat(chartAnalysis.resistance[0]), type: 'resistance' },
+                      { level: 'Resistance 2', value: parseFloat(chartAnalysis.resistance[1]), type: 'resistance' },
+                    ]}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="level" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" domain={['dataMin - 5', 'dataMax + 5']} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                      labelStyle={{ color: '#e2e8f0' }}
+                      itemStyle={{ color: '#60a5fa' }}
+                      formatter={(value) => `$${value}`}
+                    />
+                    <Area type="monotone" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-slate-800 rounded p-3">
                   <p className="text-sm font-semibold text-blue-400 mb-2">Support Levels</p>
@@ -570,7 +635,7 @@ return (
               <div className="bg-slate-800 rounded p-3 mb-4">
                 <p className="text-sm font-semibold text-blue-400 mb-2">Pattern: {chartAnalysis.pattern}</p>
                 <ul className="space-y-2">
-                  {chartAnalysis.signals.map(function (signal, idx) {
+                  {chartAnalysis.signals.map(function(signal, idx) {
                     return (
                       <li key={idx} className="text-sm text-slate-300 flex items-start gap-2">
                         <span className="text-emerald-400 mt-1">•</span>
@@ -587,6 +652,7 @@ return (
               </div>
             </div>
           )}
+
         </div>
       )}
 
@@ -625,37 +691,97 @@ return (
               <p className="text-slate-300">Configure Finnhub API key above to analyze sentiment</p>
             </div>
           )}
-
-          {sentimentAnalysis && (
-            <div className="bg-slate-700 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-blue-400">{sentimentAnalysis.ticker}</h3>
-                  <p className="text-slate-300">Overall Sentiment Analysis</p>
-                </div>
-                <div className="text-right">
-                  <span className={'text-3xl font-bold ' + (sentimentAnalysis.overall === 'BUY' ? 'text-emerald-400' : sentimentAnalysis.overall === 'HOLD' ? 'text-yellow-400' : 'text-red-400')}>
-                    {sentimentAnalysis.overall}
-                  </span>
-                  <p className="text-sm text-slate-400">Confidence: {sentimentAnalysis.confidence}%</p>
-                </div>
+  
+        {sentimentAnalysis && (
+          <div className="bg-slate-700 rounded-lg p-4">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-2xl font-bold text-blue-400">{sentimentAnalysis.ticker}</h3>
+                <p className="text-slate-300">Overall Sentiment Analysis</p>
               </div>
-
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                {sentimentBreakdown}
-              </div>
-
-              <div className="bg-emerald-900/30 border border-emerald-500/30 rounded p-3 mb-3">
-                <p className="text-sm font-semibold text-emerald-400 mb-1">Rationale:</p>
-                <p className="text-sm text-slate-300">{sentimentAnalysis.rationale}</p>
-              </div>
-
-              <div className="bg-yellow-900/30 border border-yellow-500/30 rounded p-3">
-                <p className="text-sm font-semibold text-yellow-400 mb-1">Risk Factors:</p>
-                <p className="text-sm text-slate-300">{sentimentAnalysis.risks}</p>
+              <div className="text-right">
+                <span className={'text-3xl font-bold ' + (sentimentAnalysis.overall === 'BUY' ? 'text-emerald-400' : sentimentAnalysis.overall === 'HOLD' ? 'text-yellow-400' : 'text-red-400')}>
+                  {sentimentAnalysis.overall}
+                </span>
+                <p className="text-sm text-slate-400">Confidence: {sentimentAnalysis.confidence}%</p>
               </div>
             </div>
-          )}
+
+            {/* Sentiment Score Chart */}
+            <div className="bg-slate-800 rounded p-4 mb-4">
+              <h4 className="text-sm font-semibold text-blue-400 mb-3">Sentiment Breakdown</h4>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={sentimentAnalysis.breakdown}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="source" stroke="#94a3b8" angle={-15} textAnchor="end" height={80} />
+                  <YAxis stroke="#94a3b8" domain={[0, 100]} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                    labelStyle={{ color: '#e2e8f0' }}
+                    itemStyle={{ color: '#10b981' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="score" fill="#10b981" name="Sentiment Score" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Confidence Gauge Chart */}
+            <div className="bg-slate-800 rounded p-4 mb-4">
+              <h4 className="text-sm font-semibold text-blue-400 mb-3">Overall Confidence Level</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  layout="vertical"
+                  data={[
+                    { name: 'Confidence', value: sentimentAnalysis.confidence, fill: sentimentAnalysis.confidence > 70 ? '#10b981' : sentimentAnalysis.confidence > 40 ? '#f59e0b' : '#ef4444' }
+                  ]}
+                  margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis type="number" domain={[0, 100]} stroke="#94a3b8" />
+                  <YAxis type="category" dataKey="name" stroke="#94a3b8" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
+                    formatter={(value) => `${value}%`}
+                  />
+                  <Bar dataKey="value" radius={[0, 8, 8, 0]}>
+                    {[{ name: 'Confidence', value: sentimentAnalysis.confidence, fill: sentimentAnalysis.confidence > 70 ? '#10b981' : sentimentAnalysis.confidence > 40 ? '#f59e0b' : '#ef4444' }].map((entry, index) => (
+                      <Bar key={index} dataKey="value" fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              {sentimentAnalysis.breakdown.map(function(item, idx) {
+                return (
+                  <div key={idx} className="bg-slate-800 rounded p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-semibold text-blue-400">{item.source}</p>
+                      <span className="text-sm font-bold text-emerald-400">{item.score}</span>
+                    </div>
+                    <p className="text-xs text-slate-300">{item.trend}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-emerald-900/30 border border-emerald-500/30 rounded p-3 mb-3">
+              <p className="text-sm font-semibold text-emerald-400 mb-1">Rationale:</p>
+              <p className="text-sm text-slate-300">{sentimentAnalysis.rationale}</p>
+            </div>
+
+            <div className="bg-yellow-900/30 border border-yellow-500/30 rounded p-3">
+              <p className="text-sm font-semibold text-yellow-400 mb-1">Risk Factors:</p>
+              <p className="text-sm text-slate-300">{sentimentAnalysis.risks}</p>
+            </div>
+          </div>
+        )}
+
         </div>
       )}
     </div>
