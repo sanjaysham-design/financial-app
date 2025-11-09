@@ -12,7 +12,7 @@ useEffect(function() {
         setApiKeys(data);
         // Auto-load news after keys are loaded
         if (data.newsApi) {
-          await fetchNewsWithKey(data.newsApi);
+          fetchNewsWithKey(data.newsApi);  // Remove await here
         }
       }
     } catch (err) {
