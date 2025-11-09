@@ -280,22 +280,28 @@ function FinancialApp() {
         const closesChron = closesDesc.slice().reverse();
 
         function computeMA(arr, period) {
-          const out = new Array(arr.length).fill(null);
-          let sum = 0;
+          const result = [];
           for (let i = 0; i < arr.length; i++) {
-            sum += arr[i];
-            if (i >= period) {
-              sum -= arr[i - period];
+            if (i < period - 1) {
+              result.push(null);
+              continue;
             }
-            if (i >= period - 1) {
-              out[i] = sum / period;
+            
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+              sum += arr[i - j];
             }
+            result.push(sum / period);
           }
-          return out;
+          return result;
         }
 
         const ma50 = computeMA(closesChron, 50);
         const ma200 = computeMA(closesChron, 200);
+
+        // Debug: Print first few valid MA values
+        console.debug('First MA50 values:', ma50.slice(49, 54));
+        console.debug('First MA200 values:', ma200.slice(199, 204));
 
         const timeSeriesData = closesChron.map(function(close, i) {
           return {
@@ -409,47 +415,7 @@ function FinancialApp() {
           </div>
         </div>
         
-                  {/* Price series with moving averages */}
-                  {chartAnalysis.timeSeriesData && (
-                    <div className="bg-slate-800 rounded p-4 mb-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-blue-400">Price & Moving Averages (50 / 200)</h4>
-                        <div className="text-sm text-slate-300">
-                          {/* show latest MA values if available */}
-                          {chartAnalysis.displaySeries && chartAnalysis.displaySeries.length > 0 ? (
-                            (() => {
-                              const last = chartAnalysis.displaySeries[chartAnalysis.displaySeries.length - 1];
-                              return (
-                                <div className="flex gap-4">
-                                  <div>MA(50): <span className="font-semibold text-emerald-400">{last.ma50 ? '$' + last.ma50 : 'n/a'}</span></div>
-                                  <div>MA(200): <span className="font-semibold text-orange-400">{last.ma200 ? '$' + last.ma200 : 'n/a'}</span></div>
-                                  <div>Close: <span className="font-semibold text-blue-400">${last.close}</span></div>
-                                </div>
-                              );
-                            })()
-                          ) : (
-                            <span>MA values not available</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartAnalysis.displaySeries || chartAnalysis.timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                          <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} tickFormatter={function(d) { try { return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch (e) { return d; } }} />
-                          <YAxis stroke="#94a3b8" domain={["dataMin", "dataMax"]} />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px' }}
-                            formatter={function(value) { return ['$' + value, '']; }}
-                          />
-                          <Legend />
-                          <Line type="monotone" dataKey="close" stroke="#3b82f6" dot={false} name="Close" strokeWidth={2} />
-                          <Line type="monotone" dataKey="ma50" stroke="#10b981" dot={false} name="MA (50)" strokeWidth={2} connectNulls={false} />
-                          <Line type="monotone" dataKey="ma200" stroke="#f97316" dot={false} name="MA (200)" strokeWidth={2} connectNulls={false} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
+                  {/* This chart display was moved to the Charts tab */}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <div className="bg-slate-800 rounded p-2">
