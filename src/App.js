@@ -216,13 +216,23 @@ function FinancialApp() {
   }, [fetchNewsWithKey]);
 
   function findSupportLevels(prices) {
-    const sorted = prices.slice().sort(function(a, b) { return a - b; });
-    return [sorted[5].toFixed(2), sorted[10].toFixed(2)];
+    // Look at last 50 days for support levels
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort(function(a, b) { return a - b; });
+    // Get levels at 20th and 40th percentile
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
   }
 
   function findResistanceLevels(prices) {
-    const sorted = prices.slice().sort(function(a, b) { return b - a; });
-    return [sorted[5].toFixed(2), sorted[10].toFixed(2)];
+    // Look at last 50 days for resistance levels
+    const recentPrices = prices.slice(0, 50);
+    const sorted = recentPrices.slice().sort(function(a, b) { return b - a; });
+    // Get levels at 20th and 40th percentile
+    const idx1 = Math.floor(sorted.length * 0.2);
+    const idx2 = Math.floor(sorted.length * 0.4);
+    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
   }
 
   function identifyPattern(prices) {
@@ -291,8 +301,8 @@ function FinancialApp() {
           return {
             date: datesChron[i],
             close: Number(close.toFixed(2)),
-            ma50: ma50[i] ? Number(ma50[i].toFixed(2)) : null,
-            ma200: ma200[i] ? Number(ma200[i].toFixed(2)) : null
+            ma50: ma50[i] !== null ? Number(ma50[i].toFixed(2)) : null,
+            ma200: ma200[i] !== null ? Number(ma200[i].toFixed(2)) : null
           };
         });
         // debug: log last few points so it's easy to inspect in browser console
