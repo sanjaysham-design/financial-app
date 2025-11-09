@@ -149,42 +149,44 @@ async function fetchNewsWithKey(newsApiKey) {
   }
 }
 
+async function fetchNewsWithKey(newsApiKey) {
+  setLoading(true);
+  setError('');
+  
+  try {
+    const response = await fetch(`/api/news?apikey=${newsApiKey}`);
+    const data = await response.json();
+    
+    if (data.articles) {
+      const formattedNews = [];
+      for (let i = 0; i < data.articles.length; i++) {
+        const article = data.articles[i];
+        formattedNews.push({
+          headline: article.title,
+          impact: 'Market Moving',
+          summary: article.description || '',
+          url: article.url || '',
+          implications: 'Analyze based on content and market context',
+          sentiment: analyzeSentiment(article.title + ' ' + article.description)
+        });
+      }
+      setNewsStories(formattedNews);
+    }
+  } catch (err) {
+    setError('Error fetching news: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
 async function fetchNews() {
   if (!apiKeys.newsApi) {
     setError('Please enter News API key');
     return;
   }
   
-  fetchNewsWithKey(apiKeys.newsApi);
+  await fetchNewsWithKey(apiKeys.newsApi);
 }
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch(`/api/news?apikey=${apiKeys.newsApi}`);
-      const data = await response.json();
-      
-      if (data.articles) {
-        const formattedNews = [];
-        for (let i = 0; i < data.articles.length; i++) {
-          const article = data.articles[i];
-          formattedNews.push({
-            headline: article.title,
-            impact: 'Market Moving',
-            summary: article.description || '',
-            implications: 'Analyze based on content and market context',
-            sentiment: analyzeSentiment(article.title + ' ' + article.description)
-          });
-        }
-        setNewsStories(formattedNews);
-      }
-    } catch (err) {
-      setError('Error fetching news: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function findSupportLevels(prices) {
     const sorted = prices.slice().sort(function(a, b) { return a - b; });
