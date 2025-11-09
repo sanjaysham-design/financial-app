@@ -117,12 +117,13 @@ function FinancialApp() {
     setError('');
     
     try {
-      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
+      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
       const data = await response.json();
-      
+
       if (data['Time Series (Daily)']) {
         const timeSeries = data['Time Series (Daily)'];
-        const dates = Object.keys(timeSeries).slice(0, 200).reverse();
+        // grab more history so MA200 can be plotted across the chart
+        const dates = Object.keys(timeSeries).slice(0, 400).reverse();
         const prices = dates.map(date => ({
           date,
           price: parseFloat(timeSeries[date]['4. close']),
