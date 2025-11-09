@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, AlertCircle, Loader } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, DollarSign, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
@@ -93,23 +93,7 @@ function FinancialApp() {
     { id: 'sentiment', name: 'Buy/Sell Sentiment', icon: DollarSign }
   ];
 
-  useEffect(function() {
-    async function loadDefaultKeysAndNews() {
-      try {
-        const response = await fetch('/api/default-keys');
-        const data = await response.json();
-        if (data && !data.error) {
-          setApiKeys(data);
-          if (data.newsApi) {
-            fetchNewsWithKey(data.newsApi);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load default keys:', err);
-      }
-    }
-    loadDefaultKeysAndNews();
-  }, []);
+  
 
   function calculateScore(data) {
     let score = 5;
@@ -170,20 +154,20 @@ function FinancialApp() {
     }
   }
 
-  function analyzeSentiment(text) {
+  const analyzeSentiment = useCallback(function (text) {
     const positive = ['gains', 'surge', 'profit', 'growth', 'strong', 'positive'];
     const negative = ['loss', 'decline', 'fall', 'weak', 'concern', 'risk'];
-    
-    const lowerText = text.toLowerCase();
+
+    const lowerText = (text || '').toLowerCase();
     const posCount = positive.filter(word => lowerText.includes(word)).length;
     const negCount = negative.filter(word => lowerText.includes(word)).length;
-    
+
     if (posCount > negCount) return 'positive';
     if (negCount > posCount) return 'negative';
     return 'neutral';
-  }
+  }, []);
 
-  async function fetchNewsWithKey(newsApiKey) {
+  const fetchNewsWithKey = useCallback(async function (newsApiKey) {
     setLoading(true);
     setError('');
     
@@ -211,16 +195,25 @@ function FinancialApp() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [analyzeSentiment]);
 
-  async function fetchNews() {
-    if (!apiKeys.newsApi) {
-      setError('Please configure News API key');
-      return;
+  useEffect(function() {
+    async function loadDefaultKeysAndNews() {
+      try {
+        const response = await fetch('/api/default-keys');
+        const data = await response.json();
+        if (data && !data.error) {
+          setApiKeys(data);
+          if (data.newsApi) {
+            fetchNewsWithKey(data.newsApi);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load default keys:', err);
+      }
     }
-    
-    await fetchNewsWithKey(apiKeys.newsApi);
-  }
+    loadDefaultKeysAndNews();
+  }, [fetchNewsWithKey]);
 
   function findSupportLevels(prices) {
     const sorted = prices.slice().sort(function(a, b) { return a - b; });
@@ -451,7 +444,7 @@ function FinancialApp() {
                       title="Article Content"
                       sandbox="allow-same-origin allow-scripts"
                     />
-                    
+                    <a
                       href={selectedArticle.url}
                       target="_blank"
                       rel="noopener noreferrer"
