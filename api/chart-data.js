@@ -13,8 +13,9 @@ export default async function handler(req, res) {
   }
   
   try {
+    const { outputsize = 'compact' } = req.query;
     const response = await fetch(
-      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apikey}`
+      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${apikey}&outputsize=${outputsize}`
     );
     
     const data = await response.json();

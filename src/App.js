@@ -253,16 +253,17 @@ function FinancialApp() {
     setError('');
     
     try {
-      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
+      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
       const data = await response.json();
       
       if (data['Time Series (Daily)']) {
         const timeSeries = data['Time Series (Daily)'];
-        // collect a larger history so we can compute 50- and 200-day moving averages
         const allDates = Object.keys(timeSeries);
         const sliceCount = Math.min(allDates.length, 500); // cap to 500 for performance
         const datesDesc = allDates.slice(0, sliceCount); // most recent first
         const closesDesc = datesDesc.map(function(d) { return parseFloat(timeSeries[d]['4. close']); });
+        // Add debug log
+        console.debug('Got', allDates.length, 'days of history');
 
         // Prepare chronological arrays (oldest -> newest) for moving average calculations and charting
         const datesChron = datesDesc.slice().reverse();
