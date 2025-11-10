@@ -14,15 +14,8 @@ import {
 } from 'recharts';
 import sectorsList from './data/sectors';
 
-// Candidate ticker lists for the screener (kept small to avoid API rate limits in examples)
-const NASDAQ_CANDIDATES = [
-  'AAPL','MSFT','NVDA','AMZN','TSLA','AMD','INTC','CSCO','QCOM','NFLX',
-  'ADBE','CRM','ORCL','BIIB','TXN','AVGO','REGN','INTU','ISRG','LRCX'
-];
-const SP500_CANDIDATES = [
-  'JPM','JNJ','V','PG','UNH','MA','HD','BAC','XOM','PFE',
-  'KO','ABBV','DIS','CVX','WMT','NKE','MCD','CVS','LLY','UPS'
-];
+// State for manual stock entry
+const MAX_STOCKS = 12;
 
 function FinancialApp() {
   // Helper to determine trend
@@ -186,7 +179,9 @@ function FinancialApp() {
   const [screenerLoading, setScreenerLoading] = useState(false);
   const [screenerError, setScreenerError] = useState('');
   const [screenerLastUpdated, setScreenerLastUpdated] = useState(null);
-  const [screenerResults, setScreenerResults] = useState({ nasdaq: [], sp500: [] });
+  const [screenerResults, setScreenerResults] = useState([]);
+  const [stockInput, setStockInput] = useState('');
+  const [selectedStocks, setSelectedStocks] = useState([]);
 
   // Helper: parse number safely
   const parseNum = useCallback((v) => {
@@ -256,34 +251,43 @@ function FinancialApp() {
     return results;
   }, [apiKeys.alphaVantage, evaluateOverview]);
 
+  // Add stock to selected list
+  const addStock = useCallback(() => {
+    const stock = stockInput.trim().toUpperCase();
+    if (stock && !selectedStocks.includes(stock) && selectedStocks.length < MAX_STOCKS) {
+      setSelectedStocks(prev => [...prev, stock]);
+      setStockInput('');
+    }
+  }, [stockInput, selectedStocks]);
+
+  // Remove stock from selected list
+  const removeStock = useCallback((stock) => {
+    setSelectedStocks(prev => prev.filter(s => s !== stock));
+  }, []);
+
   // Main screener fetch
   const fetchScreener = useCallback(async () => {
+    if (selectedStocks.length === 0) {
+      setScreenerError('Please add at least one stock to analyze');
+      return;
+    }
+
     setScreenerLoading(true);
     setScreenerError('');
     try {
-      const [nasdaqResults, spResults] = await Promise.all([
-        fetchAndEvaluateList(NASDAQ_CANDIDATES),
-        fetchAndEvaluateList(SP500_CANDIDATES)
-      ]);
+      const results = await fetchAndEvaluateList(selectedStocks);
 
-      // filter for our criteria: undervalued + earningsGood + (lowDebt or positiveCashProxy)
-      function pickTop(list) {
-        const filtered = list.filter(r => r.undervalued && r.earningsGood && (r.lowDebt || r.positiveCashProxy));
-        filtered.sort((a,b) => b.score - a.score);
-        return filtered.slice(0,5);
-      }
-
-      const nasdaqTop = pickTop(nasdaqResults);
-      const spTop = pickTop(spResults);
-
-      setScreenerResults({ nasdaq: nasdaqTop, sp500: spTop });
+      // Sort by score
+      results.sort((a, b) => b.score - a.score);
+      
+      setScreenerResults(results);
       setScreenerLastUpdated(new Date().toISOString());
     } catch (err) {
       setScreenerError('Screener failed: ' + err.message);
     } finally {
       setScreenerLoading(false);
     }
-  }, [fetchAndEvaluateList]);
+  }, [fetchAndEvaluateList, selectedStocks]);
 
   // Parse AlphaVantage SECTOR response into our perf shape
   function parseAlphaVantageSector(raw) {
@@ -676,99 +680,90 @@ function FinancialApp() {
               )}
 
               {!screenerLoading && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">NASDAQ — Top 5</h3>
-                    <div className="space-y-3">
-                      {screenerResults.nasdaq.length === 0 ? (
-                        <div className="text-slate-400 text-sm">No matches found in sample set. Try Refresh.</div>
-                      ) : screenerResults.nasdaq.map(s => (
-                        <div key={s.symbol} className="bg-slate-700 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <div className="text-sm text-slate-400">{s.symbol}</div>
-                              <div className="font-semibold text-lg">{s.name}</div>
-                            </div>
-                            <div className="text-right text-xs text-slate-400">
-                              <div>Score: <span className="font-semibold text-emerald-300">{Math.round(s.score)}</span></div>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <div className="text-xs text-slate-400">PE</div>
-                              <div className={s.pe != null && s.pe < 20 ? 'text-emerald-300' : 'text-slate-300'}>{s.pe ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">PEG</div>
-                              <div className={s.peg != null && s.peg < 1.5 ? 'text-emerald-300' : 'text-slate-300'}>{s.peg ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">P/B</div>
-                              <div className={s.pb != null && s.pb < 3 ? 'text-emerald-300' : 'text-slate-300'}>{s.pb ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Debt/Equity</div>
-                              <div className={s.debtToEquity != null && s.debtToEquity < 1 ? 'text-emerald-300' : 'text-slate-300'}>{s.debtToEquity ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Qtr Earnings %</div>
-                              <div className={s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.qEarningsGrowth ?? 'N/A'}%</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Profitability</div>
-                              <div className={s.profitMargin != null && s.profitMargin > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.profitMargin != null ? (s.profitMargin + '%') : 'N/A'}</div>
-                            </div>
-                          </div>
+                <div>
+                  {/* Stock Input Section */}
+                  <div className="mb-6 bg-slate-700 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-4">
+                      <input
+                        type="text"
+                        value={stockInput}
+                        onChange={(e) => setStockInput(e.target.value.toUpperCase())}
+                        onKeyPress={(e) => e.key === 'Enter' && addStock()}
+                        placeholder="Enter stock symbol (e.g., AAPL)"
+                        className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+                        disabled={selectedStocks.length >= MAX_STOCKS}
+                      />
+                      <button
+                        onClick={addStock}
+                        disabled={!stockInput || selectedStocks.length >= MAX_STOCKS}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium"
+                      >
+                        Add Stock
+                      </button>
+                    </div>
+                    
+                    {/* Selected Stocks */}
+                    <div className="flex flex-wrap gap-2">
+                      {selectedStocks.map((stock) => (
+                        <div key={stock} className="bg-slate-800 px-3 py-1 rounded-full flex items-center gap-2">
+                          <span className="text-sm">{stock}</span>
+                          <button
+                            onClick={() => removeStock(stock)}
+                            className="text-slate-400 hover:text-red-400"
+                          >
+                            ×
+                          </button>
                         </div>
                       ))}
+                    </div>
+                    <div className="mt-2 text-xs text-slate-400">
+                      {selectedStocks.length}/{MAX_STOCKS} stocks selected
                     </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">S&P 500 — Top 5</h3>
-                    <div className="space-y-3">
-                      {screenerResults.sp500.length === 0 ? (
-                        <div className="text-slate-400 text-sm">No matches found in sample set. Try Refresh.</div>
-                      ) : screenerResults.sp500.map(s => (
-                        <div key={s.symbol} className="bg-slate-700 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <div className="text-sm text-slate-400">{s.symbol}</div>
-                              <div className="font-semibold text-lg">{s.name}</div>
-                            </div>
-                            <div className="text-right text-xs text-slate-400">
-                              <div>Score: <span className="font-semibold text-emerald-300">{Math.round(s.score)}</span></div>
-                            </div>
+                  {/* Results Section */}
+                  <div className="space-y-4">
+                    {screenerResults.length === 0 ? (
+                      <div className="text-slate-400 text-sm text-center">Add stocks and click Refresh to analyze fundamentals.</div>
+                    ) : screenerResults.map(s => (
+                      <div key={s.symbol} className="bg-slate-700 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <div className="text-sm text-slate-400">{s.symbol}</div>
+                            <div className="font-semibold text-lg">{s.name}</div>
                           </div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <div className="text-xs text-slate-400">PE</div>
-                              <div className={s.pe != null && s.pe < 20 ? 'text-emerald-300' : 'text-slate-300'}>{s.pe ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">PEG</div>
-                              <div className={s.peg != null && s.peg < 1.5 ? 'text-emerald-300' : 'text-slate-300'}>{s.peg ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">P/B</div>
-                              <div className={s.pb != null && s.pb < 3 ? 'text-emerald-300' : 'text-slate-300'}>{s.pb ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Debt/Equity</div>
-                              <div className={s.debtToEquity != null && s.debtToEquity < 1 ? 'text-emerald-300' : 'text-slate-300'}>{s.debtToEquity ?? 'N/A'}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Qtr Earnings %</div>
-                              <div className={s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.qEarningsGrowth ?? 'N/A'}%</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-slate-400">Profitability</div>
-                              <div className={s.profitMargin != null && s.profitMargin > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.profitMargin != null ? (s.profitMargin + '%') : 'N/A'}</div>
-                            </div>
+                          <div className="text-right text-xs text-slate-400">
+                            <div>Score: <span className="font-semibold text-emerald-300">{Math.round(s.score)}</span></div>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
+                          <div>
+                            <div className="text-xs text-slate-400">PE</div>
+                            <div className={s.pe != null && s.pe < 20 ? 'text-emerald-300' : 'text-slate-300'}>{s.pe ?? 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">PEG</div>
+                            <div className={s.peg != null && s.peg < 1.5 ? 'text-emerald-300' : 'text-slate-300'}>{s.peg ?? 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">P/B</div>
+                            <div className={s.pb != null && s.pb < 3 ? 'text-emerald-300' : 'text-slate-300'}>{s.pb ?? 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">Debt/Equity</div>
+                            <div className={s.debtToEquity != null && s.debtToEquity < 1 ? 'text-emerald-300' : 'text-slate-300'}>{s.debtToEquity ?? 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">Qtr Earnings %</div>
+                            <div className={s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.qEarningsGrowth ?? 'N/A'}%</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">Profitability</div>
+                            <div className={s.profitMargin != null && s.profitMargin > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.profitMargin != null ? (s.profitMargin + '%') : 'N/A'}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
