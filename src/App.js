@@ -471,10 +471,6 @@ function FinancialApp() {
           </span>
         </div>
         <p className="text-slate-300 mb-3">{story.summary}</p>
-        <div className="bg-slate-800 rounded p-3">
-          <p className="text-sm font-semibold text-blue-400 mb-1">Investment Implications:</p>
-          <p className="text-sm text-slate-300">{story.implications}</p>
-        </div>
       </div>
     );
   });
