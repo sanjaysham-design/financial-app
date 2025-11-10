@@ -26,8 +26,7 @@ function FinancialApp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
-  const [chartAnalysis, setChartAnalysis] = useState(null);
-  const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
+  // Removed unused chartAnalysis and sentimentAnalysis state
 
     // Technical chart state
     const [technicalData, setTechnicalData] = useState(null);
@@ -69,7 +68,7 @@ function FinancialApp() {
     }
 
     // Analyze chart data and set technicalData
-    async function analyzeChartData() {
+    const analyzeChartData = useCallback(async () => {
       if (!stockTicker || !apiKeys.alphaVantage) return;
       setLoading(true);
       setError('');
@@ -109,12 +108,12 @@ function FinancialApp() {
       } finally {
         setLoading(false);
       }
-    }
+    }, [stockTicker, apiKeys.alphaVantage, chartWindow]);
 
     // Auto-refresh chart when chartWindow changes
     useEffect(() => {
       if (stockTicker) analyzeChartData();
-    }, [chartWindow]);
+    }, [chartWindow, analyzeChartData, stockTicker]);
 
   const tabs = [
     { id: 'news', name: 'Market News', icon: Newspaper },
@@ -268,89 +267,6 @@ function FinancialApp() {
     return 'Consider entry near $' + support[0] + '. Target $' + resistance[0] + ' on breakout. Stop loss below $' + support[1] + '.';
   }
 
-  async function analyzeChartData() {
-    if (!stockTicker || !apiKeys.alphaVantage || !apiKeys.finnhub) {
-      setError('Please enter a ticker and configure API keys');
-      return;
-    }
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch('/api/chart-data?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage + '&outputsize=full');
-      const data = await response.json();
-      
-      if (data['Time Series (Daily)']) {
-        const timeSeries = data['Time Series (Daily)'];
-        const datesDesc = Object.keys(timeSeries).slice(0, 500);
-        const closesDesc = datesDesc.map(date => parseFloat(timeSeries[date]['4. close']));
-        
-        const currentPrice = closesDesc[0];
-        const support = findSupportLevels(closesDesc);
-        const resistance = findResistanceLevels(closesDesc);
-
-        setChartAnalysis({
-          ticker: stockTicker.toUpperCase(),
-          currentPrice: currentPrice.toFixed(2),
-          support,
-          resistance,
-          pattern: identifyPattern(closesDesc),
-          trend: closesDesc[0] > (closesDesc[20] || closesDesc[0]) ? 'Bullish' : 'Bearish',
-          signals: generateSignals(closesDesc, support, resistance),
-          recommendation: generateRecommendation(currentPrice, support, resistance)
-        });
-
-        // Also fetch sentiment data
-        const [recResponse, newsResponse] = await Promise.all([
-          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=recommendation'),
-          fetch('/api/sentiment?ticker=' + stockTicker + '&apikey=' + apiKeys.finnhub + '&type=news')
-        ]);
-        
-        if (recResponse.ok && newsResponse.ok) {
-          const [recData, newsData] = await Promise.all([
-            recResponse.json(),
-            newsResponse.json()
-          ]);
-          
-          if (recData && recData.length > 0) {
-            const latest = recData[0];
-            const totalRatings = latest.buy + latest.hold + latest.sell;
-            const buyScore = (latest.buy / totalRatings) * 100;
-            
-            let overall = 'HOLD';
-            if (buyScore > 60) overall = 'BUY';
-            else if (buyScore < 40) overall = 'SELL';
-            
-            const bullishPercent = newsData.sentiment ? newsData.sentiment.bullishPercent : 50;
-            const sentimentScore = newsData.sentiment ? newsData.sentiment.sentiment : 0;
-            
-            setSentimentAnalysis({
-              ticker: stockTicker.toUpperCase(),
-              overall,
-              confidence: Math.round(buyScore),
-              breakdown: [
-                { source: 'Social Media', score: Math.round(bullishPercent), trend: 'Based on news sentiment analysis' },
-                { source: 'Analyst Ratings', score: Math.round(buyScore), trend: latest.buy + ' Buy, ' + latest.hold + ' Hold, ' + latest.sell + ' Sell' },
-                { source: 'Institutional Activity', score: buyScore > 50 ? 75 : 45, trend: 'Derived from analyst consensus' },
-                { source: 'News Sentiment', score: Math.round(sentimentScore * 100), trend: sentimentScore > 0 ? 'Positive coverage' : 'Mixed coverage' }
-              ],
-              rationale: 'Analyst consensus shows ' + overall + ' rating with ' + latest.buy + ' buy recommendations vs ' + latest.sell + ' sell recommendations.',
-              risks: 'Market conditions and company-specific events could impact performance. Always conduct your own research.'
-            });
-          }
-        } else {
-          setError('Failed to fetch sentiment data. Please try again.');
-        }
-      } else {
-        setError('Could not fetch data. Check ticker symbol or API limit.');
-      }
-    } catch (err) {
-      setError('Error analyzing chart: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   // Render function
   return (
