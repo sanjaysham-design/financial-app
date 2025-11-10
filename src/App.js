@@ -233,39 +233,6 @@ function FinancialApp() {
   //   </LineChart>
   // </ResponsiveContainer>
 
-  function findSupportLevels(prices) {
-    const recentPrices = prices.slice(0, 50);
-    const sorted = recentPrices.slice().sort((a, b) => a - b);
-    const idx1 = Math.floor(sorted.length * 0.2);
-    const idx2 = Math.floor(sorted.length * 0.4);
-    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
-  }
-
-  function findResistanceLevels(prices) {
-    const recentPrices = prices.slice(0, 50);
-    const sorted = recentPrices.slice().sort((a, b) => b - a);
-    const idx1 = Math.floor(sorted.length * 0.2);
-    const idx2 = Math.floor(sorted.length * 0.4);
-    return [sorted[idx1].toFixed(2), sorted[idx2].toFixed(2)];
-  }
-
-  function identifyPattern(prices) {
-    const direction = prices[0] > prices[prices.length - 1] ? 'Ascending' : 'Descending';
-    return `${direction} Channel`;
-  }
-
-  function generateSignals(prices, support, resistance) {
-    return [
-      'Current price relative to 50-day range',
-      'Support levels identified at $' + support.join(', $'),
-      'Resistance levels at $' + resistance.join(', $'),
-      'Momentum indicators suggest ' + (prices[0] > prices[10] ? 'bullish' : 'bearish') + ' bias'
-    ];
-  }
-
-  function generateRecommendation(current, support, resistance) {
-    return 'Consider entry near $' + support[0] + '. Target $' + resistance[0] + ' on breakout. Stop loss below $' + support[1] + '.';
-  }
 
 
   // Render function
