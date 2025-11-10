@@ -23,7 +23,7 @@ function FinancialApp() {
     return latest > prev ? 'Bullish' : 'Bearish';
   }
   // State declarations
-  const [activeTab, setActiveTab] = useState('news');
+  const [activeTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
@@ -31,7 +31,7 @@ function FinancialApp() {
     newsApi: ''
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
   // Removed unused chartAnalysis and sentimentAnalysis state
 
@@ -125,12 +125,8 @@ function FinancialApp() {
       if (stockTicker) analyzeChartData();
     }, [chartWindow, analyzeChartData, stockTicker]);
 
-  const tabs = [
-    { id: 'news', name: 'Market News', icon: Newspaper },
-    { id: 'screener', name: 'Stock Screener', icon: TrendingUp },
-    { id: 'sectors', name: 'Sector Trends', icon: BarChart3 },
-    { id: 'charts', name: 'Technical Analysis', icon: Target }
-  ];
+  // Tabs configuration (UI currently renders specific sections directly)
+  // kept for future navigation wiring
 
   // Helper function to analyze sentiment
   function analyzeSentiment(text) {
@@ -399,6 +395,24 @@ function FinancialApp() {
         </header>
         {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
+          {activeTab === 'news' && (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Newspaper className="text-blue-400" />
+                  Market News
+                </h2>
+                <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
+              </div>
+
+              {!newsStories || newsStories.length === 0 ? (
+                <div className="bg-slate-700 rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
+              ) : (
+                <div className="space-y-4">{newsCards}</div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'sectors' && (
             <div>
               <div className="mb-4 flex items-center justify-between">
