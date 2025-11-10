@@ -15,6 +15,13 @@ import {
 } from 'recharts';
 
 function FinancialApp() {
+  // Helper to determine trend
+  function getTrend(chartData) {
+    if (!chartData || chartData.length < 21) return 'Neutral';
+    const latest = chartData[chartData.length - 1].price;
+    const prev = chartData[chartData.length - 21].price;
+    return latest > prev ? 'Bullish' : 'Bearish';
+  }
   // State declarations
   const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
@@ -36,6 +43,9 @@ function FinancialApp() {
     });
     const [showSROverlay, setShowSROverlay] = useState(true);
     const [showSRShade, setShowSRShade] = useState(true);
+
+    // Compute trend for chart
+    const trend = technicalData ? getTrend(technicalData.chartData) : 'Neutral';
 
     // Persist chartWindow to localStorage
     useEffect(() => {
@@ -353,38 +363,49 @@ function FinancialApp() {
                 </div>
                 {/* Chart rendering */}
                 {technicalData && (
-                  <div className="bg-slate-700 rounded-lg p-4">
-                    <div className="h-96">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={technicalData.chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={true} horizontal={true} />
-                          <XAxis dataKey="date" stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} />
-                          <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} domain={[ 'auto', 'auto' ]} />
-                          <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.375rem' }} labelStyle={{ color: '#9CA3AF' }} />
-                          <Legend />
-                          <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} name="Price" />
-                          <Line type="monotone" dataKey="ma50" stroke="#34D399" dot={false} name="50 MA" />
-                          <Line type="monotone" dataKey="ma200" stroke="#F87171" dot={false} name="200 MA" />
-                          {/* S/R overlays */}
-                          {showSROverlay && technicalData.analysis.supports.map((level, idx) => (
-                            <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
-                          ))}
-                          {showSROverlay && technicalData.analysis.resistances.map((level, idx) => (
-                            <ReferenceLine key={`res-${idx}`} y={Number(level)} stroke="#EF4444" strokeDasharray="4 4" label={{ value: `R ${level}`, position: 'right', fill: '#EF4444' }} />
-                          ))}
-                          {/* Shade between nearest support and resistance */}
-                          {showSRShade && technicalData.srBand && (
-                            <ReferenceArea
-                              y1={technicalData.srBand.low}
-                              y2={technicalData.srBand.high}
-                              stroke="rgba(99,102,241,0.22)"
-                              strokeOpacity={0.35}
-                              fill="rgba(99,102,241,0.16)"
-                            />
-                          )}
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <div className="bg-slate-700 rounded-lg p-4">
+                      {/* Trend indicator */}
+                      <div className="flex items-center mb-4">
+                        <span className={
+                          'px-4 py-2 rounded-full font-semibold text-sm ' +
+                          (trend === 'Bullish'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-red-500/20 text-red-400')
+                        }>
+                          {trend} Trend
+                        </span>
+                      </div>
+                      <div className="h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={technicalData.chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={true} horizontal={true} />
+                            <XAxis dataKey="date" stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} />
+                            <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} domain={[ 'auto', 'auto' ]} />
+                            <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.375rem' }} labelStyle={{ color: '#9CA3AF' }} />
+                            <Legend />
+                            <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} name="Price" />
+                            <Line type="monotone" dataKey="ma50" stroke="#34D399" dot={false} name="50 MA" />
+                            <Line type="monotone" dataKey="ma200" stroke="#F87171" dot={false} name="200 MA" />
+                            {/* S/R overlays */}
+                            {showSROverlay && technicalData.analysis.supports.map((level, idx) => (
+                              <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
+                            ))}
+                            {showSROverlay && technicalData.analysis.resistances.map((level, idx) => (
+                              <ReferenceLine key={`res-${idx}`} y={Number(level)} stroke="#EF4444" strokeDasharray="4 4" label={{ value: `R ${level}`, position: 'right', fill: '#EF4444' }} />
+                            ))}
+                            {/* Shade between nearest support and resistance */}
+                            {showSRShade && technicalData.srBand && (
+                              <ReferenceArea
+                                y1={technicalData.srBand.low}
+                                y2={technicalData.srBand.high}
+                                stroke="rgba(99,102,241,0.22)"
+                                strokeOpacity={0.35}
+                                fill="rgba(99,102,241,0.16)"
+                              />
+                            )}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                     {/* Legend for shaded band */}
                         <div className="mt-4 text-xs text-slate-400">
                           <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
