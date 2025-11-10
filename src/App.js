@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
-
 import {
   ResponsiveContainer,
   LineChart,
@@ -163,6 +162,132 @@ function FinancialApp() {
     return 'Neutral';
   }
 
+  // Diagnostic: log sector list when user opens sectors tab
+  useEffect(() => {
+    if (activeTab === 'sectors') {
+      // eslint-disable-next-line no-console
+  console.log('Sector Trends opened, sectorsList length =', sectorsList && sectorsList.length);
+    }
+  }, [activeTab]);
+
+  // Live sectors state
+  const [sectorsLive, setSectorsLive] = useState([]);
+  const [sectorsLoading, setSectorsLoading] = useState(false);
+  const [sectorsError, setSectorsError] = useState('');
+  const [sectorsLastUpdated, setSectorsLastUpdated] = useState(null);
+
+  // Parse AlphaVantage SECTOR response into our perf shape
+  function parseAlphaVantageSector(raw) {
+    if (!raw || typeof raw !== 'object') return {};
+
+    // Find keys that correspond to 1 Week / 1 Month / 3 Month
+    const keyMap = { '1w': null, '1m': null, '3m': null };
+    Object.keys(raw).forEach(k => {
+      const lower = k.toLowerCase();
+      if (lower.includes('1 week') || lower.includes('1 week performance') || lower.includes('week')) {
+        keyMap['1w'] = k;
+      }
+      if (lower.includes('1 month') || lower.includes('1 month performance') || lower.includes('month')) {
+        // prefer 1 month
+        if (!keyMap['1m']) keyMap['1m'] = k;
+      }
+      if (lower.includes('3 month') || lower.includes('3 month performance') || lower.includes('3 month')) {
+        keyMap['3m'] = k;
+      }
+    });
+
+    // If specific keys aren't found, try some common alternatives
+    if (!keyMap['1w']) {
+      keyMap['1w'] = Object.keys(raw).find(k => k.toLowerCase().includes('5 day') || k.toLowerCase().includes('5 day performance')) || null;
+    }
+    if (!keyMap['1m']) {
+      keyMap['1m'] = Object.keys(raw).find(k => k.toLowerCase().includes('1 month')) || null;
+    }
+
+    const parsed = {};
+    // Build mapping of sector -> perf values
+    Object.keys(raw).forEach(k => {
+      // only consider keys that are the performance maps (they map sector name to string percent)
+      const val = raw[k];
+      if (typeof val === 'object') {
+        Object.keys(val).forEach(sectorName => {
+          if (!parsed[sectorName]) parsed[sectorName] = {};
+          // extract values for keys we care about
+          if (k === keyMap['1w']) parsed[sectorName]['1w'] = parseFloat(String(val[sectorName]).replace('%', '')) || 0;
+          if (k === keyMap['1m']) parsed[sectorName]['1m'] = parseFloat(String(val[sectorName]).replace('%', '')) || 0;
+          if (k === keyMap['3m']) parsed[sectorName]['3m'] = parseFloat(String(val[sectorName]).replace('%', '')) || 0;
+        });
+      }
+    });
+
+    return parsed; // { 'Information Technology': { '1w': x, '1m': y, '3m': z }, ... }
+  }
+
+  // Fetch live sector data from our API proxy
+  const fetchSectors = useCallback(async () => {
+    if (!apiKeys.alphaVantage) {
+      setSectorsError('Missing AlphaVantage API key (set defaults or provide key)');
+      return;
+    }
+    setSectorsLoading(true);
+    setSectorsError('');
+    try {
+      const resp = await fetch(`/api/sectors?apikey=${apiKeys.alphaVantage}`);
+      const data = await resp.json();
+      // parse response
+      const parsed = parseAlphaVantageSector(data);
+
+    // merge with static drivers list (canonical fallback from src/data/sectors.js)
+  const merged = sectorsList.map(s => {
+        // AlphaVantage uses slightly different sector names for some sectors
+        const nameMap = {
+          Technology: 'Information Technology',
+          'Real Estate': 'Real Estate',
+          Healthcare: 'Health Care',
+          'Communication Services': 'Communication Services',
+          'Consumer Discretionary': 'Consumer Discretionary',
+          Financials: 'Financials',
+          Energy: 'Energy',
+          Industrials: 'Industrials',
+          Materials: 'Materials',
+          Utilities: 'Utilities'
+        };
+        const rawName = nameMap[s.name] || s.name;
+        const perfObj = parsed[rawName] || {};
+        return {
+          ...s,
+          perf: {
+            '1w': perfObj['1w'] != null ? perfObj['1w'] : (s.perf && s.perf['1w']) || 0,
+            '1m': perfObj['1m'] != null ? perfObj['1m'] : (s.perf && s.perf['1m']) || 0,
+            '3m': perfObj['3m'] != null ? perfObj['3m'] : (s.perf && s.perf['3m']) || 0
+          }
+        };
+      });
+
+      setSectorsLive(merged);
+      setSectorsLastUpdated(new Date().toISOString());
+    } catch (err) {
+      setSectorsError('Failed to load sector data: ' + err.message);
+      // fallback to static list
+      setSectorsLive([]);
+    } finally {
+      setSectorsLoading(false);
+    }
+  }, [apiKeys.alphaVantage]);
+
+  // Auto-refresh when sectors tab active
+  useEffect(() => {
+    let id;
+    if (activeTab === 'sectors') {
+      fetchSectors();
+      // refresh every 5 minutes
+      id = setInterval(fetchSectors, 5 * 60 * 1000);
+    }
+    return () => {
+      if (id) clearInterval(id);
+    };
+  }, [activeTab, fetchSectors]);
+
   // Helper function to fetch news
   const fetchNewsWithKey = useCallback(async function(newsApiKey) {
     setLoading(true);
@@ -272,66 +397,97 @@ function FinancialApp() {
           </h1>
           <p className="text-slate-400">Comprehensive market insights and stock analysis tools</p>
         </header>
-
-        {error && (
-          <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
-            <p className="text-red-300 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ' + 
-                  (isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700')}
-              >
-                <Icon size={18} />
-                {tab.name}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
-          {/* News Tab */}
-          {activeTab === 'news' && (
+          {activeTab === 'sectors' && (
             <div>
-              <div className="mb-4">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Newspaper className="text-blue-400" />
-                  Market News
-                </h2>
-                <p className="text-slate-400 text-sm">Top market-moving stories - automatically updated</p>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <BarChart3 className="text-blue-400" />
+                    Sector Trends
+                  </h2>
+                  <p className="text-slate-400 text-sm">Current performance and near-term outlook for major sectors.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-slate-400">{sectorsLastUpdated ? `Last: ${new Date(sectorsLastUpdated).toLocaleString()}` : ''}</div>
+                  <button
+                    onClick={fetchSectors}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                    disabled={sectorsLoading}
+                  >
+                    {sectorsLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                  </button>
+                  {(!sectorsLive || sectorsLive.length === 0) && (
+                    <div className="text-xs text-amber-300 ml-3">Showing fallback data (static)</div>
+                  )}
+                </div>
               </div>
 
-              {loading && (
-                <div className="flex items-center justify-center py-12">
-                  <Loader className="animate-spin text-blue-400" size={48} />
+              {sectorsError && (
+                <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4">
+                  <p className="text-red-300 text-sm">{sectorsError}</p>
                 </div>
               )}
 
-              {newsStories.length > 0 && (
-                <div className="space-y-4">{newsCards}</div>
-              )}
-
-              {newsStories.length === 0 && !loading && (
-                <div className="bg-slate-700 rounded-lg p-8 text-center">
-                  <Newspaper className="mx-auto mb-3 text-slate-400" size={48} />
-                  <p className="text-slate-300">Loading news articles...</p>
+              {sectorsLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="animate-spin text-blue-400" size={36} />
                 </div>
               )}
+
+              {!sectorsLoading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(sectorsLive && sectorsLive.length > 0 ? sectorsLive : sectorsList).map(sec => {
+                    const outlook = determineSectorOutlook(sec.perf);
+                    const isStrong = outlook === 'Strong';
+                    const isRecovery = outlook === 'Early Recovery';
+                    const isWeak = outlook === 'Weak';
+                    const badgeClass = isStrong
+                      ? 'bg-emerald-500 text-emerald-900'
+                      : isRecovery
+                        ? 'bg-amber-300 text-amber-900'
+                        : isWeak
+                          ? 'bg-red-300 text-red-900'
+                          : 'bg-slate-700 text-slate-200';
+
+                    return (
+                      <div key={sec.id} className={'p-4 rounded-lg ' + (isStrong ? 'border-2 border-emerald-600' : 'bg-slate-700')}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="text-lg font-semibold">{sec.name}</h3>
+                            <div className="text-xs text-slate-400">{sec.drivers}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className={"inline-block px-2 py-1 rounded text-xs font-semibold " + badgeClass}>{outlook}</div>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-4 text-sm">
+                          <div>
+                            <div className="text-xs text-slate-400">1W</div>
+                            <div className={sec.perf['1w'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1w']}%</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">1M</div>
+                            <div className={sec.perf['1m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1m']}%</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400">3M</div>
+                            <div className={sec.perf['3m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['3m']}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-6 text-xs text-slate-400">
+                <strong>Highlights:</strong> Sectors marked <span className="font-semibold text-emerald-300">Strong</span> show robust momentum (1M/3M), <span className="font-semibold text-amber-300">Early Recovery</span> indicates recent rebound after weakness, and <span className="font-semibold text-red-300">Weak</span> signals sustained underperformance. Explanations summarize primary macro and structural drivers.
+              </div>
             </div>
           )}
-
-          {/* Charts Tab */}
-          {activeTab === 'charts' && (
+              {activeTab === 'charts' && (
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <div>
@@ -451,74 +607,15 @@ function FinancialApp() {
                   </div>
                 )}
 
-                    {/* Sector Trends Tab */}
-                    {activeTab === 'sectors' && (
-                      <div>
-                        <div className="mb-4">
-                          <h2 className="text-2xl font-bold flex items-center gap-2">
-                            <BarChart3 className="text-blue-400" />
-                            Sector Trends
-                          </h2>
-                          <p className="text-slate-400 text-sm">Current performance and near-term outlook for major sectors.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {sectorsList.map(sec => {
-                            const outlook = determineSectorOutlook(sec.perf);
-                            const isStrong = outlook === 'Strong';
-                            const isRecovery = outlook === 'Early Recovery';
-                            const isWeak = outlook === 'Weak';
-                            const badgeClass = isStrong
-                              ? 'bg-emerald-500 text-emerald-900'
-                              : isRecovery
-                                ? 'bg-amber-300 text-amber-900'
-                                : isWeak
-                                  ? 'bg-red-300 text-red-900'
-                                  : 'bg-slate-700 text-slate-200';
-
-                            return (
-                              <div key={sec.id} className={'p-4 rounded-lg ' + (isStrong ? 'border-2 border-emerald-600' : 'bg-slate-700')}>
-                                <div className="flex justify-between items-start mb-2">
-                                  <div>
-                                    <h3 className="text-lg font-semibold">{sec.name}</h3>
-                                    <div className="text-xs text-slate-400">{sec.drivers}</div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className={"inline-block px-2 py-1 rounded text-xs font-semibold " + badgeClass}>{outlook}</div>
-                                  </div>
-                                </div>
-                                <div className="mt-3 flex items-center gap-4 text-sm">
-                                  <div>
-                                    <div className="text-xs text-slate-400">1W</div>
-                                    <div className={sec.perf['1w'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1w']}%</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400">1M</div>
-                                    <div className={sec.perf['1m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1m']}%</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400">3M</div>
-                                    <div className={sec.perf['3m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['3m']}%</div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        <div className="mt-6 text-xs text-slate-400">
-                          <strong>Highlights:</strong> Sectors marked <span className="font-semibold text-emerald-300">Strong</span> show robust momentum (1M/3M), <span className="font-semibold text-amber-300">Early Recovery</span> indicates recent rebound after weakness, and <span className="font-semibold text-red-300">Weak</span> signals sustained underperformance. Explanations summarize primary macro and structural drivers.
-                        </div>
-                      </div>
-                    )}
+                    
                 {!technicalData && !loading && (
                   <div className="bg-slate-700 rounded-lg p-8 text-center">
                     <Target className="mx-auto mb-3 text-slate-400" size={48} />
                     <p className="text-slate-300">Enter a ticker and click Analyze to see technical analysis</p>
                   </div>
                 )}
-              </div>
-          )}
+        </div>
+      )}
         </div>
 
         <footer className="mt-8 text-center text-slate-500 text-sm">
