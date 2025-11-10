@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
+import { Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
