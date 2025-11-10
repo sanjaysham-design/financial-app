@@ -13,6 +13,7 @@ import {
   ReferenceLine,
   ReferenceArea
 } from 'recharts';
+import sectorsList from './data/sectors';
 
 function FinancialApp() {
   // Helper to determine trend
@@ -144,6 +145,22 @@ function FinancialApp() {
     if (posCount > negCount) return 'positive';
     if (negCount > posCount) return 'negative';
     return 'neutral';
+  }
+
+  // Helper to determine sector outlook from simple performance signals
+  function determineSectorOutlook(perf) {
+    // perf expected: { '1w': number, '1m': number, '3m': number }
+    const r1w = perf['1w'] ?? 0;
+    const r1m = perf['1m'] ?? 0;
+    const r3m = perf['3m'] ?? 0;
+
+    // Strong momentum: clear positive 1m and 3m
+    if (r1m >= 5 || r3m >= 10) return 'Strong';
+    // Early recovery: recent 1w positive after weaker 1m/3m
+    if (r1w > 0 && (r1m < 3 || r3m < 5)) return 'Early Recovery';
+    // Weak: sustained negative in 1m and 3m
+    if (r1m <= -2 && r3m <= -2) return 'Weak';
+    return 'Neutral';
   }
 
   // Helper function to fetch news
@@ -433,6 +450,67 @@ function FinancialApp() {
                         </div>
                   </div>
                 )}
+
+                    {/* Sector Trends Tab */}
+                    {activeTab === 'sectors' && (
+                      <div>
+                        <div className="mb-4">
+                          <h2 className="text-2xl font-bold flex items-center gap-2">
+                            <BarChart3 className="text-blue-400" />
+                            Sector Trends
+                          </h2>
+                          <p className="text-slate-400 text-sm">Current performance and near-term outlook for major sectors.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {sectorsList.map(sec => {
+                            const outlook = determineSectorOutlook(sec.perf);
+                            const isStrong = outlook === 'Strong';
+                            const isRecovery = outlook === 'Early Recovery';
+                            const isWeak = outlook === 'Weak';
+                            const badgeClass = isStrong
+                              ? 'bg-emerald-500 text-emerald-900'
+                              : isRecovery
+                                ? 'bg-amber-300 text-amber-900'
+                                : isWeak
+                                  ? 'bg-red-300 text-red-900'
+                                  : 'bg-slate-700 text-slate-200';
+
+                            return (
+                              <div key={sec.id} className={'p-4 rounded-lg ' + (isStrong ? 'border-2 border-emerald-600' : 'bg-slate-700')}>
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <h3 className="text-lg font-semibold">{sec.name}</h3>
+                                    <div className="text-xs text-slate-400">{sec.drivers}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className={"inline-block px-2 py-1 rounded text-xs font-semibold " + badgeClass}>{outlook}</div>
+                                  </div>
+                                </div>
+                                <div className="mt-3 flex items-center gap-4 text-sm">
+                                  <div>
+                                    <div className="text-xs text-slate-400">1W</div>
+                                    <div className={sec.perf['1w'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1w']}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-slate-400">1M</div>
+                                    <div className={sec.perf['1m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['1m']}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-slate-400">3M</div>
+                                    <div className={sec.perf['3m'] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf['3m']}%</div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-6 text-xs text-slate-400">
+                          <strong>Highlights:</strong> Sectors marked <span className="font-semibold text-emerald-300">Strong</span> show robust momentum (1M/3M), <span className="font-semibold text-amber-300">Early Recovery</span> indicates recent rebound after weakness, and <span className="font-semibold text-red-300">Weak</span> signals sustained underperformance. Explanations summarize primary macro and structural drivers.
+                        </div>
+                      </div>
+                    )}
                 {!technicalData && !loading && (
                   <div className="bg-slate-700 rounded-lg p-8 text-center">
                     <Target className="mx-auto mb-3 text-slate-400" size={48} />
