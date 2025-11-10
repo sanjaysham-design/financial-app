@@ -386,10 +386,30 @@ function FinancialApp() {
                       </ResponsiveContainer>
                     </div>
                     {/* Legend for shaded band */}
-                    <div className="mt-4 text-xs text-slate-400">
-                      <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
-                      shows area between nearest support and resistance. Use toggles to show/hide overlays and shading.
-                    </div>
+                        <div className="mt-4 text-xs text-slate-400">
+                          <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
+                          shows area between nearest support and resistance. Use toggles to show/hide overlays and shading.
+                        </div>
+
+                        {/* Key levels and strategy explanation */}
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-slate-800 rounded-lg p-4">
+                            <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels & Breakouts</h4>
+                            <div className="space-y-2">
+                              <p className="text-slate-300">Support Levels: <span className="font-bold text-emerald-400">{technicalData.analysis.supports.join(', ')}</span></p>
+                              <p className="text-slate-300">Resistance Levels: <span className="font-bold text-red-400">{technicalData.analysis.resistances.join(', ')}</span></p>
+                              <p className="text-slate-300">Breakout Zone: <span className="font-bold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.low} - ${technicalData.srBand.high}` : 'N/A'}</span></p>
+                            </div>
+                          </div>
+                          <div className="bg-slate-800 rounded-lg p-4">
+                            <h4 className="text-lg font-semibold text-blue-400 mb-2">Trading Strategy Insights</h4>
+                            <div className="space-y-2">
+                              <p className="text-slate-300">Short-term: Watch for price action near support and resistance. Potential entry near support, exit or partial profit near resistance. Breakouts above resistance may signal momentum trades.</p>
+                              <p className="text-slate-300">Long-term: Position entries near strong support zones, with targets at resistance. Consider stop-loss below support. If price sustains above resistance, it may indicate a longer-term uptrend.</p>
+                              <p className="text-slate-400 text-xs">These signals are based on recent pivots and moving averages. Always confirm with broader market context and risk management.</p>
+                            </div>
+                          </div>
+                        </div>
                   </div>
                 )}
                 {!technicalData && !loading && (
