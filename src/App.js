@@ -23,7 +23,7 @@ function FinancialApp() {
     return latest > prev ? 'Bullish' : 'Bearish';
   }
   // State declarations
-  const [activeTab] = useState('news');
+  const [activeTab, setActiveTab] = useState('news');
   const [stockTicker, setStockTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
@@ -395,6 +395,33 @@ function FinancialApp() {
         </header>
         {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
+          {/* Tabs */}
+          <div className="mb-6 flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('news')}
+              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'news' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+            >
+              News
+            </button>
+            <button
+              onClick={() => setActiveTab('sectors')}
+              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+            >
+              Sector Trends
+            </button>
+            <button
+              onClick={() => setActiveTab('charts')}
+              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+            >
+              Technical Analysis
+            </button>
+            <button
+              onClick={() => setActiveTab('screener')}
+              className={"px-4 py-2 rounded-md text-sm font-semibold ml-auto " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+            >
+              Stock Screener
+            </button>
+          </div>
           {activeTab === 'news' && (
             <div>
               <div className="mb-4">
