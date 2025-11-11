@@ -831,7 +831,7 @@ function FinancialApp() {
                             <h3 className="text-3xl font-bold text-blue-400">
                               {stockTicker}
                               {technicalData.companyName && (
-                                <span className="text-xl font-normal text-slate-400 ml-3"> | {technicalData.companyName}</span>
+                                <span className="text-xl font-normal text-slate-400 ml-3">{technicalData.companyName}</span>
                               )}
                             </h3>
                             <p className="text-xl text-slate-300 mt-2">
