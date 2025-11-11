@@ -112,7 +112,7 @@ function FinancialApp() {
               high: Math.max(...pivots.resistances.map(Number))
             };
           }
-          setTechnicalData({ chartData, currentPrice: prices[0].toFixed(2),analysis: pivots, srBand });
+          setTechnicalData({ chartData, currentPrice: chartData.length > 0 ? chartData[chartData.length - 1].price.toFixed(2) : '0.00',analysis: pivots, srBand });
         } else {
           setError('Could not fetch data. Check ticker or API limit.');
         }
