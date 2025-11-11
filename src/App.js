@@ -815,16 +815,24 @@ function FinancialApp() {
                 {/* Chart rendering */}
                 {technicalData && (
                     <div className="bg-slate-700 rounded-lg p-4">
-                      {/* Trend indicator */}
-                      <div className="flex items-center mb-4">
-                        <span className={
-                          'px-4 py-2 rounded-full font-semibold text-sm ' +
-                          (trend === 'Bullish'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-red-500/20 text-red-400')
-                        }>
-                          {trend} Trend
-                        </span>
+                      {/* Stock Name and Price Header */}
+                      <div className="mb-6 pb-4 border-b border-slate-600">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="text-3xl font-bold text-blue-400">{stockTicker}</h3>
+                            <p className="text-xl text-slate-300 mt-2">
+                              Current Price: <span className="font-bold">${technicalData.currentPrice}</span>
+                            </p>
+                          </div>
+                          <span className={
+                            'px-4 py-2 rounded-full font-semibold text-lg ' +
+                            (trend === 'Bullish'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'bg-red-500/20 text-red-400')
+                          }>
+                            {trend} Trend
+                          </span>
+                        </div>
                       </div>
                       <div className="h-96">
                         <ResponsiveContainer width="100%" height="100%">
