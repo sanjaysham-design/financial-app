@@ -88,6 +88,10 @@ function FinancialApp() {
       try {
         const response = await fetch(`/api/chart-data?ticker=${stockTicker}&apikey=${apiKeys.alphaVantage}&outputsize=full`);
         const data = await response.json();
+        // Fetch company name
+        const overviewResponse = await fetch('/api/stock-overview?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
+        const overviewData = await overviewResponse.json();
+        const companyName = overviewData.Name || '';
         if (data['Time Series (Daily)']) {
           const timeSeries = data['Time Series (Daily)'];
           const datesDesc = Object.keys(timeSeries);
@@ -112,7 +116,12 @@ function FinancialApp() {
               high: Math.max(...pivots.resistances.map(Number))
             };
           }
-          setTechnicalData({ chartData, currentPrice: chartData.length > 0 ? chartData[chartData.length - 1].price.toFixed(2) : '0.00',analysis: pivots, srBand });
+          setTechnicalData({ 
+            chartData, 
+            currentPrice: chartData.length > 0 ? chartData[chartData.length - 1].price.toFixed(2) : '0.00',
+            companyName: companyName, 
+            analysis: pivots, 
+            srBand });
         } else {
           setError('Could not fetch data. Check ticker or API limit.');
         }
@@ -819,7 +828,12 @@ function FinancialApp() {
                       <div className="mb-6 pb-4 border-b border-slate-600">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="text-3xl font-bold text-blue-400">{stockTicker}</h3>
+                            <h3 className="text-3xl font-bold text-blue-400">
+                              {stockTicker}
+                              {technicalData.companyName && (
+                                <span className="text-xl font-normal text-slate-400 ml-3"> | {technicalData.companyName}</span>
+                              )}
+                            </h3>
                             <p className="text-xl text-slate-300 mt-2">
                               Current Price: <span className="font-bold">${technicalData.currentPrice}</span>
                             </p>
