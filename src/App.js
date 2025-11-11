@@ -650,130 +650,277 @@ function FinancialApp() {
               </div>
             </div>
           )}
-          {activeTab === 'screener' && (
-            <div>
-              <div className="mb-4 flex items-center justify-between">
+          
+              {activeTab === 'screener' && (
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2">
-                    <Search className="text-blue-400" />
-                    Stock Screener
-                  </h2>
-                  <p className="text-slate-400 text-sm">Top undervalued picks (sampled) on NASDAQ and S&P500 based on fundamentals.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400">{screenerLastUpdated ? `Last: ${new Date(screenerLastUpdated).toLocaleString()}` : ''}</div>
-                  <button
-                    onClick={fetchScreener}
-                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
-                    disabled={screenerLoading}
-                  >
-                    {screenerLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
-                  </button>
-                </div>
-              </div>
-
-              {screenerError && (
-                <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4">
-                  <p className="text-red-300 text-sm">{screenerError}</p>
-                </div>
-              )}
-
-              {screenerLoading && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="animate-spin text-blue-400" size={36} />
-                </div>
-              )}
-
-              {!screenerLoading && (
-                <div>
-                  {/* Stock Input Section */}
-                  <div className="mb-6 bg-slate-700 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <input
-                        type="text"
-                        value={stockInput}
-                        onChange={(e) => setStockInput(e.target.value.toUpperCase())}
-                        onKeyPress={(e) => e.key === 'Enter' && addStock()}
-                        placeholder="Enter stock symbol (e.g., AAPL)"
-                        className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
-                        disabled={selectedStocks.length >= MAX_STOCKS}
-                      />
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold flex items-center gap-2">
+                        <Search className="text-blue-400" />
+                        Stock Screener
+                      </h2>
+                      <p className="text-slate-400 text-sm">Comprehensive valuation analysis based on key fundamentals</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-xs text-slate-400">{screenerLastUpdated ? `Last: ${new Date(screenerLastUpdated).toLocaleString()}` : ''}</div>
                       <button
-                        onClick={addStock}
-                        disabled={!stockInput || selectedStocks.length >= MAX_STOCKS}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium"
+                        onClick={fetchScreener}
+                        className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                        disabled={screenerLoading}
                       >
-                        Add Stock
+                        {screenerLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
                       </button>
                     </div>
-                    
-                    {/* Selected Stocks */}
-                    <div className="flex flex-wrap gap-2">
-                      {selectedStocks.map((stock) => (
-                        <div key={stock} className="bg-slate-800 px-3 py-1 rounded-full flex items-center gap-2">
-                          <span className="text-sm">{stock}</span>
-                          <button
-                            onClick={() => removeStock(stock)}
-                            className="text-slate-400 hover:text-red-400"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-xs text-slate-400">
-                      {selectedStocks.length}/{MAX_STOCKS} stocks selected
-                    </div>
                   </div>
 
-                  {/* Results Section */}
-                  <div className="space-y-4">
-                    {screenerResults.length === 0 ? (
-                      <div className="text-slate-400 text-sm text-center">Add stocks and click Refresh to analyze fundamentals.</div>
-                    ) : screenerResults.map(s => (
-                      <div key={s.symbol} className="bg-slate-700 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <div className="text-sm text-slate-400">{s.symbol}</div>
-                            <div className="font-semibold text-lg">{s.name}</div>
-                          </div>
-                          <div className="text-right text-xs text-slate-400">
-                            <div>Score: <span className="font-semibold text-emerald-300">{Math.round(s.score)}</span></div>
-                          </div>
+                  {screenerError && (
+                    <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4">
+                      <p className="text-red-300 text-sm">{screenerError}</p>
+                    </div>
+                  )}
+
+                  {screenerLoading && (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader className="animate-spin text-blue-400" size={36} />
+                    </div>
+                  )}
+
+                  {!screenerLoading && (
+                    <div>
+                      {/* Stock Input Section */}
+                      <div className="mb-6 bg-slate-700 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                          <input
+                            type="text"
+                            value={stockInput}
+                            onChange={(e) => setStockInput(e.target.value.toUpperCase())}
+                            onKeyPress={(e) => e.key === 'Enter' && addStock()}
+                            placeholder="Enter stock symbol (e.g., AAPL)"
+                            className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+                            disabled={selectedStocks.length >= MAX_STOCKS}
+                          />
+                          <button
+                            onClick={addStock}
+                            disabled={!stockInput || selectedStocks.length >= MAX_STOCKS}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium"
+                          >
+                            Add Stock
+                          </button>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
-                          <div>
-                            <div className="text-xs text-slate-400">PE</div>
-                            <div className={s.pe != null && s.pe < 20 ? 'text-emerald-300' : 'text-slate-300'}>{s.pe ?? 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400">PEG</div>
-                            <div className={s.peg != null && s.peg < 1.5 ? 'text-emerald-300' : 'text-slate-300'}>{s.peg ?? 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400">P/B</div>
-                            <div className={s.pb != null && s.pb < 3 ? 'text-emerald-300' : 'text-slate-300'}>{s.pb ?? 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400">Debt/Equity</div>
-                            <div className={s.debtToEquity != null && s.debtToEquity < 1 ? 'text-emerald-300' : 'text-slate-300'}>{s.debtToEquity ?? 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400">Qtr Earnings %</div>
-                            <div className={s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.qEarningsGrowth ?? 'N/A'}%</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400">Profitability</div>
-                            <div className={s.profitMargin != null && s.profitMargin > 0 ? 'text-emerald-300' : 'text-slate-300'}>{s.profitMargin != null ? (s.profitMargin + '%') : 'N/A'}</div>
-                          </div>
+                        
+                        {/* Selected Stocks */}
+                        <div className="flex flex-wrap gap-2">
+                          {selectedStocks.map((stock) => (
+                            <div key={stock} className="bg-slate-800 px-3 py-1 rounded-full flex items-center gap-2">
+                              <span className="text-sm">{stock}</span>
+                              <button
+                                onClick={() => removeStock(stock)}
+                                className="text-slate-400 hover:text-red-400"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-xs text-slate-400">
+                          {selectedStocks.length}/{MAX_STOCKS} stocks selected
                         </div>
                       </div>
-                    ))}
-                  </div>
+
+                      {/* Results Section */}
+                      <div className="space-y-4">
+                        {screenerResults.length === 0 ? (
+                          <div className="text-slate-400 text-sm text-center py-8">Add stocks and click Refresh to analyze fundamentals.</div>
+                        ) : (
+                          screenerResults.map(s => {
+                            // Calculate valuation summary
+                            let valuation = 'Fairly Valued';
+                            let valuationColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                            
+                            let score = 0;
+                            let factors = 0;
+                            
+                            // PEG (most important)
+                            if (s.peg != null) {
+                              if (s.peg < 1) score += 2;
+                              else if (s.peg < 2) score += 1;
+                              factors += 2;
+                            }
+                            
+                            // P/E
+                            if (s.pe != null) {
+                              if (s.pe < 15) score += 1;
+                              else if (s.pe > 25) score -= 1;
+                              factors += 1;
+                            }
+                            
+                            // P/B
+                            if (s.pb != null) {
+                              if (s.pb < 1) score += 1;
+                              else if (s.pb < 3) score += 0.5;
+                              factors += 1;
+                            }
+                            
+                            // ROE (calculate from profit margin as proxy)
+                            if (s.profitMargin != null && s.profitMargin > 0) {
+                              if (s.profitMargin > 20) score += 1;
+                              else if (s.profitMargin > 15) score += 0.5;
+                              factors += 1;
+                            }
+                            
+                            const avgScore = factors > 0 ? score / factors : 0.5;
+                            
+                            if (avgScore > 0.6) {
+                              valuation = 'Undervalued';
+                              valuationColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                            } else if (avgScore < 0.3) {
+                              valuation = 'Overvalued';
+                              valuationColor = 'bg-red-500/20 text-red-400 border-red-500/30';
+                            }
+                            
+                            return (
+                              <div key={s.symbol} className="bg-slate-700 rounded-lg p-5">
+                                <div className="flex justify-between items-start mb-4">
+                                  <div>
+                                    <div className="text-2xl font-bold text-blue-400">{s.symbol}</div>
+                                    <div className="text-slate-300 text-sm">{s.name}</div>
+                                  </div>
+                                  <div className={'px-4 py-2 rounded border font-bold ' + valuationColor}>
+                                    {valuation}
+                                  </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  {/* P/E Ratio */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">P/E Ratio</div>
+                                    <div className="text-lg font-bold">{s.pe ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.pe != null && s.pe < 15 ? '✓ Low' : s.pe != null && s.pe < 25 ? 'Fair' : s.pe != null ? '⚠ High' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* PEG Ratio */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">PEG Ratio ⭐</div>
+                                    <div className="text-lg font-bold">{s.peg ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.peg != null && s.peg < 1 ? '✓ Great' : s.peg != null && s.peg < 2 ? 'Fair' : s.peg != null ? '⚠ High' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Price-to-Book */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Price-to-Book</div>
+                                    <div className="text-lg font-bold">{s.pb ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.pb != null && s.pb < 1 ? '✓ Low' : s.pb != null && s.pb < 3 ? 'Fair' : s.pb != null ? '⚠ High' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* ROE (using profit margin) */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Profit Margin %</div>
+                                    <div className="text-lg font-bold">{s.profitMargin != null ? s.profitMargin + '%' : 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.profitMargin != null && s.profitMargin > 20 ? '✓ Excellent' : s.profitMargin != null && s.profitMargin > 10 ? 'Good' : s.profitMargin != null && s.profitMargin > 0 ? 'Fair' : s.profitMargin != null ? '⚠ Low' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Free Cash Flow (placeholder - you'll need to add this to API) */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Debt/Equity</div>
+                                    <div className="text-lg font-bold">{s.debtToEquity ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.debtToEquity != null && s.debtToEquity < 0.5 ? '✓ Low' : s.debtToEquity != null && s.debtToEquity < 1 ? 'Fair' : s.debtToEquity != null ? '⚠ High' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* EPS Growth */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">EPS Growth</div>
+                                    <div className="text-lg font-bold">{s.qEarningsGrowth != null ? (s.qEarningsGrowth > 0 ? '+' : '') + s.qEarningsGrowth + '%' : 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.qEarningsGrowth != null && s.qEarningsGrowth > 15 ? '✓ Strong' : s.qEarningsGrowth != null && s.qEarningsGrowth > 5 ? 'Good' : s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'Fair' : s.qEarningsGrowth != null ? '⚠ Negative' : ''}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Dividend Yield (placeholder - you'll need to add this) */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Dividend Yield</div>
+                                    <div className="text-lg font-bold">Coming Soon</div>
+                                    <div className="text-xs text-slate-500 mt-1">-</div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {/* Metrics Legend */}
+                      {screenerResults.length > 0 && (
+                        <div className="mt-8 bg-slate-700 rounded-lg p-6">
+                          <h3 className="text-xl font-bold text-blue-400 mb-4">📊 Metrics Explained</h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-emerald-400 mb-2">⭐ PEG Ratio (Price/Earnings-to-Growth) - BEST FOR VALUATION</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> P/E Ratio ÷ EPS Growth Rate</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Accounts for growth. A high P/E might be justified if growth is high.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-2 = fair, &gt;2 = overvalued</p>
+                            </div>
+                            
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-blue-400 mb-2">P/E Ratio (Price-to-Earnings)</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Earnings Per Share</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how much investors pay for $1 of earnings.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;15 = cheap, 15-25 = fair, &gt;25 = expensive</p>
+                            </div>
+                            
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-blue-400 mb-2">Price-to-Book Ratio</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Book Value Per Share</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if you're paying more than the company's net assets.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-3 = fair, &gt;3 = expensive</p>
+                            </div>
+                            
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-blue-400 mb-2">Profit Margin %</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Net Income ÷ Revenue × 100</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how efficiently the company converts revenue to profit.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &gt;20% = excellent, 10-20% = good, &lt;10% = needs improvement</p>
+                            </div>
+                            
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-blue-400 mb-2">Debt/Equity Ratio</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Total Debt ÷ Shareholder Equity</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows financial leverage and risk level.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;0.5 = conservative, 0.5-1 = moderate, &gt;1 = aggressive</p>
+                            </div>
+                            
+                            <div className="bg-slate-800 rounded-lg p-4">
+                              <h4 className="font-bold text-blue-400 mb-2">EPS Growth (Earnings Per Share Growth)</h4>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Year-over-year change in quarterly earnings</p>
+                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if the company is growing its profits.</p>
+                              <p className="text-sm text-slate-400"><strong>What's good:</strong> Positive = good, &gt;15% = strong growth, negative = concerning</p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                            <h4 className="font-bold text-blue-400 mb-2">💡 How to Use These Metrics</h4>
+                            <p className="text-sm text-slate-300">
+                              No single metric tells the whole story. Look at the <strong className="text-emerald-400">Valuation Summary</strong> for a combined assessment, 
+                              but also consider the individual metrics and the company's industry. A tech growth stock will have different ratios 
+                              than a mature dividend stock. Always do additional research before investing.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
               {activeTab === 'charts' && (
               <div>
                 <div className="flex justify-between items-center mb-4">
