@@ -60,8 +60,10 @@ function FinancialApp() {
       const saved = localStorage.getItem('chartWindow');
       return saved ? Number(saved) : 200;
     });
-    const [showSROverlay, setShowSROverlay] = useState(true);
-    const [showSRShade, setShowSRShade] = useState(true);
+    const [showSR, setShowSR] = useState(() => {
+      const saved = localStorage.getItem('showSR');
+      return saved !== null ? saved === 'true' : true;
+    });
 
     // Compute trend for chart
     const trend = technicalData ? getTrend(technicalData.chartData) : 'Neutral';
@@ -70,6 +72,11 @@ function FinancialApp() {
     useEffect(() => {
       localStorage.setItem('chartWindow', chartWindow);
     }, [chartWindow]);
+
+    // Persist S/R toggle to localStorage
+    useEffect(() => {
+      localStorage.setItem('showSR', showSR ? 'true' : 'false');
+    }, [showSR]);
 
     // Helper: calculate moving average
     function calculateMA(data, period) {
@@ -666,7 +673,7 @@ function FinancialApp() {
 
   // Technical chart rendering (restored)
   // Example: Place this inside your render function where you want the chart to appear
-  // You will need to wire up technicalData, chartWindow, showSROverlay, showSRShade, etc. in later steps
+  // You will need to wire up technicalData, chartWindow, showSR, etc. in later steps
   // <ResponsiveContainer width="100%" height={400}>
   //   <LineChart data={technicalData.chartData}>
   //     <CartesianGrid strokeDasharray="3 3" />
@@ -719,7 +726,7 @@ function FinancialApp() {
               onClick={() => setActiveTab('screener')}
               className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
             >
-                  Stock Analysis
+      Stock Valuations
             </button>
           </div>
           {activeTab === 'news' && (
@@ -889,7 +896,7 @@ function FinancialApp() {
                     <div>
                       <h2 className="text-2xl font-bold flex items-center gap-2">
                         <Search className="text-blue-400" />
-                          Stock Analysis
+                          Stock Valuations
                       </h2>
                       <p className="text-slate-400 text-sm">Comprehensive valuation analysis based on key fundamentals</p>
                     </div>
@@ -1213,12 +1220,8 @@ function FinancialApp() {
                     </div>
                     <div className="flex items-center gap-3 ml-4">
                       <label className="flex items-center gap-2 text-sm text-slate-300">
-                        <input type="checkbox" checked={showSROverlay} onChange={e => setShowSROverlay(e.target.checked)} className="w-4 h-4" />
+                        <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
                         Show S/R
-                      </label>
-                      <label className="flex items-center gap-2 text-sm text-slate-300">
-                        <input type="checkbox" checked={showSRShade} onChange={e => setShowSRShade(e.target.checked)} className="w-4 h-4" />
-                        Shade S/R band
                       </label>
                     </div>
                   </div>
@@ -1262,14 +1265,14 @@ function FinancialApp() {
                             <Line type="monotone" dataKey="ma50" stroke="#34D399" dot={false} name="50 MA" />
                             <Line type="monotone" dataKey="ma200" stroke="#F87171" dot={false} name="200 MA" />
                             {/* S/R overlays */}
-                            {showSROverlay && technicalData.analysis.supports.map((level, idx) => (
+                            {showSR && technicalData.analysis.supports.map((level, idx) => (
                               <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
                             ))}
-                            {showSROverlay && technicalData.analysis.resistances.map((level, idx) => (
+                            {showSR && technicalData.analysis.resistances.map((level, idx) => (
                               <ReferenceLine key={`res-${idx}`} y={Number(level)} stroke="#EF4444" strokeDasharray="4 4" label={{ value: `R ${level}`, position: 'right', fill: '#EF4444' }} />
                             ))}
                             {/* Shade between nearest support and resistance */}
-                            {showSRShade && technicalData.srBand && (
+                            {showSR && technicalData.srBand && (
                               <ReferenceArea
                                 y1={technicalData.srBand.low}
                                 y2={technicalData.srBand.high}
@@ -1284,17 +1287,31 @@ function FinancialApp() {
                     {/* Legend for shaded band */}
                         <div className="mt-4 text-xs text-slate-400">
                           <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
-                          shows area between nearest support and resistance. Use toggles to show/hide overlays and shading.
+                          shows area between nearest support and resistance. Use the toggle to show/hide overlays and shading.
                         </div>
 
                         {/* Key levels and strategy explanation */}
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="mt-6 grid grid-cols-1 gap-4">
                           <div className="bg-slate-800 rounded-lg p-4">
                             <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels & Breakouts</h4>
                             <div className="space-y-2">
                               <p className="text-slate-300">Support Levels: <span className="font-bold text-emerald-400">{technicalData.analysis.supports.join(', ')}</span></p>
                               <p className="text-slate-300">Resistance Levels: <span className="font-bold text-red-400">{technicalData.analysis.resistances.join(', ')}</span></p>
                               <p className="text-slate-300">Breakout Zone: <span className="font-bold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.low} - ${technicalData.srBand.high}` : 'N/A'}</span></p>
+                              <p className="text-slate-300">50-day MA: <span className="font-bold text-emerald-300">{
+                                (() => {
+                                  const last = technicalData.chartData && technicalData.chartData.length > 0 ? technicalData.chartData[technicalData.chartData.length - 1] : null;
+                                  const v = last && last.ma50 != null ? last.ma50 : null;
+                                  return v != null ? `$${v.toFixed(2)}` : 'N/A';
+                                })()
+                              }</span></p>
+                              <p className="text-slate-300">200-day MA: <span className="font-bold text-red-300">{
+                                (() => {
+                                  const last = technicalData.chartData && technicalData.chartData.length > 0 ? technicalData.chartData[technicalData.chartData.length - 1] : null;
+                                  const v = last && last.ma200 != null ? last.ma200 : null;
+                                  return v != null ? `$${v.toFixed(2)}` : 'N/A';
+                                })()
+                              }</span></p>
                             </div>
                           </div>
                           <div className="bg-slate-800 rounded-lg p-4">
