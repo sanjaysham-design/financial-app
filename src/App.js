@@ -228,6 +228,11 @@ function FinancialApp() {
     if (debtToEquity != null) score += Math.max(0, 5 - debtToEquity * 2);
     if (positiveCashProxy) score += 5;
 
+    // Add extraction for new metrics
+    const marketCap = ov.MarketCapitalization ? Number(ov.MarketCapitalization) : null;
+    const revenueTTM = ov.RevenueTTM ? Number(ov.RevenueTTM) : null;
+    const latestQuarter = ov.LatestQuarter || null;
+
     return {
       symbol: ov.Symbol,
       name: ov.Name || ov['CompanyName'] || '',
@@ -236,7 +241,10 @@ function FinancialApp() {
       earningsGood,
       lowDebt,
       positiveCashProxy,
-      score
+      score,
+      marketCap,
+      revenueTTM,
+      latestQuarter
     };
   }, [parseNum]);
 
@@ -484,8 +492,6 @@ function FinancialApp() {
     );
   });
 
-  // ...existing code...
-
   // Technical chart rendering (restored)
   // Example: Place this inside your render function where you want the chart to appear
   // You will need to wire up technicalData, chartWindow, showSROverlay, showSRShade, etc. in later steps
@@ -541,7 +547,7 @@ function FinancialApp() {
               onClick={() => setActiveTab('screener')}
               className={"px-4 py-2 rounded-md text-sm font-semibold ml-auto " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
             >
-              Stock Screener
+                  Stock Analysis
             </button>
           </div>
           {activeTab === 'news' && (
@@ -657,7 +663,7 @@ function FinancialApp() {
                     <div>
                       <h2 className="text-2xl font-bold flex items-center gap-2">
                         <Search className="text-blue-400" />
-                        Stock Screener
+                          Stock Analysis
                       </h2>
                       <p className="text-slate-400 text-sm">Comprehensive valuation analysis based on key fundamentals</p>
                     </div>
@@ -791,6 +797,27 @@ function FinancialApp() {
                                 </div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  {/* Market Cap */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Market Cap</div>
+                                    <div className="text-lg font-bold">{s.marketCap ? `$${s.marketCap.toLocaleString()}` : 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">Total market value of outstanding shares</div>
+                                  </div>
+                                  
+                                  {/* Revenue TTM */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Revenue (TTM)</div>
+                                    <div className="text-lg font-bold">{s.revenueTTM ? `$${s.revenueTTM.toLocaleString()}` : 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">Trailing twelve month revenue</div>
+                                  </div>
+                                  
+                                  {/* Latest Quarter */}
+                                  <div className="bg-slate-800 rounded-lg p-3">
+                                    <div className="text-xs text-slate-400 mb-1">Latest Quarter</div>
+                                    <div className="text-lg font-bold">{s.latestQuarter ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">Most recent reported quarter</div>
+                                  </div>
+                                  
                                   {/* P/E Ratio */}
                                   <div className="bg-slate-800 rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">P/E Ratio</div>
@@ -821,27 +848,19 @@ function FinancialApp() {
                                   {/* ROE (using profit margin) */}
                                   <div className="bg-slate-800 rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Profit Margin %</div>
-                                    <div className="text-lg font-bold">{s.profitMargin != null ? s.profitMargin + '%' : 'N/A'}</div>
-                                    <div className="text-xs text-slate-500 mt-1">
-                                      {s.profitMargin != null && s.profitMargin > 20 ? '✓ Excellent' : s.profitMargin != null && s.profitMargin > 10 ? 'Good' : s.profitMargin != null && s.profitMargin > 0 ? 'Fair' : s.profitMargin != null ? '⚠ Low' : ''}
+                                      <div className="text-lg font-bold">{s.profitMargin != null ? (s.profitMargin * 100).toFixed(2) + '%' : 'N/A'}</div>
+                                      <div className="text-xs text-slate-500 mt-1">
+                                        {s.profitMargin != null && s.profitMargin * 100 > 20 ? '✓ Excellent' : s.profitMargin != null && s.profitMargin * 100 > 10 ? 'Good' : s.profitMargin != null && s.profitMargin * 100 > 0 ? 'Fair' : s.profitMargin != null ? '⚠ Low' : ''}
                                     </div>
                                   </div>
                                   
-                                  {/* Free Cash Flow (placeholder - you'll need to add this to API) */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-xs text-slate-400 mb-1">Debt/Equity</div>
-                                    <div className="text-lg font-bold">{s.debtToEquity ?? 'N/A'}</div>
-                                    <div className="text-xs text-slate-500 mt-1">
-                                      {s.debtToEquity != null && s.debtToEquity < 0.5 ? '✓ Low' : s.debtToEquity != null && s.debtToEquity < 1 ? 'Fair' : s.debtToEquity != null ? '⚠ High' : ''}
-                                    </div>
-                                  </div>
                                   
                                   {/* EPS Growth */}
                                   <div className="bg-slate-800 rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">EPS Growth</div>
-                                    <div className="text-lg font-bold">{s.qEarningsGrowth != null ? (s.qEarningsGrowth > 0 ? '+' : '') + s.qEarningsGrowth + '%' : 'N/A'}</div>
+                                    <div className="text-lg font-bold">{s.qEarningsGrowth != null ? (s.qEarningsGrowth > 0 ? '+' : '') + (s.qEarningsGrowth * 100).toFixed(2) + '%' : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
-                                      {s.qEarningsGrowth != null && s.qEarningsGrowth > 15 ? '✓ Strong' : s.qEarningsGrowth != null && s.qEarningsGrowth > 5 ? 'Good' : s.qEarningsGrowth != null && s.qEarningsGrowth > 0 ? 'Fair' : s.qEarningsGrowth != null ? '⚠ Negative' : ''}
+                                      {s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 15 ? '✓ Strong' : s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 5 ? 'Good' : s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 0 ? 'Fair' : s.qEarningsGrowth != null ? '⚠ Negative' : ''}
                                     </div>
                                   </div>
                                   
