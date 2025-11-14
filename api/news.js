@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   
   try {
     const response = await fetch(
-      `https://newsapi.org/v2/everything?sources=cnbc&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apikey}`
+      `https://newsapi.org/v2/top-headlines?category=business&country=us&pageSize=10&apiKey=${apikey}`
     );
     
     const data = await response.json();
