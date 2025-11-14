@@ -231,7 +231,7 @@ function FinancialApp() {
     // Add extraction for new metrics
     const marketCap = ov.MarketCapitalization ? Number(ov.MarketCapitalization) : null;
     const revenueTTM = ov.RevenueTTM ? Number(ov.RevenueTTM) : null;
-    const latestQuarter = ov.LatestQuarter || null;
+    const priceToSales = parseNum(ov.PriceToSalesRatioTTM) ?? null;
 
     return {
       symbol: ov.Symbol,
@@ -244,7 +244,7 @@ function FinancialApp() {
       score,
       marketCap,
       revenueTTM,
-      latestQuarter
+      priceToSales
     };
   }, [parseNum]);
 
@@ -811,11 +811,13 @@ function FinancialApp() {
                                     <div className="text-xs text-slate-500 mt-1">Trailing twelve month revenue</div>
                                   </div>
                                   
-                                  {/* Latest Quarter */}
+                                  {/* Price-to-Sales Ratio */}
                                   <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-xs text-slate-400 mb-1">Latest Quarter</div>
-                                    <div className="text-lg font-bold">{s.latestQuarter ?? 'N/A'}</div>
-                                    <div className="text-xs text-slate-500 mt-1">Most recent reported quarter</div>
+                                    <div className="text-xs text-slate-400 mb-1">Price-to-Sales</div>
+                                    <div className="text-lg font-bold">{s.priceToSales ?? 'N/A'}</div>
+                                    <div className="text-xs text-slate-500 mt-1">
+                                      {s.priceToSales != null && s.priceToSales < 2 ? '✓ Low' : s.priceToSales != null && s.priceToSales < 5 ? 'Fair' : s.priceToSales != null ? '⚠ High' : ''}
+                                    </div>
                                   </div>
                                   
                                   {/* P/E Ratio */}
@@ -862,13 +864,6 @@ function FinancialApp() {
                                     <div className="text-xs text-slate-500 mt-1">
                                       {s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 15 ? '✓ Strong' : s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 5 ? 'Good' : s.qEarningsGrowth != null && s.qEarningsGrowth * 100 > 0 ? 'Fair' : s.qEarningsGrowth != null ? '⚠ Negative' : ''}
                                     </div>
-                                  </div>
-                                  
-                                  {/* Dividend Yield (placeholder - you'll need to add this) */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
-                                    <div className="text-xs text-slate-400 mb-1">Dividend Yield</div>
-                                    <div className="text-lg font-bold">Coming Soon</div>
-                                    <div className="text-xs text-slate-500 mt-1">-</div>
                                   </div>
                                 </div>
                               </div>
