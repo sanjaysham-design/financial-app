@@ -1324,6 +1324,24 @@ function FinancialApp() {
                                 const resText = res.length > 0 ? res.join(', ') : 'N/A';
                                 const lowestSup = sup.length > 0 ? Math.min(...sup.map(Number)) : null;
                                 const highestRes = res.length > 0 ? Math.max(...res.map(Number)) : null;
+                                
+                                // Extract latest MA values
+                                const last = technicalData.chartData && technicalData.chartData.length > 0 ? technicalData.chartData[technicalData.chartData.length - 1] : null;
+                                const ma50 = last && last.ma50 != null ? last.ma50 : null;
+                                const ma200 = last && last.ma200 != null ? last.ma200 : null;
+                                
+                                // Determine MA cross signal
+                                let maCrossSignal = '';
+                                if (ma50 != null && ma200 != null) {
+                                  if (ma50 > ma200) {
+                                    maCrossSignal = <span className="text-emerald-400 font-semibold">Golden Cross (Bullish)</span>;
+                                  } else if (ma50 < ma200) {
+                                    maCrossSignal = <span className="text-red-400 font-semibold">Death Cross (Bearish)</span>;
+                                  } else {
+                                    maCrossSignal = <span className="text-slate-400">Neutral</span>;
+                                  }
+                                }
+                                
                                 return (
                                   <>
                                     <p className="text-slate-300">
@@ -1335,6 +1353,24 @@ function FinancialApp() {
                                       <strong>Long-term:</strong> Position entries near strong support zones ({supText}), with targets at resistance ({resText}). 
                                       Consider stop-loss below {lowestSup ? `$${lowestSup.toFixed(2)}` : 'support'}. 
                                       If price sustains above {highestRes ? `$${highestRes.toFixed(2)}` : 'resistance'}, it may indicate a longer-term uptrend.
+                                    </p>
+                                    <p className="text-slate-300">
+                                      <strong>Moving Average Crossovers:</strong> {maCrossSignal ? maCrossSignal : 'N/A'}
+                                      {ma50 != null && ma200 != null && (
+                                        <>
+                                          {ma50 > ma200 && (
+                                            <span> — The 50-day MA (${ma50.toFixed(2)}) is above the 200-day MA (${ma200.toFixed(2)}), signaling bullish momentum. This "Golden Cross" suggests upward price action and is a buy signal for many traders.</span>
+                                          )}
+                                          {ma50 < ma200 && (
+                                            <span> — The 50-day MA (${ma50.toFixed(2)}) is below the 200-day MA (${ma200.toFixed(2)}), signaling bearish momentum. This "Death Cross" suggests downward pressure and is often seen as a sell signal.</span>
+                                          )}
+                                        </>
+                                      )}
+                                    </p>
+                                    <p className="text-slate-300 text-sm">
+                                      <strong>MA Convergence/Divergence:</strong> When both MAs move upward together, it confirms a strong uptrend; if they rise in sync, momentum is building. 
+                                      If they diverge (one rising, one falling), it signals weakening trend strength and potential reversal. 
+                                      Watch for the 50-day MA crossing the 200-day MA as a key inflection point.
                                     </p>
                                     <p className="text-slate-400 text-xs">These signals are based on recent pivots and moving averages. Always confirm with broader market context and risk management.</p>
                                   </>
