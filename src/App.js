@@ -661,7 +661,7 @@ function FinancialApp() {
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {marketIndices.map((index) => (
                     <div key={index.symbol} className="bg-slate-700 rounded-lg p-4 border border-slate-600">
-                      <div className="text-sm text-slate-400 mb-1">{index.name}</div>
+                      <div className="text-sm text-slate-400 mb-1">{index.symbol} ({index.name})</div>
                       <div className="flex items-baseline justify-between">
                         <div className="text-2xl font-bold text-white">
                           {index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
