@@ -1291,7 +1291,7 @@ function FinancialApp() {
                         </div>
 
                         {/* Key levels and strategy explanation */}
-                        <div className="mt-6 grid grid-cols-1 gap-4">
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-slate-800 rounded-lg p-4">
                             <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels & Breakouts</h4>
                             <div className="space-y-2">
@@ -1317,9 +1317,29 @@ function FinancialApp() {
                           <div className="bg-slate-800 rounded-lg p-4">
                             <h4 className="text-lg font-semibold text-blue-400 mb-2">Trading Strategy Insights</h4>
                             <div className="space-y-2">
-                              <p className="text-slate-300">Short-term: Watch for price action near support and resistance. Potential entry near support, exit or partial profit near resistance. Breakouts above resistance may signal momentum trades.</p>
-                              <p className="text-slate-300">Long-term: Position entries near strong support zones, with targets at resistance. Consider stop-loss below support. If price sustains above resistance, it may indicate a longer-term uptrend.</p>
-                              <p className="text-slate-400 text-xs">These signals are based on recent pivots and moving averages. Always confirm with broader market context and risk management.</p>
+                              {(() => {
+                                const sup = technicalData.analysis.supports;
+                                const res = technicalData.analysis.resistances;
+                                const supText = sup.length > 0 ? sup.join(', ') : 'N/A';
+                                const resText = res.length > 0 ? res.join(', ') : 'N/A';
+                                const lowestSup = sup.length > 0 ? Math.min(...sup.map(Number)) : null;
+                                const highestRes = res.length > 0 ? Math.max(...res.map(Number)) : null;
+                                return (
+                                  <>
+                                    <p className="text-slate-300">
+                                      <strong>Short-term:</strong> Watch for price action near support ({supText}) and resistance ({resText}). 
+                                      Potential entry near support levels, exit or partial profit near resistance levels. 
+                                      Breakouts above {highestRes ? `$${highestRes.toFixed(2)}` : 'resistance'} may signal momentum trades.
+                                    </p>
+                                    <p className="text-slate-300">
+                                      <strong>Long-term:</strong> Position entries near strong support zones ({supText}), with targets at resistance ({resText}). 
+                                      Consider stop-loss below {lowestSup ? `$${lowestSup.toFixed(2)}` : 'support'}. 
+                                      If price sustains above {highestRes ? `$${highestRes.toFixed(2)}` : 'resistance'}, it may indicate a longer-term uptrend.
+                                    </p>
+                                    <p className="text-slate-400 text-xs">These signals are based on recent pivots and moving averages. Always confirm with broader market context and risk management.</p>
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
                         </div>
