@@ -193,6 +193,10 @@ function FinancialApp() {
   const [stockInput, setStockInput] = useState('');
   const [selectedStocks, setSelectedStocks] = useState([]);
 
+  // Market indices state
+  const [marketIndices, setMarketIndices] = useState([]);
+  const [indicesLoading, setIndicesLoading] = useState(false);
+
   // Helper: parse number safely
   const parseNum = useCallback((v) => {
     if (v == null || v === '' ) return null;
@@ -434,6 +438,63 @@ function FinancialApp() {
     };
   }, [activeTab, fetchSectors]);
 
+  // Fetch market indices
+  const fetchMarketIndices = useCallback(async () => {
+    if (!apiKeys.alphaVantage) return;
+    
+    setIndicesLoading(true);
+    try {
+      // Using ETFs as proxies: DIA (Dow), SPY (S&P 500), QQQ (Nasdaq)
+      const symbols = [
+        { symbol: 'DIA', name: 'Dow Jones' },
+        { symbol: 'SPY', name: 'S&P 500' },
+        { symbol: 'QQQ', name: 'Nasdaq' }
+      ];
+      
+      const promises = symbols.map(async (idx) => {
+        try {
+          const response = await fetch(`/api/quote?ticker=${idx.symbol}&apikey=${apiKeys.alphaVantage}`);
+          const data = await response.json();
+          const quote = data['Global Quote'];
+          
+          if (quote) {
+            return {
+              name: idx.name,
+              symbol: idx.symbol,
+              price: parseFloat(quote['05. price']),
+              change: parseFloat(quote['09. change']),
+              changePercent: parseFloat(quote['10. change percent'].replace('%', ''))
+            };
+          }
+          return null;
+        } catch (err) {
+          console.warn(`Failed to fetch ${idx.name}:`, err);
+          return null;
+        }
+      });
+      
+      const results = await Promise.all(promises);
+      setMarketIndices(results.filter(r => r !== null));
+    } catch (err) {
+      console.error('Failed to fetch market indices:', err);
+    } finally {
+      setIndicesLoading(false);
+    }
+  }, [apiKeys.alphaVantage]);
+
+  // Auto-refresh indices when news tab is active
+  useEffect(() => {
+    let id;
+    if (activeTab === 'news') {
+      fetchMarketIndices();
+      // refresh every 2 minutes
+      id = setInterval(fetchMarketIndices, 2 * 60 * 1000);
+    }
+    return () => {
+      if (id) clearInterval(id);
+    };
+  }, [activeTab, fetchMarketIndices]);
+
   // Helper function to fetch news
   const fetchNewsWithKey = useCallback(async function(newsApiKey) {
     setLoading(true);
@@ -595,6 +656,25 @@ function FinancialApp() {
           </div>
           {activeTab === 'news' && (
             <div>
+              {/* Market Indices */}
+              {!indicesLoading && marketIndices.length > 0 && (
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {marketIndices.map((index) => (
+                    <div key={index.symbol} className="bg-slate-700 rounded-lg p-4 border border-slate-600">
+                      <div className="text-sm text-slate-400 mb-1">{index.name}</div>
+                      <div className="flex items-baseline justify-between">
+                        <div className="text-2xl font-bold text-white">
+                          {index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        <div className={'text-sm font-semibold ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                          {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold flex items-center gap-2">
