@@ -17,6 +17,21 @@ import sectorsList from './data/sectors';
 // State for manual stock entry
 const MAX_STOCKS = 12;
 
+// ETF mapping for each sector (SPDR sector ETFs)
+const SECTOR_ETF_MAP = {
+  'Technology': 'XLK',
+  'Energy': 'XLE',
+  'Healthcare': 'XLV', // static dataset name
+  'Health Care': 'XLV', // AV naming
+  'Financials': 'XLF',
+  'Consumer Discretionary': 'XLY',
+  'Industrials': 'XLI',
+  'Utilities': 'XLU',
+  'Materials': 'XLB',
+  'Real Estate': 'XLRE',
+  'Communication Services': 'XLC'
+};
+
 function FinancialApp() {
   // Helper to determine trend
   function getTrend(chartData) {
@@ -196,6 +211,10 @@ function FinancialApp() {
   // Market indices state
   const [marketIndices, setMarketIndices] = useState([]);
   const [indicesLoading, setIndicesLoading] = useState(false);
+
+  // Sector ETF quotes state
+  const [etfQuotes, setEtfQuotes] = useState({}); // { XLK: { price, change, changePercent } }
+  const [etfQuotesLoading, setEtfQuotesLoading] = useState(false);
 
   // Helper: parse number safely
   const parseNum = useCallback((v) => {
@@ -495,6 +514,55 @@ function FinancialApp() {
     };
   }, [activeTab, fetchMarketIndices]);
 
+  // Fetch sector ETF quotes
+  const fetchSectorEtfQuotes = useCallback(async () => {
+    if (!apiKeys.alphaVantage) return;
+    try {
+      setEtfQuotesLoading(true);
+      const tickers = Array.from(new Set(Object.values(SECTOR_ETF_MAP)));
+      const results = await Promise.all(
+        tickers.map(async (symbol) => {
+          try {
+            const response = await fetch(`/api/quote?ticker=${symbol}&apikey=${apiKeys.alphaVantage}`);
+            const data = await response.json();
+            const quote = data['Global Quote'];
+            if (quote) {
+              return [symbol, {
+                price: parseFloat(quote['05. price']),
+                change: parseFloat(quote['09. change']),
+                changePercent: quote['10. change percent'] ? parseFloat(quote['10. change percent'].replace('%', '')) : null
+              }];
+            }
+          } catch (e) {
+            console.error('ETF quote fetch failed for', symbol, e);
+          }
+          return [symbol, null];
+        })
+      );
+      const obj = {};
+      for (const [sym, val] of results) {
+        if (val) obj[sym] = val;
+      }
+      setEtfQuotes(obj);
+    } catch (err) {
+      console.error('Failed to fetch sector ETF quotes:', err);
+    } finally {
+      setEtfQuotesLoading(false);
+    }
+  }, [apiKeys.alphaVantage]);
+
+  // Auto-refresh ETF quotes when sectors tab is active
+  useEffect(() => {
+    let id;
+    if (activeTab === 'sectors') {
+      fetchSectorEtfQuotes();
+      id = setInterval(fetchSectorEtfQuotes, 2 * 60 * 1000);
+    }
+    return () => {
+      if (id) clearInterval(id);
+    };
+  }, [activeTab, fetchSectorEtfQuotes]);
+
   // Helper function to fetch news
   const fetchNewsWithKey = useCallback(async function(newsApiKey) {
     setLoading(true);
@@ -649,7 +717,7 @@ function FinancialApp() {
             </button>
             <button
               onClick={() => setActiveTab('screener')}
-              className={"px-4 py-2 rounded-md text-sm font-semibold ml-auto " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
             >
                   Stock Analysis
             </button>
@@ -749,6 +817,7 @@ function FinancialApp() {
                     const isStrong = outlook === 'Strong';
                     const isRecovery = outlook === 'Early Recovery';
                     const isWeak = outlook === 'Weak';
+                    const etfTicker = SECTOR_ETF_MAP[sec.name] || null;
                     const badgeClass = isStrong
                       ? 'bg-emerald-500 text-emerald-900'
                       : isRecovery
@@ -768,6 +837,26 @@ function FinancialApp() {
                             <div className={"inline-block px-2 py-1 rounded text-xs font-semibold " + badgeClass}>{outlook}</div>
                           </div>
                         </div>
+                        {etfTicker && (
+                          <div className="mt-2 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => { setStockTicker(etfTicker); setActiveTab('charts'); }}
+                              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-600 hover:bg-slate-700 hover:border-slate-500 transition-colors"
+                              title={`Open ${etfTicker} in Technical Analysis`}
+                            >
+                              ETF: <span className="font-semibold">{etfTicker}</span>
+                            </button>
+                            {etfQuotes[etfTicker] && (
+                              <div className="text-right text-xs">
+                                <div className="text-slate-200 font-semibold">${etfQuotes[etfTicker].price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                <div className={(etfQuotes[etfTicker].change ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                                  {(etfQuotes[etfTicker].change ?? 0) >= 0 ? '+' : ''}{(etfQuotes[etfTicker].change ?? 0).toFixed(2)} ({(etfQuotes[etfTicker].changePercent ?? 0) >= 0 ? '+' : ''}{(etfQuotes[etfTicker].changePercent ?? 0).toFixed(2)}%)
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <div className="mt-3 flex items-center gap-4 text-sm">
                           <div>
                             <div className="text-xs text-slate-400">1W</div>
