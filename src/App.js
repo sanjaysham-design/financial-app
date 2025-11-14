@@ -36,6 +36,7 @@ function FinancialApp() {
   const [loading, setLoading] = useState(false);
   const [, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
+  const [newsLastUpdated, setNewsLastUpdated] = useState(null);
   // Removed unused chartAnalysis and sentimentAnalysis state
 
     // Technical chart state
@@ -256,10 +257,25 @@ function FinancialApp() {
     // fetch in series to be conservative with rate limits
     for (const t of tickers) {
       try {
-        const resp = await fetch(`/api/stock-overview?ticker=${t}&apikey=${key}`);
-        const ov = await resp.json();
+        // Fetch both overview and quote data
+        const [overviewResp, quoteResp] = await Promise.all([
+          fetch(`/api/stock-overview?ticker=${t}&apikey=${key}`),
+          fetch(`/api/quote?ticker=${t}&apikey=${key}`)
+        ]);
+        const ov = await overviewResp.json();
+        const quoteData = await quoteResp.json();
+        
         const evald = evaluateOverview(ov);
-        if (evald) results.push(evald);
+        if (evald) {
+          // Add quote data to the result
+          const quote = quoteData['Global Quote'];
+          if (quote) {
+            evald.currentPrice = parseFloat(quote['05. price']) || null;
+            evald.priceChange = parseFloat(quote['09. change']) || null;
+            evald.priceChangePercent = quote['10. change percent'] ? parseFloat(quote['10. change percent'].replace('%', '')) : null;
+          }
+          results.push(evald);
+        }
       } catch (err) {
         // continue on errors
         console.warn('Failed overview for', t, err);
@@ -434,9 +450,11 @@ function FinancialApp() {
           summary: article.description || '',
           url: article.url || '',
           implications: 'Analyze based on content and market context',
-          sentiment: analyzeSentiment(article.title + ' ' + article.description)
+          sentiment: analyzeSentiment(article.title + ' ' + article.description),
+          publishedAt: article.publishedAt || null
         }));
         setNewsStories(formattedNews);
+        setNewsLastUpdated(new Date().toISOString());
       }
     } catch (err) {
       setError('Error fetching news: ' + err.message);
@@ -472,6 +490,28 @@ function FinancialApp() {
     } else if (story.sentiment === 'negative') {
       sentimentClass = 'bg-red-500/20 text-red-400';
     }
+    
+    // Format timestamp
+    let timeAgo = '';
+    if (story.publishedAt) {
+      const publishedDate = new Date(story.publishedAt);
+      const now = new Date();
+      const diffMs = now - publishedDate;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 60) {
+        timeAgo = `${diffMins}m ago`;
+      } else if (diffHours < 24) {
+        timeAgo = `${diffHours}h ago`;
+      } else if (diffDays < 7) {
+        timeAgo = `${diffDays}d ago`;
+      } else {
+        timeAgo = publishedDate.toLocaleDateString();
+      }
+    }
+    
     return (
       <div key={idx} className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors">
         <div className="flex justify-between items-start mb-2">
@@ -487,6 +527,9 @@ function FinancialApp() {
             {story.sentiment}
           </span>
         </div>
+        {timeAgo && (
+          <div className="text-xs text-slate-400 mb-2">{timeAgo}</div>
+        )}
         <p className="text-slate-300 mb-3">{story.summary}</p>
       </div>
     );
@@ -552,12 +595,26 @@ function FinancialApp() {
           </div>
           {activeTab === 'news' && (
             <div>
-              <div className="mb-4">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Newspaper className="text-blue-400" />
-                  Market News
-                </h2>
-                <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <Newspaper className="text-blue-400" />
+                    Market News
+                  </h2>
+                  <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-slate-400">
+                    {newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}
+                  </div>
+                  <button
+                    onClick={() => fetchNewsWithKey(apiKeys.newsApi)}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    {loading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                  </button>
+                </div>
               </div>
 
               {!newsStories || newsStories.length === 0 ? (
@@ -787,9 +844,24 @@ function FinancialApp() {
                             return (
                               <div key={s.symbol} className="bg-slate-700 rounded-lg p-5">
                                 <div className="flex justify-between items-start mb-4">
-                                  <div>
-                                    <div className="text-2xl font-bold text-blue-400">{s.symbol}</div>
-                                    <div className="text-slate-300 text-sm">{s.name}</div>
+                                  <div className="flex-1">
+                                    <div className="flex items-baseline gap-4">
+                                      <div className="text-2xl font-bold text-blue-400">{s.symbol}</div>
+                                      {s.currentPrice != null && (
+                                        <div className="flex items-baseline gap-3">
+                                          <span className="text-xl font-semibold text-slate-200">${s.currentPrice.toFixed(2)}</span>
+                                          {s.priceChange != null && s.priceChangePercent != null && (
+                                            <span className={
+                                              'text-sm font-medium ' + 
+                                              (s.priceChange >= 0 ? 'text-emerald-400' : 'text-red-400')
+                                            }>
+                                              {s.priceChange >= 0 ? '+' : ''}{s.priceChange.toFixed(2)} ({s.priceChangePercent >= 0 ? '+' : ''}{s.priceChangePercent.toFixed(2)}%)
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="text-slate-300 text-sm mt-1">{s.name}</div>
                                   </div>
                                   <div className={'px-4 py-2 rounded border font-bold ' + valuationColor}>
                                     {valuation}
