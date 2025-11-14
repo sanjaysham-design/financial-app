@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   
   try {
     const response = await fetch(
-      `https://newsapi.org/v2/top-headlines?category=business&country=us&pageSize=10&apiKey=${apikey}`
+      `https://newsapi.org/v2/everything?q=stock OR market OR finance OR economy OR trading OR wall street&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apikey}`
     );
     
     const data = await response.json();
