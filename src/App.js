@@ -484,12 +484,28 @@ function FinancialApp() {
           const quote = data['Global Quote'];
           
           if (quote) {
+            // also fetch compact chart data for sparkline
+            let spark = null;
+            try {
+              const ch = await fetch(`/api/chart-data?ticker=${idx.symbol}&apikey=${apiKeys.alphaVantage}&outputsize=compact`);
+              const chd = await ch.json();
+              if (chd['Time Series (Daily)']) {
+                const ts = chd['Time Series (Daily)'];
+                const dates = Object.keys(ts).sort();
+                const slice = dates.slice(-20);
+                spark = slice.map(d => ({ date: d, price: parseFloat(ts[d]['4. close']) }));
+              }
+            } catch (e) {
+              console.warn('Failed to fetch chart data for sparkline', idx.symbol, e);
+            }
+
             return {
               name: idx.name,
               symbol: idx.symbol,
               price: parseFloat(quote['05. price']),
               change: parseFloat(quote['09. change']),
-              changePercent: parseFloat(quote['10. change percent'].replace('%', ''))
+              changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+              spark
             };
           }
           return null;
@@ -571,12 +587,13 @@ function FinancialApp() {
   }, [activeTab, fetchSectorEtfQuotes]);
 
   // Helper function to fetch news
-  const fetchNewsWithKey = useCallback(async function(newsApiKey) {
+  const fetchNewsWithKey = useCallback(async function(newsApiKey, q) {
     setLoading(true);
     setError('');
     
     try {
-      const response = await fetch('/api/news?apikey=' + newsApiKey);
+      const url = '/api/news?apikey=' + newsApiKey + (q ? ('&q=' + encodeURIComponent(q)) : '');
+      const response = await fetch(url);
       const data = await response.json();
       
       if (data.articles) {
@@ -731,25 +748,6 @@ function FinancialApp() {
           </div>
           {activeTab === 'news' && (
             <div>
-              {/* Market Indices */}
-              {!indicesLoading && marketIndices.length > 0 && (
-                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {marketIndices.map((index) => (
-                    <div key={index.symbol} className="bg-slate-700 rounded-lg p-4 border border-slate-600">
-                      <div className="text-sm text-slate-400 mb-1">{index.symbol} ({index.name})</div>
-                      <div className="flex items-baseline justify-between">
-                        <div className="text-2xl font-bold text-white">
-                          {index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                        <div className={'text-sm font-semibold ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                          {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -758,6 +756,49 @@ function FinancialApp() {
                   </h2>
                   <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
                 </div>
+              
+              {/* Market Indices */}
+              {!indicesLoading && marketIndices.length > 0 && (
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {marketIndices.map((index) => (
+                    <div
+                      key={index.symbol}
+                      className="bg-slate-700 rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
+                      title={`Open ${index.symbol} in Technical Analysis`}
+                    >
+                      <div className="text-sm text-slate-400 mb-1 flex items-center justify-between">
+                        <div>{index.symbol} ({index.name})</div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActiveTab('news'); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
+                            className="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700"
+                          >
+                            News
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-baseline justify-between">
+                        <div className="text-2xl font-bold text-white">
+                          {index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        <div className={'text-sm font-semibold ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                          {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
+                        </div>
+                      </div>
+                      {index.spark && index.spark.length > 0 && (
+                        <div className="mt-3 h-10">
+                          <ResponsiveContainer width="100%" height={40}>
+                            <LineChart data={index.spark}>
+                              <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
                 <div className="flex items-center gap-3">
                   <div className="text-xs text-slate-400">
                     {newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}

@@ -6,16 +6,16 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { apikey } = req.query;
+  const { apikey, q } = req.query;
   
   if (!apikey) {
     return res.status(400).json({ error: 'Missing apikey' });
   }
   
   try {
-    const response = await fetch(
-      `https://newsapi.org/v2/top-headlines?category=business&country=us&pageSize=10&apiKey=${apikey}`
-    );
+    const base = `https://newsapi.org/v2/top-headlines?category=business&country=us&pageSize=10&apiKey=${apikey}`;
+    const url = q ? `${base}&q=${encodeURIComponent(q)}` : base;
+    const response = await fetch(url);
     
     const data = await response.json();
     res.status(200).json(data);
