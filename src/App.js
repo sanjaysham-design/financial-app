@@ -756,7 +756,20 @@ function FinancialApp() {
                   </h2>
                   <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
                 </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-slate-400">
+                    {newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}
+                  </div>
+                  <button
+                    onClick={() => fetchNewsWithKey(apiKeys.newsApi)}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    {loading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                  </button>
+                </div>
               
+              </div>
               {/* Market Indices */}
               {!indicesLoading && marketIndices.length > 0 && (
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -799,19 +812,6 @@ function FinancialApp() {
                   ))}
                 </div>
               )}
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400">
-                    {newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}
-                  </div>
-                  <button
-                    onClick={() => fetchNewsWithKey(apiKeys.newsApi)}
-                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
-                    disabled={loading}
-                  >
-                    {loading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
-                  </button>
-                </div>
-              </div>
 
               {!newsStories || newsStories.length === 0 ? (
                 <div className="bg-slate-700 rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
