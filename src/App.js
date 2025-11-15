@@ -1193,7 +1193,7 @@ function FinancialApp() {
                                     </div>
                                     <div className="text-slate-300 text-sm mt-1">{s.name}</div>
                                   </div>
-                                  <div className={'px-4 py-2 rounded border font-bold ' + valuationColor}>
+                                  <div className={'px-4 py-2 rounded border font-bold ' + valuationColor + ' hidden md:block'}>
                                     {valuation}
                                   </div>
                                 </div>
@@ -1268,6 +1268,10 @@ function FinancialApp() {
                                     </div>
                                   </div>
                                 </div>
+                                {/* Mobile: valuation badge moved to bottom of the card to avoid layout breakage */}
+                                <div className={'mt-4 px-4 py-2 rounded border font-bold ' + valuationColor + ' md:hidden text-center'}>
+                                  {valuation}
+                                </div>
                               </div>
                             );
                           })
@@ -1279,49 +1283,63 @@ function FinancialApp() {
                         <div className="mt-8 bg-slate-700 rounded-lg p-6">
                           <h3 className="text-xl font-bold text-blue-400 mb-4">📊 Metrics Explained</h3>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-emerald-400 mb-2">⭐ PEG Ratio (Price/Earnings-to-Growth) - BEST FOR VALUATION</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> P/E Ratio ÷ EPS Growth Rate</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Accounts for growth. A high P/E might be justified if growth is high.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-2 = fair, &gt;2 = overvalued</p>
-                            </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-emerald-400 mb-2">⭐ PEG Ratio (Price/Earnings-to-Growth)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> P/E Ratio ÷ EPS Growth Rate</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Balances valuation against growth expectations.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued relative to growth, 1-2 = fair, &gt;2 = may be expensive</p>
+                                </div>
                             
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-blue-400 mb-2">P/E Ratio (Price-to-Earnings)</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Earnings Per Share</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how much investors pay for $1 of earnings.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;15 = cheap, 15-25 = fair, &gt;25 = expensive</p>
-                            </div>
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">P/E Ratio (Price-to-Earnings)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Earnings Per Share</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how much investors pay for $1 of earnings.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;15 = cheap, 15-25 = fair, &gt;25 = expensive (industry dependent)</p>
+                                </div>
                             
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-blue-400 mb-2">Price-to-Book Ratio</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Book Value Per Share</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if you're paying more than the company's net assets.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-3 = fair, &gt;3 = expensive</p>
-                            </div>
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">Price-to-Sales (P/S)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Market Cap ÷ Revenue (TTM)</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Useful for companies with little earnings (early growth) — compares price to revenue base.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> Lower P/S indicates cheaper relative to revenue; &lt;2 often considered attractive depending on the sector</p>
+                                </div>
                             
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-blue-400 mb-2">Profit Margin %</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Net Income ÷ Revenue × 100</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how efficiently the company converts revenue to profit.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &gt;20% = excellent, 10-20% = good, &lt;10% = needs improvement</p>
-                            </div>
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">Price-to-Book Ratio (P/B)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Book Value Per Share</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if you're paying more than the company's net assets.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-3 = fair, &gt;3 = expensive (industry dependent)</p>
+                                </div>
                             
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-blue-400 mb-2">Debt/Equity Ratio</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Total Debt ÷ Shareholder Equity</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows financial leverage and risk level.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;0.5 = conservative, 0.5-1 = moderate, &gt;1 = aggressive</p>
-                            </div>
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">Market Capitalization</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Definition:</strong> Total market value of outstanding shares (Price × Shares Outstanding)</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Determines company size and what comparables/benchmarks to use.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> No universal threshold — use market cap to select peers and adjust valuation expectations</p>
+                                </div>
                             
-                            <div className="bg-slate-800 rounded-lg p-4">
-                              <h4 className="font-bold text-blue-400 mb-2">EPS Growth (Earnings Per Share Growth)</h4>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Year-over-year change in quarterly earnings</p>
-                              <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if the company is growing its profits.</p>
-                              <p className="text-sm text-slate-400"><strong>What's good:</strong> Positive = good, &gt;15% = strong growth, negative = concerning</p>
-                            </div>
-                          </div>
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">Revenue (TTM)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Definition:</strong> Trailing twelve months total revenue</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Baseline for P/S and growth analysis; look for stability or acceleration.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> Positive and growing revenue is generally favorable; compare growth rates to peers</p>
+                                </div>
+                            
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">Profit Margin %</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Net Income ÷ Revenue × 100</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how efficiently the company converts revenue to profit.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> &gt;20% = excellent, 10-20% = good, &lt;10% = needs improvement (sector dependent)</p>
+                                </div>
+                            
+                                <div className="bg-slate-800 rounded-lg p-4">
+                                  <h4 className="font-bold text-blue-400 mb-2">EPS Growth (Earnings Per Share Growth)</h4>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Year-over-year change in quarterly earnings or trailing EPS growth</p>
+                                  <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if the company is scaling profits per share — critical for growth investors.</p>
+                                  <p className="text-sm text-slate-400"><strong>What's good:</strong> Positive = good, &gt;15% = strong growth, negative = concerning</p>
+                                </div>
+                              </div>
                           
                           <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
                             <h4 className="font-bold text-blue-400 mb-2">💡 How to Use These Metrics</h4>
