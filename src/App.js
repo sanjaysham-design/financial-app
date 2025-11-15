@@ -969,20 +969,20 @@ function FinancialApp() {
                     <div>
                       {/* Stock Input Section */}
                       <div className="mb-6 bg-slate-700 rounded-lg p-4">
-                        <div className="flex items-center gap-3 mb-4">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-4">
                           <input
                             type="text"
                             value={stockInput}
                             onChange={(e) => setStockInput(e.target.value.toUpperCase())}
                             onKeyPress={(e) => e.key === 'Enter' && addStock()}
                             placeholder="Enter stock symbol (e.g., AAPL)"
-                            className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+                            className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
                             disabled={selectedStocks.length >= MAX_STOCKS}
                           />
                           <button
                             onClick={addStock}
                             disabled={!stockInput || selectedStocks.length >= MAX_STOCKS}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium"
+                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium w-full md:w-auto"
                           >
                             Add Stock
                           </button>
@@ -1226,32 +1226,32 @@ function FinancialApp() {
               )}
               {activeTab === 'charts' && (
               <div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
                   <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2">
                       <Target className="text-blue-400" />
                       Technical Analysis
                     </h2>
-                    <p className="text-slate-400">Price, moving averages, support/resistance, and overlays</p>
+                    <p className="text-slate-400 hidden md:block">Price, moving averages, support/resistance, and overlays</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col md:flex-row md:items-center items-stretch gap-3 w-full md:w-auto">
                     <input
                       type="text"
                       value={stockTicker}
                       onChange={e => setStockTicker(e.target.value.toUpperCase())}
                       placeholder="e.g. AAPL"
-                      className="bg-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="bg-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
                     />
                     <button
                       onClick={analyzeChartData}
                       disabled={loading}
-                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors w-full md:w-auto justify-center"
                     >
                       {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
-                      Analyze
+                      <span className="ml-1">Analyze</span>
                     </button>
-                    <div className="ml-3">
-                      <label className="text-xs text-slate-400 mr-2">View:</label>
+                    <div className="flex items-center gap-3 md:ml-3">
+                      <label className="text-xs text-slate-400 mr-2 hidden md:inline">View:</label>
                       <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-700 text-sm text-white px-2 py-1 rounded">
                         <option value={200}>200 days</option>
                         <option value={30}>30 days</option>
@@ -1259,10 +1259,10 @@ function FinancialApp() {
                         <option value={1}>1 day</option>
                       </select>
                     </div>
-                    <div className="flex items-center gap-3 ml-4">
+                    <div className="flex items-center gap-3 md:ml-4">
                       <label className="flex items-center gap-2 text-sm text-slate-300">
                         <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
-                        Show S/R
+                        <span className="hidden sm:inline">Show S/R</span>
                       </label>
                     </div>
                   </div>
