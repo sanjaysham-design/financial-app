@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Newspaper, BarChart3, Target, Search, Loader } from 'lucide-react';
+import { Newspaper, BarChart3, Target, Search, Loader, Menu, X } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -42,6 +42,7 @@ function FinancialApp() {
   }
   // State declarations
   const [activeTab, setActiveTab] = useState('news');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [stockTicker, setStockTicker] = useState('');
   const [apiKeys, setApiKeys] = useState({
     alphaVantage: '',
@@ -222,6 +223,18 @@ function FinancialApp() {
   // Sector ETF quotes state
   const [etfQuotes, setEtfQuotes] = useState({}); // { XLK: { price, change, changePercent } }
   const [etfQuotesLoading, setEtfQuotesLoading] = useState(false);
+
+  // Local: simple component to handle Escape key for mobile nav
+  function MobileNavEscapeHandler({ onClose }) {
+    useEffect(() => {
+      function onKey(e) {
+        if (e.key === 'Escape') onClose();
+      }
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
+    return null;
+  }
 
   // Helper: parse number safely
   const parseNum = useCallback((v) => {
@@ -720,31 +733,81 @@ function FinancialApp() {
         {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
           {/* Tabs */}
-          <div className="mb-6 flex items-center gap-3">
-            <button
-              onClick={() => setActiveTab('news')}
-              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'news' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="md:hidden">
+                <button
+                  onClick={() => setMobileNavOpen(prev => !prev)}
+                  aria-expanded={mobileNavOpen}
+                  aria-label="Toggle navigation"
+                  className="p-2 rounded bg-slate-700 hover:bg-slate-600"
+                >
+                  {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <button
+                  onClick={() => setActiveTab('news')}
+                  className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'news' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+                >
+                  News
+                </button>
+                <button
+                  onClick={() => setActiveTab('sectors')}
+                  className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+                >
+                  Sector Trends
+                </button>
+                <button
+                  onClick={() => setActiveTab('charts')}
+                  className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+                >
+                  Technical Analysis
+                </button>
+                <button
+                  onClick={() => setActiveTab('screener')}
+                  className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+                >
+                  Stock Valuations
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile nav slide-over/backdrop */}
+            {/* Backdrop (fades) and slide-over panel (translates) to animate open/close */}
+            <div
+              className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              onClick={() => setMobileNavOpen(false)}
+              aria-hidden={!mobileNavOpen}
+            />
+
+            <aside
+              role="dialog"
+              aria-modal="true"
+              className={`fixed top-0 left-0 h-full w-64 max-w-xs bg-slate-800 z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
-              News
-            </button>
-            <button
-              onClick={() => setActiveTab('sectors')}
-              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
-            >
-              Sector Trends
-            </button>
-            <button
-              onClick={() => setActiveTab('charts')}
-              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
-            >
-              Technical Analysis
-            </button>
-            <button
-              onClick={() => setActiveTab('screener')}
-              className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
-            >
-      Stock Valuations
-            </button>
+              <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+                <div className="text-lg font-bold">Menu</div>
+                <button
+                  onClick={() => setMobileNavOpen(false)}
+                  aria-label="Close menu"
+                  className="p-2 rounded bg-slate-700 hover:bg-slate-600"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-4 space-y-2">
+                <button onClick={() => { setActiveTab('news'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'news' ? 'bg-slate-700 text-white' : 'text-slate-200')}>News</button>
+                <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Sector Trends</button>
+                <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Technical Analysis</button>
+                <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Stock Valuations</button>
+              </div>
+            </aside>
+
+            {/* Close menu on Escape key for accessibility */}
+            {mobileNavOpen && (
+              <MobileNavEscapeHandler onClose={() => setMobileNavOpen(false)} />
+            )}
           </div>
           {activeTab === 'news' && (
             <div>
