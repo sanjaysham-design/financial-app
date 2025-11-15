@@ -285,6 +285,31 @@ function FinancialApp() {
     return Number.isFinite(n) ? n : null;
   }, []);
 
+  // Helper: format large currency values into abbreviated strings
+  // Examples: 4320000000000 -> $4.32T, 4320000000 -> $4.32Bn, 4320000 -> $4.32M
+  function formatCurrencyAbbrev(v) {
+    const n = parseNum(v);
+    if (n == null) return 'N/A';
+    const abs = Math.abs(n);
+    let value, suffix;
+    if (abs >= 1e12) {
+      value = n / 1e12;
+      suffix = 'T';
+    } else if (abs >= 1e9) {
+      value = n / 1e9;
+      suffix = 'Bn';
+    } else if (abs >= 1e6) {
+      value = n / 1e6;
+      suffix = 'M';
+    } else {
+      // For smaller numbers show full with commas
+      return '$' + n.toLocaleString('en-US');
+    }
+    // show one or two decimal places depending on size
+    const formatted = Math.abs(value) >= 100 ? Math.round(value).toString() : value.toFixed(2);
+    return (n < 0 ? '-$' : '$') + formatted + suffix;
+  }
+
   // Score and filter an overview object. Returns null if it fails basic checks.
   const evaluateOverview = useCallback((ov) => {
     if (!ov || !ov.Symbol) return null;
@@ -764,7 +789,7 @@ function FinancialApp() {
 
   // Render function
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between">
           <div>
@@ -787,8 +812,8 @@ function FinancialApp() {
             </button>
           </div>
         </header>
-        {/* Content Area */}
-        <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
+  {/* Content Area */}
+  <div className="bg-black rounded-xl shadow-2xl p-6">
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -1202,14 +1227,14 @@ function FinancialApp() {
                                   {/* Market Cap */}
                                   <div className="bg-slate-800 rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Market Cap</div>
-                                    <div className="text-lg font-bold">{s.marketCap ? `$${s.marketCap.toLocaleString()}` : 'N/A'}</div>
+                                      <div className="text-lg font-bold">{s.marketCap ? formatCurrencyAbbrev(s.marketCap) : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">Total market value of outstanding shares</div>
                                   </div>
                                   
                                   {/* Revenue TTM */}
                                   <div className="bg-slate-800 rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Revenue (TTM)</div>
-                                    <div className="text-lg font-bold">{s.revenueTTM ? `$${s.revenueTTM.toLocaleString()}` : 'N/A'}</div>
+                                    <div className="text-lg font-bold">{s.revenueTTM ? formatCurrencyAbbrev(s.revenueTTM) : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">Trailing twelve month revenue</div>
                                   </div>
                                   
