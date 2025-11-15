@@ -236,6 +236,48 @@ function FinancialApp() {
     return null;
   }
 
+  // Local: focus trap for the mobile nav panel (basic Tab wrap)
+  function MobileNavFocusTrap() {
+    useEffect(() => {
+      const panel = document.querySelector("aside[role='dialog']");
+      if (!panel) return;
+      const focusableSelector = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+      const focusable = Array.from(panel.querySelectorAll(focusableSelector)).filter(el => el.offsetParent !== null);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const prevActive = document.activeElement;
+
+      if (first && typeof first.focus === 'function') first.focus();
+
+      function onKey(e) {
+        if (e.key !== 'Tab') return;
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+
+      window.addEventListener('keydown', onKey);
+      return () => {
+        window.removeEventListener('keydown', onKey);
+        if (prevActive && typeof prevActive.focus === 'function') prevActive.focus();
+      };
+    }, []);
+
+    return null;
+  }
+
   // Helper: parse number safely
   const parseNum = useCallback((v) => {
     if (v == null || v === '' ) return null;
@@ -724,27 +766,31 @@ function FinancialApp() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <div className="max-w-7xl mx-auto p-6">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Financial Analysis Hub
-          </h1>
-          <p className="text-slate-400">Comprehensive market insights and stock analysis tools</p>
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+              Financial Analysis Hub
+            </h1>
+            <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
+          </div>
+          <div className="md:hidden">
+            <button
+              onClick={() => setMobileNavOpen(prev => !prev)}
+              aria-expanded={mobileNavOpen}
+              aria-label="Toggle navigation"
+              className="p-2 rounded bg-slate-700 hover:bg-slate-600"
+            >
+              <span className={`inline-block transform transition-transform duration-200 ${mobileNavOpen ? 'rotate-12 scale-105' : 'rotate-0 scale-100'}`}>
+                {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+              </span>
+            </button>
+          </div>
         </header>
         {/* Content Area */}
         <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
-              <div className="md:hidden">
-                <button
-                  onClick={() => setMobileNavOpen(prev => !prev)}
-                  aria-expanded={mobileNavOpen}
-                  aria-label="Toggle navigation"
-                  className="p-2 rounded bg-slate-700 hover:bg-slate-600"
-                >
-                  {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
-              </div>
               <div className="hidden md:flex items-center gap-3">
                 <button
                   onClick={() => setActiveTab('news')}
@@ -784,7 +830,7 @@ function FinancialApp() {
             <aside
               role="dialog"
               aria-modal="true"
-              className={`fixed top-0 left-0 h-full w-64 max-w-xs bg-slate-800 z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}
+              className={`fixed top-0 right-0 h-full w-64 max-w-xs bg-slate-800 z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
               <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                 <div className="text-lg font-bold">Menu</div>
@@ -804,9 +850,12 @@ function FinancialApp() {
               </div>
             </aside>
 
-            {/* Close menu on Escape key for accessibility */}
+            {/* Accessibility helpers when mobile nav is open */}
             {mobileNavOpen && (
-              <MobileNavEscapeHandler onClose={() => setMobileNavOpen(false)} />
+              <>
+                <MobileNavEscapeHandler onClose={() => setMobileNavOpen(false)} />
+                <MobileNavFocusTrap />
+              </>
             )}
           </div>
           {activeTab === 'news' && (
