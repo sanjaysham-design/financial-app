@@ -769,8 +769,8 @@ function FinancialApp() {
         <header className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              Financial Analysis Hub
-            </h1>
+                Financial Hub
+              </h1>
             <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
           </div>
           <div className="md:hidden">
@@ -780,8 +780,9 @@ function FinancialApp() {
               aria-label="Toggle navigation"
               className="p-2 rounded bg-slate-700 hover:bg-slate-600"
             >
-              <span className={`inline-block transform transition-transform duration-200 ${mobileNavOpen ? 'rotate-12 scale-105' : 'rotate-0 scale-100'}`}>
-                {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+              <span className="relative inline-block w-5 h-5">
+                <Menu size={20} className={`absolute inset-0 transition-all duration-200 transform ${mobileNavOpen ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`} />
+                <X size={20} className={`absolute inset-0 transition-all duration-200 transform ${mobileNavOpen ? 'opacity-100 scale-105' : 'opacity-0 scale-90'}`} />
               </span>
             </button>
           </div>
