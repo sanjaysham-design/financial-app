@@ -754,7 +754,7 @@ function FinancialApp() {
                     <Newspaper className="text-blue-400" />
                     Market News
                   </h2>
-                  <p className="text-slate-400 text-sm">Curated market-moving headlines and quick sentiment.</p>
+                  <p className="text-slate-400 text-sm hidden md:block">Curated market-moving headlines and quick sentiment.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-xs text-slate-400">
@@ -829,7 +829,7 @@ function FinancialApp() {
                     <BarChart3 className="text-blue-400" />
                     Sector Trends
                   </h2>
-                  <p className="text-slate-400 text-sm">Current performance and near-term outlook for major sectors.</p>
+                      <p className="text-slate-400 text-sm hidden md:block">Current performance and near-term outlook for major sectors.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-xs text-slate-400">{sectorsLastUpdated ? `Last: ${new Date(sectorsLastUpdated).toLocaleString()}` : ''}</div>
@@ -939,7 +939,7 @@ function FinancialApp() {
                         <Search className="text-blue-400" />
                           Stock Valuations
                       </h2>
-                      <p className="text-slate-400 text-sm">Comprehensive valuation analysis based on key fundamentals</p>
+                      <p className="text-slate-400 text-sm hidden md:block">Comprehensive valuation analysis based on key fundamentals</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-xs text-slate-400">{screenerLastUpdated ? `Last: ${new Date(screenerLastUpdated).toLocaleString()}` : ''}</div>
