@@ -5,7 +5,7 @@
   box-sizing: border-box;
 }
 
-/* Theme variables (defaults for 'default' theme) */
+/* Theme variables (defaults for 'classic' theme) */
 :root {
   --panel-bg: #374151; /* tailwind slate-700 */
   --subpanel-bg: #1f2937; /* tailwind slate-800 */

@@ -50,10 +50,13 @@ function FinancialApp() {
     finnhub: '',
     newsApi: ''
   });
-  // Theme state: 'default' or 'liquid-glass'
+  // Theme state: 'classic' or 'liquid-glass'  (we rename 'default' -> 'classic')
+  // New installs will default to the liquid-glass theme; persisted users keep their saved choice.
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
-    return saved || 'default';
+    // migrate older stored value 'default' -> 'classic'
+    if (saved === 'default') return 'classic';
+    return saved || 'liquid-glass';
   });
   const [loading, setLoading] = useState(false);
   const [, setError] = useState('');
@@ -1001,10 +1004,10 @@ function FinancialApp() {
               <div className="lg-panel rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 text-slate-100">Theme</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'default' ? 'border-blue-500 bg-slate-600' : 'border-transparent lg-panel'}`}>
-                    <input type="radio" name="theme" value="default" checked={theme === 'default'} onChange={() => setTheme('default')} className="mr-3" />
+                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'classic' ? 'border-blue-500 bg-slate-600' : 'border-transparent lg-panel'}`}>
+                    <input type="radio" name="theme" value="classic" checked={theme === 'classic'} onChange={() => setTheme('classic')} className="mr-3" />
                     <div>
-                      <div className="font-semibold">Default</div>
+                      <div className="font-semibold">Classic</div>
                       <div className="text-xs text-slate-400">Current application look</div>
                     </div>
                   </label>
