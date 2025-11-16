@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
 import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings } from 'lucide-react';
 import {
   ResponsiveContainer,
