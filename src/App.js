@@ -832,7 +832,7 @@ function FinancialApp() {
           </div>
         </header>
   {/* Content Area */}
-  <div className={`lg-panel rounded-xl shadow-2xl p-6`}>
+  <div className={`${theme === 'liquid-glass' ? 'lg-panel' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} rounded-xl shadow-2xl p-6`}>
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
