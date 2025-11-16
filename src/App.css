@@ -10,8 +10,7 @@
   --panel-bg: #374151; /* tailwind slate-700 */
   --subpanel-bg: #1f2937; /* tailwind slate-800 */
   /* Page background for classic theme - darker than panels so cards stand out */
-  /* Darkened per request */
-  --page-bg: linear-gradient(180deg, #00040a 0%, #030612 60%, #050812 100%);
+  --page-bg: linear-gradient(180deg, #020617 0%, #0b1220 100%);
   --panel-border-default: rgba(148,163,184,0.06);
   --heading-color: #e6eefc;
 }
