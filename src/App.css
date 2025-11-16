@@ -7,10 +7,12 @@
 
 /* Theme variables (defaults for 'classic' theme) */
 :root {
-  --panel-bg: #374151; /* tailwind slate-700 */
-  --subpanel-bg: #1f2937; /* tailwind slate-800 */
-  /* Page background for classic theme - darker than panels so cards stand out */
-  --page-bg: linear-gradient(180deg, #020617 0%, #0b1220 100%);
+  /* Panel colors: tuned to create subtle, visible differences between
+     page background (darkest), panel (mid), and subpanel (lightest) */
+  --panel-bg: #0f1724;    /* slate-900 (panel) — slightly lighter than page */
+  --subpanel-bg: #1e293b; /* slate-800 (subpanel) — a touch lighter than panel */
+  /* Page background for classic theme - darkest so cards stand out */
+  --page-bg: linear-gradient(180deg, #02040a 0%, #071018 100%);
   --panel-border-default: rgba(148,163,184,0.06);
   --heading-color: #e6eefc;
 }
@@ -36,6 +38,17 @@
 .theme-classic {
   background: var(--page-bg);
   color-scheme: dark;
+}
+
+/* Make classic panels visibly distinct with a subtle border and lift */
+.theme-classic .lg-panel {
+  background: var(--panel-bg) !important;
+  border: 1px solid rgba(255,255,255,0.02) !important;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.45);
+}
+.theme-classic .lg-subpanel {
+  background: var(--subpanel-bg) !important;
+  border: 1px solid rgba(255,255,255,0.02) !important;
 }
 
 /* Apply frosted panels to common rounded card elements */
