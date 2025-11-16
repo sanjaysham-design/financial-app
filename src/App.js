@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './App.fixed.css';
+import './App.css';
 import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -809,6 +809,43 @@ function FinancialApp() {
   // Render function
   return (
     <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
+      {/* Mobile nav slide-over/backdrop moved here so it's a direct child of the root to avoid positioning issues */}
+      <div
+        className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMobileNavOpen(false)}
+        aria-hidden={!mobileNavOpen}
+      />
+
+      <aside
+        role="dialog"
+        aria-modal="true"
+        className={`fixed top-0 right-0 h-full w-64 max-w-xs lg-panel z-50 md:hidden`}
+        style={{ transform: mobileNavOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 300ms ease-out' }}
+      >
+        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+          <div className="text-lg font-bold">Menu</div>
+          <button
+            onClick={() => setMobileNavOpen(false)}
+            aria-label="Close menu"
+            className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div className="p-4 space-y-2">
+          <button onClick={() => { setActiveTab('news'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'news' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>News</button>
+          <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'sectors' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Sector Trends</button>
+          <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'charts' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Technical Analysis</button>
+          <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'screener' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Stock Valuations</button>
+          <button onClick={() => { setActiveTab('settings'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'settings' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>
+            <div className="flex items-center gap-2">
+              <Settings size={16} />
+              Settings
+            </div>
+          </button>
+        </div>
+      </aside>
+
       <div className="max-w-7xl mx-auto p-6">
   <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
           <div>
@@ -871,44 +908,7 @@ function FinancialApp() {
               </div>
             </div>
 
-            {/* Mobile nav slide-over/backdrop */}
-            {/* Backdrop (fades) and slide-over panel (translates) to animate open/close */}
-            <div
-              className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-              onClick={() => setMobileNavOpen(false)}
-              aria-hidden={!mobileNavOpen}
-            />
-
-            <aside
-              role="dialog"
-              aria-modal="true"
-              // anchor the slide-over to the same top/right as the hamburger so it appears to originate from the icon
-              className={`fixed top-0 right-0 h-full w-64 max-w-xs lg-panel z-50 md:hidden`}
-              style={{ transform: mobileNavOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 300ms ease-out' }}
-            >
-              <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-                <div className="text-lg font-bold">Menu</div>
-                <button
-                  onClick={() => setMobileNavOpen(false)}
-                  aria-label="Close menu"
-                  className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="p-4 space-y-2">
-                <button onClick={() => { setActiveTab('news'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'news' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>News</button>
-                <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'sectors' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Sector Trends</button>
-                <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'charts' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Technical Analysis</button>
-                <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'screener' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Stock Valuations</button>
-                <button onClick={() => { setActiveTab('settings'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'settings' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>
-                  <div className="flex items-center gap-2">
-                    <Settings size={16} />
-                    Settings
-                  </div>
-                </button>
-              </div>
-            </aside>
+            {/* Mobile nav slide-over/backdrop (moved to root to avoid nesting issues) */}
 
             {/* Accessibility helpers when mobile nav is open */}
             {mobileNavOpen && (
