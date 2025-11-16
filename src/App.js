@@ -110,12 +110,17 @@ function FinancialApp() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch(`/api/chart-data?ticker=${stockTicker}&apikey=${apiKeys.alphaVantage}&outputsize=full`);
-        const data = await response.json();
         // Fetch company name
-        const overviewResponse = await fetch('/api/stock-overview?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
-        const overviewData = await overviewResponse.json();
+        const overviewResp = await fetch('/api/stock-overview?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
+        const overviewData = await overviewResp.json();
         const companyName = overviewData.Name || '';
+
+        let data;
+        // Always fetch daily series (we avoid intraday calls to respect rate limits)
+
+        // Default: fetch daily series
+        const response = await fetch(`/api/chart-data?ticker=${stockTicker}&apikey=${apiKeys.alphaVantage}&outputsize=full`);
+        data = await response.json();
         if (data['Time Series (Daily)']) {
           const timeSeries = data['Time Series (Daily)'];
           const datesDesc = Object.keys(timeSeries);
@@ -1434,7 +1439,7 @@ function FinancialApp() {
                                 <option value={200}>200 days</option>
                                 <option value={30}>30 days</option>
                                 <option value={10}>10 days</option>
-                                <option value={1}>1 day</option>
+                                <option value={3}>3 days</option>
                               </select>
                               <label className="flex items-center gap-2 text-sm text-slate-300 ml-2">
                                 <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
