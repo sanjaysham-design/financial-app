@@ -805,7 +805,7 @@ function FinancialApp() {
 
   // Render function
   return (
-    <div className={`min-h-screen theme-liquid-glass text-white`} data-theme={theme}>
+    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
       <div className="max-w-7xl mx-auto p-6">
   <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
           <div>
@@ -819,7 +819,7 @@ function FinancialApp() {
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-expanded={mobileNavOpen}
               aria-label="Toggle navigation"
-              className="p-2 rounded bg-slate-700 hover:bg-slate-600"
+              className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}
             >
               <span className="relative inline-block w-5 h-5">
                 <Menu size={20} className={`absolute inset-0 transition-all duration-200 transform ${mobileNavOpen ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`} />
@@ -871,7 +871,7 @@ function FinancialApp() {
             {/* Mobile nav slide-over/backdrop */}
             {/* Backdrop (fades) and slide-over panel (translates) to animate open/close */}
             <div
-              className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
               onClick={() => setMobileNavOpen(false)}
               aria-hidden={!mobileNavOpen}
             />
@@ -879,24 +879,24 @@ function FinancialApp() {
             <aside
               role="dialog"
               aria-modal="true"
-              className={`fixed top-0 right-0 h-full w-64 max-w-xs bg-slate-800 z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
+              className={`fixed top-0 right-0 h-full w-64 max-w-xs ${theme === 'liquid-glass' ? 'bg-white/4 backdrop-blur-sm border border-white/5' : 'bg-slate-800'} z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
               <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                 <div className="text-lg font-bold">Menu</div>
                 <button
                   onClick={() => setMobileNavOpen(false)}
                   aria-label="Close menu"
-                  className="p-2 rounded bg-slate-700 hover:bg-slate-600"
+                  className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}
                 >
                   <X size={18} />
                 </button>
               </div>
               <div className="p-4 space-y-2">
-                <button onClick={() => { setActiveTab('news'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'news' ? 'bg-slate-700 text-white' : 'text-slate-200')}>News</button>
-                <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Sector Trends</button>
-                <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Technical Analysis</button>
-                <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Stock Valuations</button>
-                <button onClick={() => { setActiveTab('settings'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'settings' ? 'bg-slate-700 text-white' : 'text-slate-200')}>
+                <button onClick={() => { setActiveTab('news'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'news' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>News</button>
+                <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'sectors' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Sector Trends</button>
+                <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'charts' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Technical Analysis</button>
+                <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'screener' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>Stock Valuations</button>
+                <button onClick={() => { setActiveTab('settings'); setMobileNavOpen(false); }} className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === 'settings' ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>
                   <div className="flex items-center gap-2">
                     <Settings size={16} />
                     Settings
