@@ -1081,13 +1081,6 @@ function FinancialApp() {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-xs text-slate-400">{screenerLastUpdated ? `Last: ${new Date(screenerLastUpdated).toLocaleString()}` : ''}</div>
-                      <button
-                        onClick={fetchScreener}
-                        className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
-                        disabled={screenerLoading}
-                      >
-                        {screenerLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
-                      </button>
                     </div>
                   </div>
 
@@ -1142,6 +1135,15 @@ function FinancialApp() {
                         </div>
                         <div className="mt-2 text-xs text-slate-400">
                           {selectedStocks.length}/{MAX_STOCKS} stocks selected
+                        </div>
+                        <div className="mt-4">
+                          <button
+                            onClick={fetchScreener}
+                            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium w-full md:w-auto"
+                            disabled={screenerLoading || selectedStocks.length === 0}
+                          >
+                            {screenerLoading ? <Loader className="animate-spin" size={14} /> : 'Submit'}
+                          </button>
                         </div>
                       </div>
 
