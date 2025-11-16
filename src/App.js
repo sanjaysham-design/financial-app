@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Newspaper, BarChart3, Target, Search, Loader, Menu, X } from 'lucide-react';
+import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -49,6 +49,11 @@ function FinancialApp() {
     finnhub: '',
     newsApi: ''
   });
+  // Theme state: 'default' or 'liquid-glass'
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved || 'default';
+  });
   const [loading, setLoading] = useState(false);
   const [, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
@@ -78,6 +83,11 @@ function FinancialApp() {
     useEffect(() => {
       localStorage.setItem('showSR', showSR ? 'true' : 'false');
     }, [showSR]);
+
+    // Persist theme selection
+    useEffect(() => {
+      localStorage.setItem('theme', theme);
+    }, [theme]);
 
     // Helper: calculate moving average
     function calculateMA(data, period) {
@@ -794,7 +804,7 @@ function FinancialApp() {
 
   // Render function
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between">
           <div>
@@ -818,7 +828,7 @@ function FinancialApp() {
           </div>
         </header>
   {/* Content Area */}
-  <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
+  <div className={`${theme === 'liquid-glass' ? 'bg-white/5 backdrop-blur-sm border border-white/5' : 'bg-slate-800'} rounded-xl shadow-2xl p-6`}>
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -846,6 +856,13 @@ function FinancialApp() {
                   className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
                 >
                   Stock Valuations
+                </button>
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={"px-3 py-2 rounded-md text-sm font-semibold flex items-center gap-2 " + (activeTab === 'settings' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}
+                >
+                  <Settings size={16} />
+                  Settings
                 </button>
               </div>
             </div>
@@ -878,6 +895,12 @@ function FinancialApp() {
                 <button onClick={() => { setActiveTab('sectors'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'sectors' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Sector Trends</button>
                 <button onClick={() => { setActiveTab('charts'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'charts' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Technical Analysis</button>
                 <button onClick={() => { setActiveTab('screener'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'screener' ? 'bg-slate-700 text-white' : 'text-slate-200')}>Stock Valuations</button>
+                <button onClick={() => { setActiveTab('settings'); setMobileNavOpen(false); }} className={"w-full text-left px-4 py-2 rounded text-sm font-semibold " + (activeTab === 'settings' ? 'bg-slate-700 text-white' : 'text-slate-200')}>
+                  <div className="flex items-center gap-2">
+                    <Settings size={16} />
+                    Settings
+                  </div>
+                </button>
               </div>
             </aside>
 
@@ -961,6 +984,43 @@ function FinancialApp() {
               ) : (
                 <div className="space-y-4">{newsCards}</div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Settings className="text-blue-400" />
+                  Settings
+                </h2>
+                <p className="text-slate-400 text-sm hidden md:block">Customize application behavior and appearance</p>
+              </div>
+
+              <div className="bg-slate-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-3">Theme</h3>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'default' ? 'border-blue-500 bg-slate-600' : 'border-transparent bg-slate-800'}`}>
+                    <input type="radio" name="theme" value="default" checked={theme === 'default'} onChange={() => setTheme('default')} className="mr-3" />
+                    <div>
+                      <div className="font-semibold">Default</div>
+                      <div className="text-xs text-slate-400">Current application look</div>
+                    </div>
+                  </label>
+
+                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'liquid-glass' ? 'border-blue-500 bg-slate-600' : 'border-transparent bg-slate-800'}`}>
+                    <input type="radio" name="theme" value="liquid-glass" checked={theme === 'liquid-glass'} onChange={() => setTheme('liquid-glass')} className="mr-3" />
+                    <div>
+                      <div className="font-semibold">Liquid Glass</div>
+                      <div className="text-xs text-slate-400">A glassy, translucent aesthetic (configure below)</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="mt-4 text-sm text-slate-400">
+                  Theme selection is saved to your browser. I'll implement the Liquid Glass styling next — tell me how you'd like it to look and I'll apply styles globally.
+                </div>
+              </div>
             </div>
           )}
 
