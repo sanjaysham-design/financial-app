@@ -789,7 +789,7 @@ function FinancialApp() {
 
   // Render function
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between">
           <div>
@@ -813,7 +813,7 @@ function FinancialApp() {
           </div>
         </header>
   {/* Content Area */}
-  <div className="bg-black rounded-xl shadow-2xl p-6">
+  <div className="bg-slate-800 rounded-xl shadow-2xl p-6">
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
