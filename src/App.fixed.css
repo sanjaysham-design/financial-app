@@ -1,0 +1,136 @@
+/* Basic reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Theme variables (defaults for 'classic' theme) */
+:root {
+  --panel-bg: #374151; /* tailwind slate-700 */
+  --subpanel-bg: #1f2937; /* tailwind slate-800 */
+  --panel-border-default: rgba(148,163,184,0.06);
+  --heading-color: #e6eefc;
+}
+
+/* Liquid Glass theme styles (applies when root has .theme-liquid-glass) */
+.theme-liquid-glass {
+  /* soft bluish/neutral backdrop */
+  --glass-accent: rgba(99, 102, 241, 0.95); /* indigo */
+  /* increase translucency so panels appear lighter against white */
+  --glass-panel: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-faint: rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(6,8,15,1) 0%, rgba(10,12,20,1) 100%);
+  color-scheme: dark;
+
+  /* map semantic panel variables to glass values so components use them */
+  --panel-bg: var(--glass-panel);
+  --subpanel-bg: rgba(255,255,255,0.02);
+  --panel-border-default: var(--glass-border);
+}
+
+/* Apply frosted panels to common rounded card elements */
+.theme-liquid-glass .rounded-lg,
+.theme-liquid-glass .rounded-xl,
+.theme-liquid-glass .rounded-md {
+  background: var(--glass-panel) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  /* lighter outer shadow rather than dark inset */
+  box-shadow: 0 8px 24px rgba(2,6,23,0.30);
+}
+
+/* Make explicit .bg-slate-700 slightly translucent in liquid-glass mode so older classes don't look stark */
+.theme-liquid-glass .bg-slate-700 {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+.theme-liquid-glass .text-slate-400,
+.theme-liquid-glass .text-slate-300,
+.theme-liquid-glass .text-slate-200 {
+  color: rgba(220, 230, 255, 0.9) !important;
+}
+
+.theme-liquid-glass .text-blue-400 {
+  color: var(--glass-accent) !important;
+}
+
+/* Inputs and selects */
+.theme-liquid-glass input,
+.theme-liquid-glass select,
+.theme-liquid-glass textarea {
+  background: rgba(255,255,255,0.025) !important;
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  color: rgba(230, 240, 255, 0.98) !important;
+}
+
+/* Buttons primary (blue) — use a softer glassy accent */
+.theme-liquid-glass .bg-blue-600 {
+  background: linear-gradient(180deg, rgba(79,70,229,0.95), rgba(59,130,246,0.95)) !important;
+  color: white !important;
+}
+
+/* small sheen overlay for important panels */
+.theme-liquid-glass .glass-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Subtle angled sheen */
+  background: linear-gradient(120deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 8%, rgba(255,255,255,0.00) 28%);
+  border-radius: inherit;
+}
+
+/* Ensure charts and SVGs blend properly */
+.theme-liquid-glass .recharts-wrapper {
+  background: transparent !important;
+}
+
+/* small utility: slightly brighten borders when hovering cards */
+.theme-liquid-glass .rounded-lg:hover,
+.theme-liquid-glass .rounded-xl:hover {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+/* Semantic panel classes to avoid direct tailwind overrides */
+.lg-panel {
+  background: var(--panel-bg);
+  border-color: var(--panel-border-default);
+}
+.lg-subpanel {
+  background: var(--subpanel-bg);
+}
+
+.theme-liquid-glass .lg-panel {
+  background: var(--glass-panel) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+}
+.theme-liquid-glass .lg-subpanel {
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* Sheen sweep animation (subtle, pointer-only) */
+@keyframes lg-sheen {
+  from { transform: translateX(-110%); opacity: 0 }
+  50% { opacity: 0.45 }
+  to { transform: translateX(110%); opacity: 0 }
+}
+.theme-liquid-glass .glass-sheen::before {
+  transform: translateX(-110%);
+}
+
+/* Only run the hover sheen on pointer-capable devices (no mobile) and respect reduced-motion */
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .theme-liquid-glass .glass-sheen:hover::before {
+      animation: lg-sheen 1000ms ease-in-out forwards;
+    }
+  }
+}
+
+/* End Liquid Glass styles */

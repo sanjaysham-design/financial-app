@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './App.css';
+import './App.fixed.css';
 import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -817,7 +817,7 @@ function FinancialApp() {
               </h1>
             <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
           </div>
-          <div className="md:hidden fixed top-4 right-6 z-50">
+          <div className="md:hidden fixed top-4 right-6 z-60">
             <button
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-expanded={mobileNavOpen}
@@ -883,7 +883,8 @@ function FinancialApp() {
               role="dialog"
               aria-modal="true"
               // anchor the slide-over to the same top/right as the hamburger so it appears to originate from the icon
-              className={`fixed top-4 right-6 bottom-0 w-64 max-w-xs lg-panel z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
+              className={`fixed top-0 right-0 h-full w-64 max-w-xs lg-panel z-50 md:hidden`}
+              style={{ transform: mobileNavOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 300ms ease-out' }}
             >
               <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                 <div className="text-lg font-bold">Menu</div>
