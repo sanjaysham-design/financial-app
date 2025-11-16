@@ -114,17 +114,23 @@
   border: 1px solid rgba(255,255,255,0.03) !important;
 }
 
-/* Sheen sweep animation */
+/* Sheen sweep animation (subtle, pointer-only) */
 @keyframes lg-sheen {
-  from { transform: translateX(-110%); opacity: 0.0 }
-  50% { opacity: 0.6 }
+  from { transform: translateX(-110%); opacity: 0 }
+  50% { opacity: 0.45 }
   to { transform: translateX(110%); opacity: 0 }
 }
 .theme-liquid-glass .glass-sheen::before {
   transform: translateX(-110%);
 }
-.theme-liquid-glass .glass-sheen:hover::before {
-  animation: lg-sheen 900ms ease-in-out forwards;
+
+/* Only run the hover sheen on pointer-capable devices (no mobile) and respect reduced-motion */
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .theme-liquid-glass .glass-sheen:hover::before {
+      animation: lg-sheen 1000ms ease-in-out forwards;
+    }
+  }
 }
 
 /* End Liquid Glass styles */

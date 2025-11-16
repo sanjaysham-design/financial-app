@@ -832,7 +832,7 @@ function FinancialApp() {
           </div>
         </header>
   {/* Content Area */}
-  <div className={`${theme === 'liquid-glass' ? 'bg-white/5 backdrop-blur-sm border border-white/5' : 'bg-slate-800'} rounded-xl shadow-2xl p-6`}>
+  <div className={`lg-panel rounded-xl shadow-2xl p-6`}>
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -882,7 +882,8 @@ function FinancialApp() {
             <aside
               role="dialog"
               aria-modal="true"
-              className={`fixed top-0 right-0 h-full w-64 max-w-xs ${theme === 'liquid-glass' ? 'bg-white/4 backdrop-blur-sm border border-white/5' : 'bg-slate-800'} z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
+              // anchor the slide-over to the same top/right as the hamburger so it appears to originate from the icon
+              className={`fixed top-4 right-6 bottom-0 w-64 max-w-xs lg-panel z-50 transform transition-transform duration-300 ease-out md:hidden ${mobileNavOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
               <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                 <div className="text-lg font-bold">Menu</div>
