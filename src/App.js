@@ -1430,7 +1430,7 @@ function FinancialApp() {
                           <div className="flex flex-col items-end gap-3">
                             <div className="flex items-center gap-3">
                               <label className="text-xs text-slate-400 mr-2 hidden md:inline">View:</label>
-                              <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-700 text-sm text-white px-2 py-1 rounded">
+                              <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-600 text-sm text-white px-2 py-1 rounded">
                                 <option value={200}>200 days</option>
                                 <option value={30}>30 days</option>
                                 <option value={10}>10 days</option>
