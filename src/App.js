@@ -808,7 +808,7 @@ function FinancialApp() {
 
   // Render function
   return (
-    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
+  <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'theme-classic'} text-white`} data-theme={theme}>
       {/* Mobile nav slide-over/backdrop moved here so it's a direct child of the root to avoid positioning issues */}
       <div
         className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
@@ -869,7 +869,7 @@ function FinancialApp() {
           </div>
         </header>
   {/* Content Area */}
-  <div className={`${theme === 'liquid-glass' ? 'lg-panel' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} rounded-xl shadow-2xl p-6`}>
+  <div className={`lg-panel rounded-xl shadow-2xl p-6`}>
           {/* Tabs */}
           <div className="mb-6">
             <div className="flex items-center justify-between">

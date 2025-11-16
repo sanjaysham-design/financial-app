@@ -8,7 +8,10 @@
 /* Theme variables (defaults for 'classic' theme) */
 :root {
   --panel-bg: #374151; /* tailwind slate-700 */
-  --subpanel-bg: #141b25; /* tailwind slate-800 */
+  --subpanel-bg: #1f2937; /* tailwind slate-800 */
+  /* Page background for classic theme - darker than panels so cards stand out */
+  /* Darkened per request */
+  --page-bg: linear-gradient(180deg, #00040a 0%, #030612 60%, #050812 100%);
   --panel-border-default: rgba(148,163,184,0.06);
   --heading-color: #e6eefc;
 }
@@ -28,6 +31,12 @@
   --panel-bg: var(--glass-panel);
   --subpanel-bg: rgba(255,255,255,0.02);
   --panel-border-default: var(--glass-border);
+}
+
+/* Classic theme wrapper: apply darker page background from --page-bg */
+.theme-classic {
+  background: var(--page-bg);
+  color-scheme: dark;
 }
 
 /* Apply frosted panels to common rounded card elements */
