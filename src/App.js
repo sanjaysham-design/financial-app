@@ -762,7 +762,7 @@ function FinancialApp() {
     }
     
     return (
-      <div key={idx} className="relative glass-sheen overflow-hidden bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors">
+      <div key={idx} className="relative glass-sheen overflow-hidden lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
         <div className="flex justify-between items-start mb-2">
           <a
             href={story.url}
@@ -952,7 +952,7 @@ function FinancialApp() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => { e.stopPropagation(); setActiveTab('news'); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
-                            className="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700"
+                            className="text-xs lg-subpanel px-2 py-1 rounded hover:opacity-95 text-slate-200"
                           >
                             News
                           </button>
@@ -1001,7 +1001,7 @@ function FinancialApp() {
               <div className="lg-panel rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 text-slate-100">Theme</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'default' ? 'border-blue-500 bg-slate-600' : 'border-transparent bg-slate-800'}`}>
+                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'default' ? 'border-blue-500 bg-slate-600' : 'border-transparent lg-panel'}`}>
                     <input type="radio" name="theme" value="default" checked={theme === 'default'} onChange={() => setTheme('default')} className="mr-3" />
                     <div>
                       <div className="font-semibold">Default</div>
@@ -1009,7 +1009,7 @@ function FinancialApp() {
                     </div>
                   </label>
 
-                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'liquid-glass' ? 'border-blue-500 bg-slate-600' : 'border-transparent bg-slate-800'}`}>
+                  <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'liquid-glass' ? 'border-blue-500 bg-slate-600' : 'border-transparent lg-panel'}`}>
                     <input type="radio" name="theme" value="liquid-glass" checked={theme === 'liquid-glass'} onChange={() => setTheme('liquid-glass')} className="mr-3" />
                     <div>
                       <div className="font-semibold">Liquid Glass</div>
@@ -1094,7 +1094,7 @@ function FinancialApp() {
                             <button
                               type="button"
                               onClick={() => { setStockTicker(etfTicker); setActiveTab('charts'); }}
-                              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded bg-slate-800 text-slate-200 border border-slate-600 hover:bg-slate-700 hover:border-slate-500 transition-colors"
+                              className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded lg-subpanel text-slate-200 border border-slate-600 hover:opacity-95 transition-colors"
                               title={`Open ${etfTicker} in Technical Analysis`}
                             >
                               ETF: <span className="font-semibold">{etfTicker}</span>
@@ -1173,7 +1173,7 @@ function FinancialApp() {
                             onChange={(e) => setStockInput(e.target.value.toUpperCase())}
                             onKeyPress={(e) => e.key === 'Enter' && addStock()}
                             placeholder="Enter stock symbol (e.g., AAPL)"
-                            className="bg-slate-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
+                            className="lg-subpanel text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
                             disabled={selectedStocks.length >= MAX_STOCKS}
                           />
                           <button
@@ -1188,7 +1188,7 @@ function FinancialApp() {
                         {/* Selected Stocks */}
                         <div className="flex flex-wrap gap-2">
                           {selectedStocks.map((stock) => (
-                            <div key={stock} className="bg-slate-800 px-3 py-1 rounded-full flex items-center gap-2">
+                            <div key={stock} className="lg-subpanel px-3 py-1 rounded-full flex items-center gap-2">
                               <span className="text-sm">{stock}</span>
                               <button
                                 onClick={() => removeStock(stock)}
@@ -1353,7 +1353,7 @@ function FinancialApp() {
                                   
                                   
                                   {/* EPS Growth */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">EPS Growth</div>
                                     <div className="text-lg font-bold">{s.qEarningsGrowth != null ? (s.qEarningsGrowth > 0 ? '+' : '') + (s.qEarningsGrowth * 100).toFixed(2) + '%' : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
@@ -1426,7 +1426,7 @@ function FinancialApp() {
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> &gt;20% = excellent, 10-20% = good, &lt;10% = needs improvement (sector dependent)</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">EPS Growth (Earnings Per Share Growth)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Year-over-year change in quarterly earnings or trailing EPS growth</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if the company is scaling profits per share — critical for growth investors.</p>
@@ -1557,7 +1557,7 @@ function FinancialApp() {
 
                         {/* Key levels and strategy explanation */}
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-slate-800 rounded-lg p-4">
+                          <div className="lg-subpanel rounded-lg p-4">
                             <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels & Breakouts</h4>
                             <div className="space-y-2">
                               <p className="text-slate-300">Support Levels: <span className="font-bold text-emerald-400">{technicalData.analysis.supports.join(', ')}</span></p>
@@ -1579,7 +1579,7 @@ function FinancialApp() {
                               }</span></p>
                             </div>
                           </div>
-                          <div className="bg-slate-800 rounded-lg p-4">
+                          <div className="lg-subpanel rounded-lg p-4">
                             <h4 className="text-lg font-semibold text-blue-400 mb-2">Trading Strategy Insights</h4>
                             <div className="space-y-2">
                               {(() => {

@@ -5,6 +5,14 @@
   box-sizing: border-box;
 }
 
+/* Theme variables (defaults for 'default' theme) */
+:root {
+  --panel-bg: #374151; /* tailwind slate-700 */
+  --subpanel-bg: #1f2937; /* tailwind slate-800 */
+  --panel-border-default: rgba(148,163,184,0.06);
+  --heading-color: #e6eefc;
+}
+
 /* Liquid Glass theme styles (applies when root has .theme-liquid-glass) */
 .theme-liquid-glass {
   /* soft bluish/neutral backdrop */
@@ -15,6 +23,11 @@
   --glass-faint: rgba(255,255,255,0.03);
   background: linear-gradient(180deg, rgba(6,8,15,1) 0%, rgba(10,12,20,1) 100%);
   color-scheme: dark;
+
+  /* map semantic panel variables to glass values so components use them */
+  --panel-bg: var(--glass-panel);
+  --subpanel-bg: rgba(255,255,255,0.02);
+  --panel-border-default: var(--glass-border);
 }
 
 /* Apply frosted panels to common rounded card elements */
@@ -83,10 +96,11 @@
 
 /* Semantic panel classes to avoid direct tailwind overrides */
 .lg-panel {
-  background-color: #0f1724; /* slate-900-ish for default */
+  background: var(--panel-bg);
+  border-color: var(--panel-border-default);
 }
 .lg-subpanel {
-  background-color: #0b1320; /* slightly darker for inner tiles */
+  background: var(--subpanel-bg);
 }
 
 .theme-liquid-glass .lg-panel {
