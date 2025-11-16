@@ -1408,21 +1408,6 @@ function FinancialApp() {
                       {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
                       <span className="ml-1">Analyze</span>
                     </button>
-                    <div className="flex items-center gap-3 md:ml-3">
-                      <label className="text-xs text-slate-400 mr-2 hidden md:inline">View:</label>
-                      <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-700 text-sm text-white px-2 py-1 rounded">
-                        <option value={200}>200 days</option>
-                        <option value={30}>30 days</option>
-                        <option value={10}>10 days</option>
-                        <option value={1}>1 day</option>
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-3 md:ml-4">
-                      <label className="flex items-center gap-2 text-sm text-slate-300">
-                        <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
-                        <span className="hidden sm:inline">Show S/R</span>
-                      </label>
-                    </div>
                   </div>
                 </div>
                 {/* Chart rendering */}
@@ -1442,14 +1427,29 @@ function FinancialApp() {
                               Current Price: <span className="font-bold">${technicalData.currentPrice}</span>
                             </p>
                           </div>
-                          <span className={
-                            'px-4 py-2 rounded-full font-semibold text-lg ' +
-                            (trend === 'Bullish'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : 'bg-red-500/20 text-red-400')
-                          }>
-                            {trend} Trend
-                          </span>
+                          <div className="flex flex-col items-end gap-3">
+                            <div className="flex items-center gap-3">
+                              <label className="text-xs text-slate-400 mr-2 hidden md:inline">View:</label>
+                              <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-700 text-sm text-white px-2 py-1 rounded">
+                                <option value={200}>200 days</option>
+                                <option value={30}>30 days</option>
+                                <option value={10}>10 days</option>
+                                <option value={1}>1 day</option>
+                              </select>
+                              <label className="flex items-center gap-2 text-sm text-slate-300 ml-2">
+                                <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
+                                <span className="hidden sm:inline">Show S/R</span>
+                              </label>
+                            </div>
+                            <span className={
+                              'px-4 py-2 rounded-full font-semibold text-lg ' +
+                              (trend === 'Bullish'
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'bg-red-500/20 text-red-400')
+                            }>
+                              {trend} Trend
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="h-96">
