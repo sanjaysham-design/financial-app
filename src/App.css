@@ -7,13 +7,9 @@
 
 /* Theme variables (defaults for 'classic' theme) */
 :root {
-  /* Restore grey panel tones and make the base page a bit lighter so the
-     boxes (panels) read as grey like before. We increase border/shadow
-     strength below to improve contrast between page, panel and subpanel. */
-  --panel-bg: #374151;    /* tailwind slate-700 — panel (box) color) */
-  --subpanel-bg: #1f2937; /* tailwind slate-800 — subpanel (slightly darker) */
-  /* Page background for classic theme - lighter than before but still dark */
-  --page-bg: linear-gradient(180deg, #0b1520 0%, #07121a 100%);
+  --panel-bg: #374151; /* tailwind slate-700 */
+  --subpanel-bg: #1f2937; /* tailwind slate-800 */
+  --page-bg: linear-gradient(180deg, #020617 0%, #0b1220 100%);
   --panel-border-default: rgba(148,163,184,0.06);
   --heading-color: #e6eefc;
 }
@@ -39,17 +35,6 @@
 .theme-classic {
   background: var(--page-bg);
   color-scheme: dark;
-}
-
-/* Make classic panels visibly distinct with a subtle border and lift */
-.theme-classic .lg-panel {
-  background: var(--panel-bg) !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
-  box-shadow: 0 10px 30px rgba(2,6,23,0.55);
-}
-.theme-classic .lg-subpanel {
-  background: var(--subpanel-bg) !important;
-  border: 1px solid rgba(255,255,255,0.03) !important;
 }
 
 /* Apply frosted panels to common rounded card elements */
