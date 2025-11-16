@@ -81,4 +81,36 @@
   border-color: rgba(255,255,255,0.10) !important;
 }
 
+/* Semantic panel classes to avoid direct tailwind overrides */
+.lg-panel {
+  background-color: #0f1724; /* slate-900-ish for default */
+}
+.lg-subpanel {
+  background-color: #0b1320; /* slightly darker for inner tiles */
+}
+
+.theme-liquid-glass .lg-panel {
+  background: var(--glass-panel) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+}
+.theme-liquid-glass .lg-subpanel {
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* Sheen sweep animation */
+@keyframes lg-sheen {
+  from { transform: translateX(-110%); opacity: 0.0 }
+  50% { opacity: 0.6 }
+  to { transform: translateX(110%); opacity: 0 }
+}
+.theme-liquid-glass .glass-sheen::before {
+  transform: translateX(-110%);
+}
+.theme-liquid-glass .glass-sheen:hover::before {
+  animation: lg-sheen 900ms ease-in-out forwards;
+}
+
 /* End Liquid Glass styles */

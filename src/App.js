@@ -814,7 +814,7 @@ function FinancialApp() {
               </h1>
             <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
           </div>
-          <div className="md:hidden">
+          <div className="md:hidden fixed top-4 right-6 z-50">
             <button
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-expanded={mobileNavOpen}
@@ -943,7 +943,7 @@ function FinancialApp() {
                   {marketIndices.map((index) => (
                     <div
                       key={index.symbol}
-                      className="bg-slate-700 rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
+                      className="lg-panel rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
                       onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
                       title={`Open ${index.symbol} in Technical Analysis`}
                     >
@@ -981,7 +981,7 @@ function FinancialApp() {
               )}
 
               {!newsStories || newsStories.length === 0 ? (
-                <div className="bg-slate-700 rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
+                <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
               ) : (
                 <div className="space-y-4">{newsCards}</div>
               )}
@@ -998,7 +998,7 @@ function FinancialApp() {
                 <p className="text-slate-400 text-sm hidden md:block">Customize application behavior and appearance</p>
               </div>
 
-              <div className="bg-slate-700 rounded-lg p-4">
+              <div className="lg-panel rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 text-slate-100">Theme</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <label className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === 'default' ? 'border-blue-500 bg-slate-600' : 'border-transparent bg-slate-800'}`}>
@@ -1079,7 +1079,7 @@ function FinancialApp() {
                           : 'bg-slate-700 text-slate-200';
 
                       return (
-                      <div key={sec.id} className={'p-4 rounded-lg relative overflow-hidden glass-sheen ' + (isStrong ? 'border-2 border-emerald-600' : 'bg-slate-700')}>
+                      <div key={sec.id} className={'p-4 rounded-lg relative overflow-hidden glass-sheen ' + (isStrong ? 'border-2 border-emerald-600' : 'lg-panel')}>
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h3 className="text-lg font-semibold text-slate-100">{sec.name}</h3>
@@ -1165,7 +1165,7 @@ function FinancialApp() {
                   {!screenerLoading && (
                     <div>
                       {/* Stock Input Section */}
-                      <div className="mb-6 bg-slate-700 rounded-lg p-4">
+                      <div className="mb-6 lg-panel rounded-lg p-4">
                         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-4">
                           <input
                             type="text"
@@ -1265,7 +1265,7 @@ function FinancialApp() {
                             }
                             
                             return (
-                              <div key={s.symbol} className="bg-slate-700 rounded-lg p-5">
+                              <div key={s.symbol} className="lg-panel rounded-lg p-5">
                                 <div className="flex justify-between items-start mb-4">
                                   <div className="flex-1">
                                     <div className="flex items-baseline gap-4">
@@ -1293,21 +1293,21 @@ function FinancialApp() {
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                   {/* Market Cap */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Market Cap</div>
                                       <div className="text-lg font-bold">{s.marketCap ? formatCurrencyAbbrev(s.marketCap) : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">Total market value of outstanding shares</div>
                                   </div>
                                   
                                   {/* Revenue TTM */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Revenue (TTM)</div>
                                     <div className="text-lg font-bold">{s.revenueTTM ? formatCurrencyAbbrev(s.revenueTTM) : 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">Trailing twelve month revenue</div>
                                   </div>
                                   
                                   {/* Price-to-Sales Ratio */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Price-to-Sales</div>
                                     <div className="text-lg font-bold">{s.priceToSales ?? 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
@@ -1316,7 +1316,7 @@ function FinancialApp() {
                                   </div>
                                   
                                   {/* P/E Ratio */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">P/E Ratio</div>
                                     <div className="text-lg font-bold">{s.pe ?? 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
@@ -1325,7 +1325,7 @@ function FinancialApp() {
                                   </div>
                                   
                                   {/* PEG Ratio */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">PEG Ratio ⭐</div>
                                     <div className="text-lg font-bold">{s.peg ?? 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
@@ -1334,7 +1334,7 @@ function FinancialApp() {
                                   </div>
                                   
                                   {/* Price-to-Book */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Price-to-Book</div>
                                     <div className="text-lg font-bold">{s.pb ?? 'N/A'}</div>
                                     <div className="text-xs text-slate-500 mt-1">
@@ -1343,7 +1343,7 @@ function FinancialApp() {
                                   </div>
                                   
                                   {/* ROE (using profit margin) */}
-                                  <div className="bg-slate-800 rounded-lg p-3">
+                                  <div className="lg-subpanel rounded-lg p-3">
                                     <div className="text-xs text-slate-400 mb-1">Profit Margin %</div>
                                       <div className="text-lg font-bold">{s.profitMargin != null ? (s.profitMargin * 100).toFixed(2) + '%' : 'N/A'}</div>
                                       <div className="text-xs text-slate-500 mt-1">
@@ -1372,54 +1372,54 @@ function FinancialApp() {
                       </div>
 
                       {/* Metrics Legend */}
-                      {screenerResults.length > 0 && (
-                        <div className="mt-8 bg-slate-700 rounded-lg p-6">
+                        {screenerResults.length > 0 && (
+                        <div className="mt-8 lg-panel rounded-lg p-6">
                           <h3 className="text-xl font-bold text-blue-400 mb-4">📊 Metrics Explained</h3>
                           
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-emerald-400 mb-2">⭐ PEG Ratio (Price/Earnings-to-Growth)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> P/E Ratio ÷ EPS Growth Rate</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Balances valuation against growth expectations.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued relative to growth, 1-2 = fair, &gt;2 = may be expensive</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">P/E Ratio (Price-to-Earnings)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Earnings Per Share</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how much investors pay for $1 of earnings.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;15 = cheap, 15-25 = fair, &gt;25 = expensive (industry dependent)</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">Price-to-Sales (P/S)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Market Cap ÷ Revenue (TTM)</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Useful for companies with little earnings (early growth) — compares price to revenue base.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> Lower P/S indicates cheaper relative to revenue; &lt;2 often considered attractive depending on the sector</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">Price-to-Book Ratio (P/B)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Stock Price ÷ Book Value Per Share</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows if you're paying more than the company's net assets.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> &lt;1 = undervalued, 1-3 = fair, &gt;3 = expensive (industry dependent)</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">Market Capitalization</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Definition:</strong> Total market value of outstanding shares (Price × Shares Outstanding)</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Determines company size and what comparables/benchmarks to use.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> No universal threshold — use market cap to select peers and adjust valuation expectations</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">Revenue (TTM)</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Definition:</strong> Trailing twelve months total revenue</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Baseline for P/S and growth analysis; look for stability or acceleration.</p>
                                   <p className="text-sm text-slate-400"><strong>What's good:</strong> Positive and growing revenue is generally favorable; compare growth rates to peers</p>
                                 </div>
                             
-                                <div className="bg-slate-800 rounded-lg p-4">
+                                <div className="lg-subpanel rounded-lg p-4">
                                   <h4 className="font-bold text-blue-400 mb-2">Profit Margin %</h4>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Formula:</strong> Net Income ÷ Revenue × 100</p>
                                   <p className="text-sm text-slate-300 mb-2"><strong>Why it matters:</strong> Shows how efficiently the company converts revenue to profit.</p>
