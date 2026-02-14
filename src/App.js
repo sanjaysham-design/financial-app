@@ -93,24 +93,9 @@ function FinancialApp() {
       localStorage.setItem('theme', theme);
     }, [theme]);
 
-    // Helper: calculate moving average
-    function calculateMA(data, period) {
-      return data.map((_, idx, arr) => {
-        if (idx + period > arr.length) return null;
-        const slice = arr.slice(idx, idx + period);
-        return slice.reduce((sum, v) => sum + v, 0) / period;
-      });
-    }
 
-    // Helper: find support/resistance pivots
-    function findSupportResistance(prices) {
-      const pivots = { supports: [], resistances: [] };
-      for (let i = 10; i < prices.length - 10; i++) {
-        const low = Math.min(...prices.slice(i - 10, i + 10));
-        const high = Math.max(...prices.slice(i - 10, i + 10));
-        if (prices[i] === low) pivots.supports.push(prices[i].toFixed(2));
-        if (prices[i] === high) pivots.resistances.push(prices[i].toFixed(2));
-      }
+
+
       // Only keep unique and nearest levels
       return {
         supports: Array.from(new Set(pivots.supports)).slice(0, 2),
@@ -118,34 +103,32 @@ function FinancialApp() {
       };
     }
 
-    // Analyze chart data and set technicalData
+  // Analyze chart data and set technicalData
     const analyzeChartData = useCallback(async () => {
-  if (!stockTicker) return;
-  setLoading(true);
-  setError('');
-  try {
-    const response = await fetch(`/api/chart-data?ticker=${stockTicker}`);
-    const data = await response.json();
-
-    if (data.error) {
-      setError('Could not fetch data: ' + data.error);
-      return;
-    }
-
-    setTechnicalData({
-      chartData: data.chartData,
-      currentPrice: data.currentPrice,
-      companyName: data.companyName,
-      analysis: data.analysis,
-      srBand: data.srBand,
-      trend: data.trend,
-    });
-  } catch (err) {
-    setError('Error analyzing chart: ' + err.message);
-  } finally {
-    setLoading(false);
-  }
-}, [stockTicker]);
+      if (!stockTicker) return;
+      setLoading(true);
+      setError('');
+      try {
+        const response = await fetch(`/api/chart-data?ticker=${stockTicker}`);
+        const data = await response.json();
+        if (data.error) {
+          setError('Could not fetch data: ' + data.error);
+          return;
+        }
+        setTechnicalData({
+          chartData: data.chartData,
+          currentPrice: data.currentPrice,
+          companyName: data.companyName,
+          analysis: data.analysis,
+          srBand: data.srBand,
+          trend: data.trend,
+        });
+      } catch (err) {
+        setError('Error analyzing chart: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, [stockTicker]);    
 
     // Auto-refresh chart when chartWindow changes
     useEffect(() => {
@@ -1516,8 +1499,8 @@ function FinancialApp() {
                             {/* Shade between nearest support and resistance */}
                             {showSR && technicalData.srBand && (
                               <ReferenceArea
-                                y1={technicalData.srBand.low}
-                                y2={technicalData.srBand.high}
+                                y1={technicalData.srBand.support}
+                                y2={technicalData.srBand.resistance}
                                 stroke="rgba(99,102,241,0.22)"
                                 strokeOpacity={0.35}
                                 fill="rgba(99,102,241,0.16)"
@@ -1539,7 +1522,7 @@ function FinancialApp() {
                             <div className="space-y-2">
                               <p className="text-slate-300">Support Levels: <span className="font-bold text-emerald-400">{technicalData.analysis.supports.join(', ')}</span></p>
                               <p className="text-slate-300">Resistance Levels: <span className="font-bold text-red-400">{technicalData.analysis.resistances.join(', ')}</span></p>
-                              <p className="text-slate-300">Breakout Zone: <span className="font-bold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.low} - ${technicalData.srBand.high}` : 'N/A'}</span></p>
+                              <p className="text-slate-300">Breakout Zone: <span className="font-bold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.support} - ${technicalData.srBand.resistance}` : 'N/A'}</span></p>
                               <p className="text-slate-300">50-day MA: <span className="font-bold text-emerald-300">{
                                 (() => {
                                   const last = technicalData.chartData && technicalData.chartData.length > 0 ? technicalData.chartData[technicalData.chartData.length - 1] : null;
