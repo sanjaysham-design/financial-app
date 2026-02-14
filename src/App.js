@@ -120,60 +120,32 @@ function FinancialApp() {
 
     // Analyze chart data and set technicalData
     const analyzeChartData = useCallback(async () => {
-      if (!stockTicker) return;
-      setLoading(true);
-      setError('');
-      try {
-        // Fetch company name
-        const overviewResp = await fetch('/api/stock-overview?ticker=' + stockTicker + '&apikey=' + apiKeys.alphaVantage);
-        const overviewData = await overviewResp.json();
-        const companyName = overviewData.Name || '';
+  if (!stockTicker) return;
+  setLoading(true);
+  setError('');
+  try {
+    const response = await fetch(`/api/chart-data?ticker=${stockTicker}`);
+    const data = await response.json();
 
-        let data;
-        // Always fetch daily series (we avoid intraday calls to respect rate limits)
+    if (data.error) {
+      setError('Could not fetch data: ' + data.error);
+      return;
+    }
 
-        // Default: fetch daily series
-        const response = await fetch(`/api/chart-data?ticker=${stockTicker}&apikey=${apiKeys.alphaVantage}&outputsize=full`);
-        data = await response.json();
-        if (data['Time Series (Daily)']) {
-          const timeSeries = data['Time Series (Daily)'];
-          const datesDesc = Object.keys(timeSeries);
-          const closesDesc = datesDesc.map(date => parseFloat(timeSeries[date]['4. close']));
-          // Compute MAs
-          const ma50 = calculateMA(closesDesc, 50);
-          const ma200 = calculateMA(closesDesc, 200);
-          // Find S/R
-          const pivots = findSupportResistance(closesDesc);
-          // Chart data slice
-          const chartData = datesDesc.slice(0, chartWindow).map((date, idx) => ({
-            date,
-            price: closesDesc[idx],
-            ma50: ma50[idx] || null,
-            ma200: ma200[idx] || null
-          })).reverse();
-          // S/R band
-          let srBand = null;
-          if (pivots.supports.length && pivots.resistances.length) {
-            srBand = {
-              low: Math.min(...pivots.supports.map(Number)),
-              high: Math.max(...pivots.resistances.map(Number))
-            };
-          }
-          setTechnicalData({ 
-            chartData, 
-            currentPrice: chartData.length > 0 ? chartData[chartData.length - 1].price.toFixed(2) : '0.00',
-            companyName: companyName, 
-            analysis: pivots, 
-            srBand });
-        } else {
-          setError('Could not fetch data. Check ticker or API limit.');
-        }
-      } catch (err) {
-        setError('Error analyzing chart: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    }, [stockTicker, apiKeys.alphaVantage, chartWindow]);
+    setTechnicalData({
+      chartData: data.chartData,
+      currentPrice: data.currentPrice,
+      companyName: data.companyName,
+      analysis: data.analysis,
+      srBand: data.srBand,
+      trend: data.trend,
+    });
+  } catch (err) {
+    setError('Error analyzing chart: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+}, [stockTicker]);
 
     // Auto-refresh chart when chartWindow changes
     useEffect(() => {
