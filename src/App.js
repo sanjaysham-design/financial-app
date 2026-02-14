@@ -120,7 +120,7 @@ function FinancialApp() {
 
     // Analyze chart data and set technicalData
     const analyzeChartData = useCallback(async () => {
-      if (!stockTicker || !apiKeys.alphaVantage) return;
+      if (!stockTicker) return;
       setLoading(true);
       setError('');
       try {

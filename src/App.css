@@ -7,7 +7,7 @@
 
 /* Theme variables (defaults for 'classic' theme) */
 :root {
-  --panel-bg: #374151; /* tailwind slate-700 */
+  --panel-bg: #323b4a; /* tailwind slate-700 */
   --subpanel-bg: #1f2937; /* tailwind slate-800 */
   --page-bg: linear-gradient(180deg, #020617 0%, #0b1220 100%);
   --panel-border-default: rgba(148,163,184,0.06);
