@@ -242,9 +242,9 @@ function FinancialApp() {
     for (const t of tickers) {
       try {
         const [overviewResp, quoteResp] = await Promise.all([
-          fetch(`/api/stock-overview?ticker=${t}&apikey=${key}`),
+          fetch(`/api/stock-overview?ticker=${t}`),
           fetch(`/api/quote?ticker=${t}&apikey=${key}`)
-        ]);
+      ]);
         const ov = await overviewResp.json();
         const quoteData = await quoteResp.json();
         const evald = evaluateOverview(ov);
