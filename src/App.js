@@ -634,15 +634,6 @@ function FinancialApp() {
                           {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
                         </div>
                       </div>
-                      {index.spark && index.spark.length > 0 && (
-                        <div className="mt-3 h-10">
-                          <ResponsiveContainer width="100%" height={40}>
-                            <LineChart data={index.spark}>
-                              <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} strokeWidth={2} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
