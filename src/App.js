@@ -17,6 +17,113 @@ import sectorsList from './data/sectors';
 
 const MAX_STOCKS = 12;
 
+        {/* AI TRACKER TAB */}
+        {activeTab === 'ai' && (
+          <div>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100">
+                  🤖 AI Tracker
+                </h2>
+                <p className="text-slate-400 text-sm hidden md:block">Live AI stock prices and latest AI news from across the web</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-slate-400">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
+                <button onClick={() => { fetchAiNews(); fetchAiStocks(); }}
+                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                  disabled={aiNewsLoading || aiStocksLoading}>
+                  {aiNewsLoading || aiStocksLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                </button>
+              </div>
+            </div>
+
+            {/* AI Stocks */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">AI Stocks</h3>
+              {aiStocksLoading && Object.keys(aiStocks).length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="animate-spin text-blue-400 mr-3" size={24} />
+                  <span className="text-slate-400">Loading stock prices...</span>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.entries(AI_STOCKS).map(([category, stocks]) => (
+                    <div key={category}>
+                      <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">{category}</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                        {stocks.map(stock => {
+                          const data = aiStocks[stock.symbol];
+                          return (
+                            <div key={stock.symbol}
+                              className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
+                              <div className="text-xs text-slate-400 mb-1">{stock.name}</div>
+                              <div className="text-lg font-bold text-blue-400">{stock.symbol}</div>
+                              {data ? (
+                                <>
+                                  <div className="text-sm font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
+                                  <div className={'text-xs font-medium mt-1 ' + (data.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                    {data.change >= 0 ? '+' : ''}{data.change.toFixed(2)} ({data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%)
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-xs text-slate-500 mt-1">Loading...</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* AI News */}
+            <div>
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Latest AI News</h3>
+              {aiNewsLoading && aiNews.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="animate-spin text-blue-400 mr-3" size={24} />
+                  <span className="text-slate-400">Fetching AI news from across the web...</span>
+                </div>
+              ) : aiNews.length === 0 ? (
+                <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No AI news found. Try refreshing.</div>
+              ) : (
+                <div className="space-y-3">
+                  {aiNews.map((article, idx) => {
+                    let timeAgo = '';
+                    if (article.published) {
+                      const publishedDate = new Date(article.published);
+                      const diffMs = new Date() - publishedDate;
+                      const diffMins = Math.floor(diffMs / 60000);
+                      const diffHours = Math.floor(diffMs / 3600000);
+                      const diffDays = Math.floor(diffMs / 86400000);
+                      if (diffMins < 60) timeAgo = `${diffMins}m ago`;
+                      else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
+                      else if (diffDays < 7) timeAgo = `${diffDays}d ago`;
+                      else timeAgo = publishedDate.toLocaleDateString();
+                    }
+                    return (
+                      <div key={idx} className="lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
+                        <div className="flex justify-between items-start mb-1">
+                          <a href={article.link} target="_blank" rel="noopener noreferrer"
+                            className="text-base font-semibold text-blue-400 hover:text-blue-300 flex-1 transition-colors">
+                            {article.title}
+                          </a>
+                          <span className="text-xs text-slate-500 ml-4 whitespace-nowrap">{article.source}</span>
+                        </div>
+                        {timeAgo && <div className="text-xs text-slate-500 mb-1">{timeAgo}</div>}
+                        {article.summary && <p className="text-sm text-slate-400">{article.summary.slice(0, 200)}{article.summary.length > 200 ? '...' : ''}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
 const SECTOR_ETF_MAP = {
   'Technology': 'XLK',
   'Energy': 'XLE',
@@ -29,6 +136,38 @@ const SECTOR_ETF_MAP = {
   'Materials': 'XLB',
   'Real Estate': 'XLRE',
   'Communication Services': 'XLC'
+};
+
+const AI_STOCKS = {
+  'Chips & Semiconductors': [
+    { symbol: 'NVDA', name: 'NVIDIA' },
+    { symbol: 'AMD', name: 'AMD' },
+    { symbol: 'INTC', name: 'Intel' },
+    { symbol: 'AVGO', name: 'Broadcom' },
+    { symbol: 'TSM', name: 'TSMC' },
+    { symbol: 'QCOM', name: 'Qualcomm' },
+  ],
+  'Infrastructure & Hardware': [
+    { symbol: 'DELL', name: 'Dell Technologies' },
+    { symbol: 'SMCI', name: 'Super Micro Computer' },
+    { symbol: 'HPE', name: 'HP Enterprise' },
+    { symbol: 'WDC', name: 'Western Digital' },
+    { symbol: 'ANET', name: 'Arista Networks' },
+  ],
+  'Cloud & Hyperscalers': [
+    { symbol: 'MSFT', name: 'Microsoft' },
+    { symbol: 'AMZN', name: 'Amazon' },
+    { symbol: 'GOOGL', name: 'Alphabet' },
+    { symbol: 'META', name: 'Meta' },
+    { symbol: 'ORCL', name: 'Oracle' },
+  ],
+  'AI Software & Models': [
+    { symbol: 'PLTR', name: 'Palantir' },
+    { symbol: 'SNOW', name: 'Snowflake' },
+    { symbol: 'AI', name: 'C3.ai' },
+    { symbol: 'SOUN', name: 'SoundHound' },
+    { symbol: 'BBAI', name: 'BigBear.ai' },
+  ],
 };
 
 function FinancialApp() {
@@ -146,6 +285,11 @@ function FinancialApp() {
   const [indicesLoading, setIndicesLoading] = useState(false);
   const [etfQuotes, setEtfQuotes] = useState({});
   const [, setEtfQuotesLoading] = useState(false);
+  const [aiStocks, setAiStocks] = useState({});
+  const [aiStocksLoading, setAiStocksLoading] = useState(false);
+  const [aiNews, setAiNews] = useState([]);
+  const [aiNewsLoading, setAiNewsLoading] = useState(false);
+  const [aiLastUpdated, setAiLastUpdated] = useState(null);
 
   function MobileNavEscapeHandler({ onClose }) {
     useEffect(() => {
@@ -445,6 +589,50 @@ function FinancialApp() {
     }
   }, [apiKeys.alphaVantage]);
 
+  const fetchAiStocks = useCallback(async () => {
+    setAiStocksLoading(true);
+    try {
+      const allStocks = Object.values(AI_STOCKS).flat();
+      const stockData = {};
+      for (const stock of allStocks) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 400));
+          const resp = await fetch(`/api/quote?ticker=${stock.symbol}`);
+          const data = await resp.json();
+          const quote = data['Global Quote'];
+          if (quote) {
+            stockData[stock.symbol] = {
+              price: parseFloat(quote['05. price']),
+              change: parseFloat(quote['09. change']),
+              changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+            };
+          }
+        } catch (e) {
+          console.warn('Failed to fetch AI stock', stock.symbol, e);
+        }
+      }
+      setAiStocks(stockData);
+    } catch (err) {
+      console.error('Failed to fetch AI stocks:', err);
+    } finally {
+      setAiStocksLoading(false);
+    }
+  }, []);
+
+  const fetchAiNews = useCallback(async () => {
+    setAiNewsLoading(true);
+    try {
+      const resp = await fetch('/api/ai-news');
+      const data = await resp.json();
+      if (data.articles) setAiNews(data.articles);
+      setAiLastUpdated(new Date().toISOString());
+    } catch (err) {
+      console.error('Failed to fetch AI news:', err);
+    } finally {
+      setAiNewsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let id;
     if (activeTab === 'sectors') {
@@ -453,6 +641,13 @@ function FinancialApp() {
     }
     return () => { if (id) clearInterval(id); };
   }, [activeTab, fetchSectorEtfQuotes]);
+
+  useEffect(() => {
+    if (activeTab === 'ai') {
+      fetchAiNews();
+      fetchAiStocks();
+    }
+  }, [activeTab, fetchAiNews, fetchAiStocks]);
 
   const fetchNewsWithKey = useCallback(async function(newsApiKey, q) {
     setLoading(true);
@@ -547,10 +742,10 @@ function FinancialApp() {
           </button>
         </div>
         <div className="p-4 space-y-2">
-          {['news','sectors','charts','screener','settings'].map(tab => (
+          {['news','sectors','charts','screener','ai','settings'].map(tab => (
             <button key={tab} onClick={() => { setActiveTab(tab); setMobileNavOpen(false); }}
               className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === tab ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>
-              {tab === 'news' ? 'News' : tab === 'sectors' ? 'Sector Trends' : tab === 'charts' ? 'Technical Analysis' : tab === 'screener' ? 'Stock Valuations' : 'Settings'}
+              {tab === 'news' ? 'News' : tab === 'sectors' ? 'Sector Trends' : tab === 'charts' ? 'Technical Analysis' : tab === 'screener' ? 'Stock Valuations' : tab === 'ai' ? 'AI Tracker' : 'Settings'}
             </button>
           ))}
         </div>
@@ -582,6 +777,7 @@ function FinancialApp() {
                   { id: 'sectors', label: 'Sector Trends' },
                   { id: 'charts', label: 'Technical Analysis' },
                   { id: 'screener', label: 'Stock Valuations' },
+                  { id: 'ai', label: 'AI Tracker' },
                 ].map(t => (
                   <button key={t.id} onClick={() => setActiveTab(t.id)}
                     className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === t.id ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}>
