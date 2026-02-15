@@ -6,24 +6,42 @@ export default async function handler(req, res) {
   const { ticker } = req.query;
   if (!ticker) return res.status(400).json({ error: 'Missing ticker' });
 
-  try {
-    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=summaryDetail,defaultKeyStatistics,financialData,price`;
+  const apikey = process.env.DEFAULT_FINNHUB_KEY;
+  if (!apikey) return res.status(500).json({ error: 'Finnhub API key not configured' });
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json',
-        'Referer': 'https://finance.yahoo.com',
-        'Origin': 'https://finance.yahoo.com',
-      }
+  try {
+    const [profileRes, metricRes, quoteRes] = await Promise.all([
+      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`),
+      fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apikey}`),
+      fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apikey}`)
+    ]);
+
+    const [profile, metricData, quote] = await Promise.all([
+      profileRes.json(),
+      metricRes.json(),
+      quoteRes.json()
+    ]);
+
+    const m = metricData.metric || {};
+
+    return res.status(200).json({
+      Symbol: ticker.toUpperCase(),
+      Name: profile.name || ticker,
+      MarketCapitalization: profile.marketCapitalization ? profile.marketCapitalization * 1e6 : null,
+      PERatio: m['peBasicExclExtraTTM'] || m['peTTM'] || null,
+      PEGRatio: m['pegyratio'] || null,
+      PriceToBookRatio: m['pbQuarterly'] || m['pbAnnual'] || null,
+      PriceToSalesRatioTTM: m['psTTM'] || null,
+      EPS: m['epsBasicExclExtraAnnual'] || m['epsTTM'] || null,
+      QuarterlyEarningsGrowthYOY: m['epsGrowthQuarterlyYoy'] != null ? m['epsGrowthQuarterlyYoy'] / 100 : null,
+      ProfitMargin: m['netProfitMarginTTM'] != null ? m['netProfitMarginTTM'] / 100 : null,
+      EBITDA: m['ebitdaAnnual'] ? m['ebitdaAnnual'] * 1e6 : null,
+      RevenueTTM: m['revenueTTM'] ? m['revenueTTM'] * 1e6 : null,
+      DebtToEquity: m['totalDebt/totalEquityAnnual'] != null ? m['totalDebt/totalEquityAnnual'] / 100 : null,
     });
 
-    const data = await response.json();
-    
-    // Return raw response so we can see the actual structure
-    return res.status(200).json(data);
-
   } catch (error) {
+    console.error('stock-overview error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
