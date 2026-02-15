@@ -6,47 +6,46 @@ export default async function handler(req, res) {
   const { ticker } = req.query;
   if (!ticker) return res.status(400).json({ error: 'Missing ticker' });
 
-  const apikey = process.env.FMP_API_KEY;
-  console.log('FMP key present:', !!apikey, 'ticker:', ticker);
-
-  if (!apikey) return res.status(500).json({ error: 'FMP API key not configured' });
-
   try {
-    const [profileRes, ratiosRes, incomeRes] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/profile/${ticker}?apikey=${apikey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/ratios-ttm/${ticker}?apikey=${apikey}`),
-      fetch(`https://financialmodelingprep.com/api/v3/income-statement/${ticker}?limit=2&apikey=${apikey}`)
-    ]);
+    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=summaryDetail,defaultKeyStatistics,financialData,price`;
 
-    const [profile, ratios, income] = await Promise.all([
-      profileRes.json(),
-      ratiosRes.json(),
-      incomeRes.json()
-    ]);
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://finance.yahoo.com',
+        'Origin': 'https://finance.yahoo.com',
+      }
+    });
 
-    const p = profile[0] || {};
-    const r = ratios[0] || {};
-    const i0 = income[0] || {};
-    const i1 = income[1] || {};
+    if (!response.ok) throw new Error(`Yahoo Finance error: ${response.status}`);
 
-    const epsGrowth = i0.eps && i1.eps && i1.eps !== 0
-      ? (i0.eps - i1.eps) / Math.abs(i1.eps)
-      : null;
+    const data = await response.json();
+    const result = data.quoteSummary.result[0];
+
+    const price = result.price || {};
+    const summary = result.summaryDetail || {};
+    const keyStats = result.defaultKeyStatistics || {};
+    const financialData = result.financialData || {};
+
+    const raw = (obj, key) => obj?.[key]?.raw ?? null;
 
     return res.status(200).json({
       Symbol: ticker.toUpperCase(),
-      Name: p.companyName || ticker,
-      MarketCapitalization: p.mktCap || null,
-      PERatio: r.peRatioTTM || null,
-      PEGRatio: r.pegRatioTTM || null,
-      PriceToBookRatio: r.priceToBookRatioTTM || null,
-      PriceToSalesRatioTTM: r.priceToSalesRatioTTM || null,
-      EPS: p.eps || null,
-      QuarterlyEarningsGrowthYOY: epsGrowth,
-      ProfitMargin: r.netProfitMarginTTM || null,
-      EBITDA: i0.ebitda || null,
-      RevenueTTM: i0.revenue || null,
-      DebtToEquity: r.debtEquityRatioTTM || null,
+      Name: price.longName || price.shortName || ticker,
+      MarketCapitalization: raw(price, 'marketCap'),
+      PERatio: raw(summary, 'trailingPE'),
+      PEGRatio: raw(keyStats, 'pegRatio'),
+      PriceToBookRatio: raw(keyStats, 'priceToBook'),
+      PriceToSalesRatioTTM: raw(summary, 'priceToSalesTrailing12Months'),
+      EPS: raw(keyStats, 'trailingEps'),
+      QuarterlyEarningsGrowthYOY: raw(keyStats, 'earningsQuarterlyGrowth'),
+      ProfitMargin: raw(financialData, 'profitMargins'),
+      EBITDA: raw(financialData, 'ebitda'),
+      RevenueTTM: raw(financialData, 'totalRevenue'),
+      DebtToEquity: raw(financialData, 'debtToEquity') != null
+        ? raw(financialData, 'debtToEquity') / 100
+        : null,
     });
 
   } catch (error) {
