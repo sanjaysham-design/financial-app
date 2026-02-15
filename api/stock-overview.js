@@ -7,6 +7,8 @@ export default async function handler(req, res) {
   if (!ticker) return res.status(400).json({ error: 'Missing ticker' });
 
   const apikey = process.env.FMP_API_KEY;
+  console.log('FMP key present:', !!apikey, 'ticker:', ticker);
+
   if (!apikey) return res.status(500).json({ error: 'FMP API key not configured' });
 
   try {
