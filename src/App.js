@@ -17,113 +17,6 @@ import sectorsList from './data/sectors';
 
 const MAX_STOCKS = 12;
 
-        {/* AI TRACKER TAB */}
-        {activeTab === 'ai' && (
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100">
-                  🤖 AI Tracker
-                </h2>
-                <p className="text-slate-400 text-sm hidden md:block">Live AI stock prices and latest AI news from across the web</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-xs text-slate-400">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
-                <button onClick={() => { fetchAiNews(); fetchAiStocks(); }}
-                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
-                  disabled={aiNewsLoading || aiStocksLoading}>
-                  {aiNewsLoading || aiStocksLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
-                </button>
-              </div>
-            </div>
-
-            {/* AI Stocks */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-200 mb-4">AI Stocks</h3>
-              {aiStocksLoading && Object.keys(aiStocks).length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="animate-spin text-blue-400 mr-3" size={24} />
-                  <span className="text-slate-400">Loading stock prices...</span>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(AI_STOCKS).map(([category, stocks]) => (
-                    <div key={category}>
-                      <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">{category}</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                        {stocks.map(stock => {
-                          const data = aiStocks[stock.symbol];
-                          return (
-                            <div key={stock.symbol}
-                              className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
-                              <div className="text-xs text-slate-400 mb-1">{stock.name}</div>
-                              <div className="text-lg font-bold text-blue-400">{stock.symbol}</div>
-                              {data ? (
-                                <>
-                                  <div className="text-sm font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
-                                  <div className={'text-xs font-medium mt-1 ' + (data.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                                    {data.change >= 0 ? '+' : ''}{data.change.toFixed(2)} ({data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%)
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="text-xs text-slate-500 mt-1">Loading...</div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* AI News */}
-            <div>
-              <h3 className="text-lg font-semibold text-slate-200 mb-4">Latest AI News</h3>
-              {aiNewsLoading && aiNews.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="animate-spin text-blue-400 mr-3" size={24} />
-                  <span className="text-slate-400">Fetching AI news from across the web...</span>
-                </div>
-              ) : aiNews.length === 0 ? (
-                <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No AI news found. Try refreshing.</div>
-              ) : (
-                <div className="space-y-3">
-                  {aiNews.map((article, idx) => {
-                    let timeAgo = '';
-                    if (article.published) {
-                      const publishedDate = new Date(article.published);
-                      const diffMs = new Date() - publishedDate;
-                      const diffMins = Math.floor(diffMs / 60000);
-                      const diffHours = Math.floor(diffMs / 3600000);
-                      const diffDays = Math.floor(diffMs / 86400000);
-                      if (diffMins < 60) timeAgo = `${diffMins}m ago`;
-                      else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
-                      else if (diffDays < 7) timeAgo = `${diffDays}d ago`;
-                      else timeAgo = publishedDate.toLocaleDateString();
-                    }
-                    return (
-                      <div key={idx} className="lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
-                        <div className="flex justify-between items-start mb-1">
-                          <a href={article.link} target="_blank" rel="noopener noreferrer"
-                            className="text-base font-semibold text-blue-400 hover:text-blue-300 flex-1 transition-colors">
-                            {article.title}
-                          </a>
-                          <span className="text-xs text-slate-500 ml-4 whitespace-nowrap">{article.source}</span>
-                        </div>
-                        {timeAgo && <div className="text-xs text-slate-500 mb-1">{timeAgo}</div>}
-                        {article.summary && <p className="text-sm text-slate-400">{article.summary.slice(0, 200)}{article.summary.length > 200 ? '...' : ''}</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
 const SECTOR_ETF_MAP = {
   'Technology': 'XLK',
   'Energy': 'XLE',
@@ -181,11 +74,7 @@ function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [stockTicker, setStockTicker] = useState('');
-  const [apiKeys, setApiKeys] = useState({
-    alphaVantage: '',
-    finnhub: '',
-    newsApi: ''
-  });
+  const [apiKeys, setApiKeys] = useState({ alphaVantage: '', finnhub: '', newsApi: '' });
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
     if (saved === 'default') return 'classic';
@@ -195,7 +84,6 @@ function FinancialApp() {
   const [, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
   const [newsLastUpdated, setNewsLastUpdated] = useState(null);
-
   const [technicalData, setTechnicalData] = useState(null);
   const [chartWindow, setChartWindow] = useState(() => {
     const saved = localStorage.getItem('chartWindow');
@@ -205,14 +93,12 @@ function FinancialApp() {
     const saved = localStorage.getItem('showSR');
     return saved !== null ? saved === 'true' : true;
   });
-
   const trend = technicalData ? getTrend(technicalData.chartData) : 'Neutral';
 
   useEffect(() => { localStorage.setItem('chartWindow', chartWindow); }, [chartWindow]);
   useEffect(() => { localStorage.setItem('showSR', showSR ? 'true' : 'false'); }, [showSR]);
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
 
-  // Analyze chart data using Yahoo Finance
   const analyzeChartData = useCallback(async () => {
     if (!stockTicker) return;
     setLoading(true);
@@ -220,10 +106,7 @@ function FinancialApp() {
     try {
       const response = await fetch(`/api/chart-data?ticker=${stockTicker}`);
       const data = await response.json();
-      if (data.error) {
-        setError('Could not fetch data: ' + data.error);
-        return;
-      }
+      if (data.error) { setError('Could not fetch data: ' + data.error); return; }
       setTechnicalData({
         chartData: data.chartData,
         currentPrice: data.currentPrice,
@@ -379,27 +262,26 @@ function FinancialApp() {
     };
   }, [parseNum]);
 
- const fetchAndEvaluateList = useCallback(async (tickers) => {
-  const results = [];
-  for (const t of tickers) {
-    try {
-      const overviewResp = await fetch(`/api/stock-overview?ticker=${t}`);
-      const ov = await overviewResp.json();
-      const evald = evaluateOverview(ov);
-      if (evald) {
-        evald.currentPrice = null;
-        evald.priceChange = null;
-        evald.priceChangePercent = null;
-        results.push(evald);
+  const fetchAndEvaluateList = useCallback(async (tickers) => {
+    const results = [];
+    for (const t of tickers) {
+      try {
+        const overviewResp = await fetch(`/api/stock-overview?ticker=${t}`);
+        const ov = await overviewResp.json();
+        const evald = evaluateOverview(ov);
+        if (evald) {
+          evald.currentPrice = null;
+          evald.priceChange = null;
+          evald.priceChangePercent = null;
+          results.push(evald);
+        }
+      } catch (err) {
+        console.warn('Failed overview for', t, err);
       }
-    } catch (err) {
-      console.warn('Failed overview for', t, err);
+      await new Promise(resolve => setTimeout(resolve, 1200));
     }
-    // Wait 1.2 seconds between each stock to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 1200));
-  }
-  return results;
-}, [evaluateOverview]);
+    return results;
+  }, [evaluateOverview]);
 
   const addStock = useCallback(() => {
     const stock = stockInput.trim().toUpperCase();
@@ -501,50 +383,39 @@ function FinancialApp() {
   }, [activeTab, fetchSectors]);
 
   const fetchMarketIndices = useCallback(async () => {
-  setIndicesLoading(true);
-  try {
-    const symbols = [
-      { symbol: 'DIA', name: 'Dow Jones' },
-      { symbol: 'SPY', name: 'S&P 500' },
-      { symbol: 'QQQ', name: 'Nasdaq' }
-    ];
-
-    const results = [];
-    for (const idx of symbols) {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 400));
-        const response = await fetch(`/api/quote?ticker=${idx.symbol}`);
-        const data = await response.json();
-        const quote = data['Global Quote'];
-        if (quote) {
-          let spark = null;
-          try {
-            const ch = await fetch(`/api/chart-data?ticker=${idx.symbol}`);
-            const chd = await ch.json();
-            if (chd.chartData) spark = chd.chartData.slice(-20);
-          } catch (e) {
-            console.warn('Failed to fetch sparkline for', idx.symbol, e);
+    setIndicesLoading(true);
+    try {
+      const symbols = [
+        { symbol: 'DIA', name: 'Dow Jones' },
+        { symbol: 'SPY', name: 'S&P 500' },
+        { symbol: 'QQQ', name: 'Nasdaq' }
+      ];
+      const results = [];
+      for (const idx of symbols) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 400));
+          const response = await fetch(`/api/quote?ticker=${idx.symbol}`);
+          const data = await response.json();
+          const quote = data['Global Quote'];
+          if (quote) {
+            results.push({
+              name: idx.name, symbol: idx.symbol,
+              price: parseFloat(quote['05. price']),
+              change: parseFloat(quote['09. change']),
+              changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+            });
           }
-          results.push({
-            name: idx.name,
-            symbol: idx.symbol,
-            price: parseFloat(quote['05. price']),
-            change: parseFloat(quote['09. change']),
-            changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
-            spark
-          });
+        } catch (err) {
+          console.warn(`Failed to fetch ${idx.name}:`, err);
         }
-      } catch (err) {
-        console.warn(`Failed to fetch ${idx.name}:`, err);
       }
+      setMarketIndices(results);
+    } catch (err) {
+      console.error('Failed to fetch market indices:', err);
+    } finally {
+      setIndicesLoading(false);
     }
-    setMarketIndices(results);
-  } catch (err) {
-    console.error('Failed to fetch market indices:', err);
-  } finally {
-    setIndicesLoading(false);
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     let id;
@@ -563,7 +434,7 @@ function FinancialApp() {
       const results = await Promise.all(
         tickers.map(async (symbol) => {
           try {
-            const response = await fetch(`/api/quote?ticker=${symbol}&apikey=${apiKeys.alphaVantage}`);
+            const response = await fetch(`/api/quote?ticker=${symbol}`);
             const data = await response.json();
             const quote = data['Global Quote'];
             if (quote) {
@@ -588,6 +459,15 @@ function FinancialApp() {
       setEtfQuotesLoading(false);
     }
   }, [apiKeys.alphaVantage]);
+
+  useEffect(() => {
+    let id;
+    if (activeTab === 'sectors') {
+      fetchSectorEtfQuotes();
+      id = setInterval(fetchSectorEtfQuotes, 2 * 60 * 1000);
+    }
+    return () => { if (id) clearInterval(id); };
+  }, [activeTab, fetchSectorEtfQuotes]);
 
   const fetchAiStocks = useCallback(async () => {
     setAiStocksLoading(true);
@@ -634,15 +514,6 @@ function FinancialApp() {
   }, []);
 
   useEffect(() => {
-    let id;
-    if (activeTab === 'sectors') {
-      fetchSectorEtfQuotes();
-      id = setInterval(fetchSectorEtfQuotes, 2 * 60 * 1000);
-    }
-    return () => { if (id) clearInterval(id); };
-  }, [activeTab, fetchSectorEtfQuotes]);
-
-  useEffect(() => {
     if (activeTab === 'ai') {
       fetchAiNews();
       fetchAiStocks();
@@ -662,7 +533,6 @@ function FinancialApp() {
           impact: 'Market Moving',
           summary: article.description || '',
           url: article.url || '',
-          implications: 'Analyze based on content and market context',
           sentiment: analyzeSentiment(article.title + ' ' + article.description),
           publishedAt: article.publishedAt || null
         }));
@@ -818,10 +688,10 @@ function FinancialApp() {
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {marketIndices.map((index) => (
                     <div key={index.symbol} className="lg-panel rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }} title={`Open ${index.symbol} in Technical Analysis`}>
+                      onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}>
                       <div className="text-sm text-slate-400 mb-1 flex items-center justify-between">
                         <div>{index.symbol} ({index.name})</div>
-                        <button onClick={(e) => { e.stopPropagation(); setActiveTab('news'); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
+                        <button onClick={(e) => { e.stopPropagation(); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
                           className="text-xs lg-subpanel px-2 py-1 rounded hover:opacity-95 text-slate-200">News</button>
                       </div>
                       <div className="flex items-baseline justify-between">
@@ -904,8 +774,7 @@ function FinancialApp() {
                           {etfTicker && (
                             <div className="mt-2 flex items-center justify-between">
                               <button type="button" onClick={() => { setStockTicker(etfTicker); setActiveTab('charts'); }}
-                                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded lg-subpanel text-slate-200 border border-slate-600 hover:opacity-95 transition-colors"
-                                title={`Open ${etfTicker} in Technical Analysis`}>
+                                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded lg-subpanel text-slate-200 border border-slate-600 hover:opacity-95 transition-colors">
                                 ETF: <span className="font-semibold">{etfTicker}</span>
                               </button>
                               {etfQuotes[etfTicker] && (
@@ -997,16 +866,6 @@ function FinancialApp() {
                                 <div className="flex-1">
                                   <div className="flex items-baseline gap-4">
                                     <div className="text-2xl font-bold text-blue-400">{s.symbol}</div>
-                                    {s.currentPrice != null && (
-                                      <div className="flex items-baseline gap-3">
-                                        <span className="text-xl font-semibold text-slate-200">${s.currentPrice.toFixed(2)}</span>
-                                        {s.priceChange != null && s.priceChangePercent != null && (
-                                          <span className={'text-sm font-medium ' + (s.priceChange >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                                            {s.priceChange >= 0 ? '+' : ''}{s.priceChange.toFixed(2)} ({s.priceChangePercent >= 0 ? '+' : ''}{s.priceChangePercent.toFixed(2)}%)
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
                                   </div>
                                   <div className="text-slate-300 text-sm mt-1">{s.name}</div>
                                 </div>
@@ -1014,8 +873,8 @@ function FinancialApp() {
                               </div>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {[
-                                  { label: 'Market Cap', value: s.marketCap ? formatCurrencyAbbrev(s.marketCap) : 'N/A', sub: 'Total market value of outstanding shares' },
-                                  { label: 'Revenue (TTM)', value: s.revenueTTM ? formatCurrencyAbbrev(s.revenueTTM) : 'N/A', sub: 'Trailing twelve month revenue' },
+                                  { label: 'Market Cap', value: s.marketCap ? formatCurrencyAbbrev(s.marketCap) : 'N/A', sub: 'Total market value' },
+                                  { label: 'Revenue (TTM)', value: s.revenueTTM ? formatCurrencyAbbrev(s.revenueTTM) : 'N/A', sub: 'Trailing twelve months' },
                                   { label: 'Price-to-Sales', value: s.priceToSales ?? 'N/A', sub: s.priceToSales != null ? (s.priceToSales < 2 ? '✓ Low' : s.priceToSales < 5 ? 'Fair' : '⚠ High') : '' },
                                   { label: 'P/E Ratio', value: s.pe ?? 'N/A', sub: s.pe != null ? (s.pe < 15 ? '✓ Low' : s.pe < 25 ? 'Fair' : '⚠ High') : '' },
                                   { label: 'PEG Ratio ⭐', value: s.peg ?? 'N/A', sub: s.peg != null ? (s.peg < 1 ? '✓ Great' : s.peg < 2 ? 'Fair' : '⚠ High') : '' },
@@ -1039,6 +898,109 @@ function FinancialApp() {
                   </div>
                 )
               }
+            </div>
+          )}
+
+          {/* AI TRACKER TAB */}
+          {activeTab === 'ai' && (
+            <div>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100">🤖 AI Tracker</h2>
+                  <p className="text-slate-400 text-sm hidden md:block">Live AI stock prices and latest AI news from across the web</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-slate-400">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
+                  <button onClick={() => { fetchAiNews(); fetchAiStocks(); }}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                    disabled={aiNewsLoading || aiStocksLoading}>
+                    {aiNewsLoading || aiStocksLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4">AI Stocks</h3>
+                {aiStocksLoading && Object.keys(aiStocks).length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="animate-spin text-blue-400 mr-3" size={24} />
+                    <span className="text-slate-400">Loading stock prices...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {Object.entries(AI_STOCKS).map(([category, stocks]) => (
+                      <div key={category}>
+                        <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">{category}</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                          {stocks.map(stock => {
+                            const data = aiStocks[stock.symbol];
+                            return (
+                              <div key={stock.symbol}
+                                className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
+                                <div className="text-xs text-slate-400 mb-1">{stock.name}</div>
+                                <div className="text-lg font-bold text-blue-400">{stock.symbol}</div>
+                                {data ? (
+                                  <>
+                                    <div className="text-sm font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
+                                    <div className={'text-xs font-medium mt-1 ' + (data.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                      {data.change >= 0 ? '+' : ''}{data.change.toFixed(2)} ({data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%)
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-xs text-slate-500 mt-1">Loading...</div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-200 mb-4">Latest AI News</h3>
+                {aiNewsLoading && aiNews.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="animate-spin text-blue-400 mr-3" size={24} />
+                    <span className="text-slate-400">Fetching AI news from across the web...</span>
+                  </div>
+                ) : aiNews.length === 0 ? (
+                  <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No AI news found. Try refreshing.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {aiNews.map((article, idx) => {
+                      let timeAgo = '';
+                      if (article.published) {
+                        const publishedDate = new Date(article.published);
+                        const diffMs = new Date() - publishedDate;
+                        const diffMins = Math.floor(diffMs / 60000);
+                        const diffHours = Math.floor(diffMs / 3600000);
+                        const diffDays = Math.floor(diffMs / 86400000);
+                        if (diffMins < 60) timeAgo = `${diffMins}m ago`;
+                        else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
+                        else if (diffDays < 7) timeAgo = `${diffDays}d ago`;
+                        else timeAgo = publishedDate.toLocaleDateString();
+                      }
+                      return (
+                        <div key={idx} className="lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
+                          <div className="flex justify-between items-start mb-1">
+                            <a href={article.link} target="_blank" rel="noopener noreferrer"
+                              className="text-base font-semibold text-blue-400 hover:text-blue-300 flex-1 transition-colors">
+                              {article.title}
+                            </a>
+                            <span className="text-xs text-slate-500 ml-4 whitespace-nowrap">{article.source}</span>
+                          </div>
+                          {timeAgo && <div className="text-xs text-slate-500 mb-1">{timeAgo}</div>}
+                          {article.summary && <p className="text-sm text-slate-400">{article.summary.slice(0, 200)}{article.summary.length > 200 ? '...' : ''}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1093,7 +1055,6 @@ function FinancialApp() {
                       </div>
                     </div>
                   </div>
-
                   <div className="h-96">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={technicalData.chartData.slice(-chartWindow)}>
@@ -1116,12 +1077,10 @@ function FinancialApp() {
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-
                   <div className="mt-4 text-xs text-slate-400">
                     <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
                     shows area between nearest support and resistance.
                   </div>
-
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="lg-subpanel rounded-lg p-4">
                       <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels</h4>
@@ -1155,7 +1114,6 @@ function FinancialApp() {
                   </div>
                 </div>
               )}
-
               {!technicalData && !loading && (
                 <div className="bg-slate-700 rounded-lg p-8 text-center">
                   <Target className="mx-auto mb-3 text-slate-400" size={48} />
