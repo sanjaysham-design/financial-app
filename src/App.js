@@ -357,52 +357,50 @@ function FinancialApp() {
   }, [activeTab, fetchSectors]);
 
   const fetchMarketIndices = useCallback(async () => {
-    if (!apiKeys.alphaVantage) return;
-    setIndicesLoading(true);
-    try {
-      const symbols = [
-        { symbol: 'DIA', name: 'Dow Jones' },
-        { symbol: 'SPY', name: 'S&P 500' },
-        { symbol: 'QQQ', name: 'Nasdaq' }
-      ];
-      const promises = symbols.map(async (idx) => {
-        try {
-          const response = await fetch(`/api/quote?ticker=${idx.symbol}&apikey=${apiKeys.alphaVantage}`);
-          const data = await response.json();
-          const quote = data['Global Quote'];
-          if (quote) {
-            let spark = null;
-            try {
-              const ch = await fetch(`/api/chart-data?ticker=${idx.symbol}`);
-              const chd = await ch.json();
-              if (chd.chartData) {
-                spark = chd.chartData.slice(-20);
-              }
-            } catch (e) {
-              console.warn('Failed to fetch sparkline for', idx.symbol, e);
-            }
-            return {
-              name: idx.name, symbol: idx.symbol,
-              price: parseFloat(quote['05. price']),
-              change: parseFloat(quote['09. change']),
-              changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
-              spark
-            };
+  setIndicesLoading(true);
+  try {
+    const symbols = [
+      { symbol: 'DIA', name: 'Dow Jones' },
+      { symbol: 'SPY', name: 'S&P 500' },
+      { symbol: 'QQQ', name: 'Nasdaq' }
+    ];
+
+    const results = [];
+    for (const idx of symbols) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 400));
+        const response = await fetch(`/api/quote?ticker=${idx.symbol}`);
+        const data = await response.json();
+        const quote = data['Global Quote'];
+        if (quote) {
+          let spark = null;
+          try {
+            const ch = await fetch(`/api/chart-data?ticker=${idx.symbol}`);
+            const chd = await ch.json();
+            if (chd.chartData) spark = chd.chartData.slice(-20);
+          } catch (e) {
+            console.warn('Failed to fetch sparkline for', idx.symbol, e);
           }
-          return null;
-        } catch (err) {
-          console.warn(`Failed to fetch ${idx.name}:`, err);
-          return null;
+          results.push({
+            name: idx.name,
+            symbol: idx.symbol,
+            price: parseFloat(quote['05. price']),
+            change: parseFloat(quote['09. change']),
+            changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+            spark
+          });
         }
-      });
-      const results = await Promise.all(promises);
-      setMarketIndices(results.filter(r => r !== null));
-    } catch (err) {
-      console.error('Failed to fetch market indices:', err);
-    } finally {
-      setIndicesLoading(false);
+      } catch (err) {
+        console.warn(`Failed to fetch ${idx.name}:`, err);
+      }
     }
-  }, [apiKeys.alphaVantage]);
+    setMarketIndices(results);
+  } catch (err) {
+    console.error('Failed to fetch market indices:', err);
+  } finally {
+    setIndicesLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     let id;
