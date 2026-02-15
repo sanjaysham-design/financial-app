@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       Name: profile.name || ticker,
       MarketCapitalization: m['marketCapitalization'] ? m['marketCapitalization'] * 1e6 : null,
       PERatio: m['peBasicExclExtraTTM'] || m['peTTM'] || null,
-      PEGRatio: m['pegTTM'] || null,
+      PEGRatio: m['pegTTM'] != null ? parseFloat(m['pegTTM'].toFixed(4)) : null,
       PriceToBookRatio: m['pbQuarterly'] || m['pbAnnual'] || null,
       PriceToSalesRatioTTM: m['psTTM'] || null,
       EPS: m['epsBasicExclExtraItemsTTM'] || m['epsTTM'] || null,
