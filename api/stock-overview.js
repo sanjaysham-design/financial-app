@@ -11,8 +11,6 @@ export default async function handler(req, res) {
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  console.log('Finnhub metrics keys:', Object.keys(m));
-
   try {
     const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`);
     const profile = await profileRes.json();
@@ -23,21 +21,8 @@ export default async function handler(req, res) {
 
     const m = metricData.metric || {};
 
-    return res.status(200).json({
-      Symbol: ticker.toUpperCase(),
-      Name: profile.name || ticker,
-      MarketCapitalization: profile.marketCapitalization ? profile.marketCapitalization * 1e6 : null,
-      PERatio: m['peBasicExclExtraTTM'] || m['peTTM'] || null,
-      PEGRatio: m['pegyratio'] || null,
-      PriceToBookRatio: m['pbQuarterly'] || m['pbAnnual'] || null,
-      PriceToSalesRatioTTM: m['psTTM'] || null,
-      EPS: m['epsBasicExclExtraAnnual'] || m['epsTTM'] || null,
-      QuarterlyEarningsGrowthYOY: m['epsGrowthQuarterlyYoy'] != null ? m['epsGrowthQuarterlyYoy'] / 100 : null,
-      ProfitMargin: m['netProfitMarginTTM'] != null ? m['netProfitMarginTTM'] / 100 : null,
-      EBITDA: m['ebitdaAnnual'] ? m['ebitdaAnnual'] * 1e6 : null,
-      RevenueTTM: m['revenueTTM'] ? m['revenueTTM'] * 1e6 : null,
-      DebtToEquity: m['totalDebt/totalEquityAnnual'] != null ? m['totalDebt/totalEquityAnnual'] / 100 : null,
-    });
+    // Temporary: return all raw metric keys so we can find correct field names
+    return res.status(200).json({ debug: m });
 
   } catch (error) {
     console.error('stock-overview error:', error);
