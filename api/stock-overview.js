@@ -11,6 +11,8 @@ export default async function handler(req, res) {
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+  console.log('Finnhub metrics keys:', Object.keys(m));
+
   try {
     const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`);
     const profile = await profileRes.json();
