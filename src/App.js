@@ -235,34 +235,27 @@ function FinancialApp() {
     };
   }, [parseNum]);
 
-  const fetchAndEvaluateList = useCallback(async (tickers) => {
-    const key = apiKeys.alphaVantage;
-    if (!key) throw new Error('Missing AlphaVantage API key');
-    const results = [];
-    for (const t of tickers) {
-      try {
-        const [overviewResp, quoteResp] = await Promise.all([
-          fetch(`/api/stock-overview?ticker=${t}`),
-          fetch(`/api/quote?ticker=${t}&apikey=${key}`)
-      ]);
-        const ov = await overviewResp.json();
-        const quoteData = await quoteResp.json();
-        const evald = evaluateOverview(ov);
-        if (evald) {
-          const quote = quoteData['Global Quote'];
-          if (quote) {
-            evald.currentPrice = parseFloat(quote['05. price']) || null;
-            evald.priceChange = parseFloat(quote['09. change']) || null;
-            evald.priceChangePercent = quote['10. change percent'] ? parseFloat(quote['10. change percent'].replace('%', '')) : null;
-          }
-          results.push(evald);
-        }
-      } catch (err) {
-        console.warn('Failed overview for', t, err);
+ const fetchAndEvaluateList = useCallback(async (tickers) => {
+  const results = [];
+  for (const t of tickers) {
+    try {
+      const overviewResp = await fetch(`/api/stock-overview?ticker=${t}`);
+      const ov = await overviewResp.json();
+      const evald = evaluateOverview(ov);
+      if (evald) {
+        evald.currentPrice = null;
+        evald.priceChange = null;
+        evald.priceChangePercent = null;
+        results.push(evald);
       }
+    } catch (err) {
+      console.warn('Failed overview for', t, err);
     }
-    return results;
-  }, [apiKeys.alphaVantage, evaluateOverview]);
+    // Wait 1.2 seconds between each stock to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 1200));
+  }
+  return results;
+}, [evaluateOverview]);
 
   const addStock = useCallback(() => {
     const stock = stockInput.trim().toUpperCase();

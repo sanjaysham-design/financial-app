@@ -9,18 +9,15 @@ export default async function handler(req, res) {
   const apikey = process.env.DEFAULT_FINNHUB_KEY;
   if (!apikey) return res.status(500).json({ error: 'Finnhub API key not configured' });
 
-  try {
-    const [profileRes, metricRes, quoteRes] = await Promise.all([
-      fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`),
-      fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apikey}`),
-      fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apikey}`)
-    ]);
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    const [profile, metricData, quote] = await Promise.all([
-      profileRes.json(),
-      metricRes.json(),
-      quoteRes.json()
-    ]);
+  try {
+    const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`);
+    const profile = await profileRes.json();
+    await delay(300);
+
+    const metricRes = await fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apikey}`);
+    const metricData = await metricRes.json();
 
     const m = metricData.metric || {};
 
