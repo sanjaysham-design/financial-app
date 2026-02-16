@@ -524,17 +524,20 @@ function FinancialApp() {
     setLoading(true);
     setError('');
     try {
-      const url = '/api/news?apikey=' + newsApiKey + (q ? ('&q=' + encodeURIComponent(q)) : '');
+      // Try RSS feeds first
+      const url = q
+        ? `/api/news?apikey=${newsApiKey}&q=${encodeURIComponent(q)}`
+        : `/api/financial-news?apikey=${newsApiKey}`;
       const response = await fetch(url);
       const data = await response.json();
-      if (data.articles) {
+      if (data.articles && data.articles.length > 0) {
         const formattedNews = data.articles.map(article => ({
           headline: article.title,
-          impact: 'Market Moving',
-          summary: article.description || '',
+          summary: article.summary || article.description || '',
           url: article.url || '',
-          sentiment: analyzeSentiment(article.title + ' ' + article.description),
-          publishedAt: article.publishedAt || null
+          sentiment: article.sentiment || analyzeSentiment(article.title + ' ' + (article.summary || '')),
+          publishedAt: article.publishedAt || null,
+          source: article.source || null,
         }));
         setNewsStories(formattedNews);
         setNewsLastUpdated(new Date().toISOString());
@@ -586,7 +589,10 @@ function FinancialApp() {
             className="text-lg font-bold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors">
             {story.headline}
           </a>
-          <span className={'px-3 py-1 rounded-full text-xs font-semibold ml-4 ' + sentimentClass}>{story.sentiment}</span>
+          <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
+          <span className={'px-3 py-1 rounded-full text-xs font-semibold ' + sentimentClass}>{story.sentiment}</span>
+          {story.source && <span className="text-xs text-slate-500">{story.source}</span>}
+          </div>
         </div>
         {timeAgo && <div className="text-xs text-slate-400 mb-2">{timeAgo}</div>}
         <p className="text-slate-300 mb-3">{story.summary}</p>
