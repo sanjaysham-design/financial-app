@@ -99,6 +99,20 @@ function FinancialApp() {
   useEffect(() => { localStorage.setItem('showSR', showSR ? 'true' : 'false'); }, [showSR]);
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
 
+  const [aiStocksConfig, setAiStocksConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aiStocksConfig');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return AI_STOCKS;
+  });
+  useEffect(() => { localStorage.setItem('aiStocksConfig', JSON.stringify(aiStocksConfig)); }, [aiStocksConfig]);
+
+  // Settings UI state for AI stocks editor
+  const [aiStockEditCategory, setAiStockEditCategory] = useState(Object.keys(AI_STOCKS)[0]);
+  const [aiStockNewSymbol, setAiStockNewSymbol] = useState('');
+  const [aiStockNewName, setAiStockNewName] = useState('');
+
   const analyzeChartData = useCallback(async () => {
     if (!stockTicker) return;
     setLoading(true);
@@ -472,7 +486,7 @@ function FinancialApp() {
   const fetchAiStocks = useCallback(async () => {
     setAiStocksLoading(true);
     try {
-      const allStocks = Object.values(AI_STOCKS).flat();
+      const allStocks = Object.values(aiStocksConfig).flat();
       const stockData = {};
       for (const stock of allStocks) {
         try {
@@ -513,7 +527,7 @@ function FinancialApp() {
     } finally {
       setAiStocksLoading(false);
     }
-  }, []);
+  }, [aiStocksConfig]);
 
   const fetchAiNews = useCallback(async () => {
     setAiNewsLoading(true);
@@ -754,6 +768,91 @@ function FinancialApp() {
                   ))}
                 </div>
               </div>
+
+              {/* AI Stocks Configuration */}
+              <div className="lg-panel rounded-lg p-4 mt-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-lg font-semibold text-slate-100">AI Tracker Stocks</h3>
+                  <button
+                    onClick={() => { setAiStocksConfig(AI_STOCKS); }}
+                    className="text-xs text-slate-400 hover:text-slate-200 underline">
+                    Reset to defaults
+                  </button>
+                </div>
+                <p className="text-slate-400 text-sm mb-4">Choose which tickers appear in each category on the AI Tracker.</p>
+
+                {/* Category tabs */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {Object.keys(aiStocksConfig).map(cat => (
+                    <button key={cat}
+                      onClick={() => { setAiStockEditCategory(cat); setAiStockNewSymbol(''); setAiStockNewName(''); }}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${aiStockEditCategory === cat ? 'bg-blue-600 text-white' : 'lg-subpanel text-slate-300 hover:text-white'}`}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Current tickers for selected category */}
+                <div className="mb-4">
+                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Tickers in "{aiStockEditCategory}"</div>
+                  <div className="flex flex-wrap gap-2">
+                    {(aiStocksConfig[aiStockEditCategory] || []).map(stock => (
+                      <div key={stock.symbol} className="lg-subpanel flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm">
+                        <span className="font-semibold text-blue-400">{stock.symbol}</span>
+                        <span className="text-slate-400">{stock.name}</span>
+                        <button
+                          onClick={() => {
+                            setAiStocksConfig(prev => ({
+                              ...prev,
+                              [aiStockEditCategory]: prev[aiStockEditCategory].filter(s => s.symbol !== stock.symbol),
+                            }));
+                          }}
+                          className="text-slate-500 hover:text-red-400 ml-1 font-bold leading-none"
+                          title="Remove">×</button>
+                      </div>
+                    ))}
+                    {(aiStocksConfig[aiStockEditCategory] || []).length === 0 && (
+                      <div className="text-slate-500 text-sm italic">No tickers — add one below.</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add new ticker */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={aiStockNewSymbol}
+                    onChange={e => setAiStockNewSymbol(e.target.value.toUpperCase())}
+                    placeholder="Ticker (e.g. AAPL)"
+                    className="lg-subpanel text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-36 text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={aiStockNewName}
+                    onChange={e => setAiStockNewName(e.target.value)}
+                    placeholder="Display name (e.g. Apple)"
+                    className="lg-subpanel text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 text-sm"
+                  />
+                  <button
+                    onClick={() => {
+                      const sym = aiStockNewSymbol.trim();
+                      const nm = aiStockNewName.trim() || sym;
+                      if (!sym) return;
+                      const alreadyExists = (aiStocksConfig[aiStockEditCategory] || []).some(s => s.symbol === sym);
+                      if (alreadyExists) return;
+                      setAiStocksConfig(prev => ({
+                        ...prev,
+                        [aiStockEditCategory]: [...(prev[aiStockEditCategory] || []), { symbol: sym, name: nm }],
+                      }));
+                      setAiStockNewSymbol('');
+                      setAiStockNewName('');
+                    }}
+                    disabled={!aiStockNewSymbol.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
+                    Add Ticker
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -950,7 +1049,7 @@ function FinancialApp() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {Object.entries(AI_STOCKS).map(([category, stocks]) => (
+                    {Object.entries(aiStocksConfig).map(([category, stocks]) => (
                       <div key={category}>
                         <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">{category}</h4>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
