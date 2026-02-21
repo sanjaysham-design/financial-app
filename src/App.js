@@ -957,14 +957,15 @@ function FinancialApp() {
                           {stocks.map(stock => {
                             const data = aiStocks[stock.symbol];
                             const isUp = data && data.change >= 0;
-                            const cardBg = data
+                            const cardStyle = data
                               ? isUp
-                                ? 'bg-emerald-950/60 border border-emerald-800/40'
-                                : 'bg-red-950/60 border border-red-800/40'
-                              : '';
+                                ? { background: 'rgba(6, 78, 59, 0.55)', borderColor: 'rgba(6, 78, 59, 0.6)' }
+                                : { background: 'rgba(127, 29, 29, 0.55)', borderColor: 'rgba(127, 29, 29, 0.6)' }
+                              : {};
                             return (
                               <div key={stock.symbol}
-                                className={`lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity ${cardBg}`}
+                                className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                                style={cardStyle}
                                 onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
                                 <div className="flex items-center justify-between mb-1">
                                   <div className="text-xs text-slate-400">{stock.name}</div>
