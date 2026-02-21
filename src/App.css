@@ -141,3 +141,20 @@
 }
 
 /* End Liquid Glass styles */
+
+/* Stock card sentiment colors — must override all theme !important rules */
+.stock-card-up,
+.theme-liquid-glass .stock-card-up,
+.theme-liquid-glass .stock-card-up.rounded-lg,
+.theme-liquid-glass .stock-card-up.lg-panel {
+  background: rgba(6, 78, 59, 0.55) !important;
+  border-color: rgba(6, 78, 59, 0.6) !important;
+}
+
+.stock-card-down,
+.theme-liquid-glass .stock-card-down,
+.theme-liquid-glass .stock-card-down.rounded-lg,
+.theme-liquid-glass .stock-card-down.lg-panel {
+  background: rgba(127, 29, 29, 0.55) !important;
+  border-color: rgba(127, 29, 29, 0.6) !important;
+}
