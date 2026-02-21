@@ -477,14 +477,30 @@ function FinancialApp() {
       for (const stock of allStocks) {
         try {
           await new Promise(resolve => setTimeout(resolve, 400));
-          const resp = await fetch(`/api/quote?ticker=${stock.symbol}`);
-          const data = await resp.json();
-          const quote = data['Global Quote'];
+          const [quoteResp, histResp] = await Promise.all([
+            fetch(`/api/quote?ticker=${stock.symbol}`),
+            fetch(`/api/stock-history?ticker=${stock.symbol}`),
+          ]);
+          const quoteData = await quoteResp.json();
+          const histData = await histResp.json();
+          const quote = quoteData['Global Quote'];
           if (quote) {
+            // Compute 5-day trend: count up vs down days over last 5 closes
+            let trend = null;
+            if (histData.closes && histData.closes.length >= 2) {
+              const closes = histData.closes.map(d => d.close);
+              let upDays = 0, downDays = 0;
+              for (let i = 1; i < closes.length; i++) {
+                if (closes[i] > closes[i - 1]) upDays++;
+                else if (closes[i] < closes[i - 1]) downDays++;
+              }
+              trend = upDays > downDays ? 'up' : downDays > upDays ? 'down' : 'flat';
+            }
             stockData[stock.symbol] = {
               price: parseFloat(quote['05. price']),
               change: parseFloat(quote['09. change']),
               changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+              trend,
             };
           }
         } catch (e) {
@@ -940,16 +956,31 @@ function FinancialApp() {
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                           {stocks.map(stock => {
                             const data = aiStocks[stock.symbol];
+                            const isUp = data && data.change >= 0;
+                            const isDown = data && data.change < 0;
+                            const cardBg = data
+                              ? isUp
+                                ? 'bg-emerald-950/60 border border-emerald-800/40'
+                                : 'bg-red-950/60 border border-red-800/40'
+                              : '';
                             return (
                               <div key={stock.symbol}
-                                className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                                className={`lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity ${cardBg}`}
                                 onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
-                                <div className="text-xs text-slate-400 mb-1">{stock.name}</div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="text-xs text-slate-400">{stock.name}</div>
+                                  {data && data.trend && (
+                                    <span className={`text-sm font-bold leading-none ${data.trend === 'up' ? 'text-emerald-400' : data.trend === 'down' ? 'text-red-400' : 'text-slate-400'}`}
+                                      title={`5-day trend: ${data.trend}`}>
+                                      {data.trend === 'up' ? '↑' : data.trend === 'down' ? '↓' : '→'}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-lg font-bold text-blue-400">{stock.symbol}</div>
                                 {data ? (
                                   <>
                                     <div className="text-sm font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
-                                    <div className={'text-xs font-medium mt-1 ' + (data.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                    <div className={'text-xs font-medium mt-1 ' + (isUp ? 'text-emerald-400' : 'text-red-400')}>
                                       {data.change >= 0 ? '+' : ''}{data.change.toFixed(2)} ({data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%)
                                     </div>
                                   </>
