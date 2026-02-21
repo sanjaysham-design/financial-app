@@ -957,7 +957,6 @@ function FinancialApp() {
                           {stocks.map(stock => {
                             const data = aiStocks[stock.symbol];
                             const isUp = data && data.change >= 0;
-                            const isDown = data && data.change < 0;
                             const cardBg = data
                               ? isUp
                                 ? 'bg-emerald-950/60 border border-emerald-800/40'
