@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings } from 'lucide-react';
+import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings, RefreshCw } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -778,38 +778,39 @@ function FinancialApp() {
                     </div>
                   )}
                 </div>
-                {/* Refresh controls */}
-                <div className="flex items-center gap-3">
+              </div>
+
+              {/* Sub-tabs + refresh on same row */}
+              <div className="flex items-center justify-between border-b border-slate-700 mb-6">
+                <div className="flex gap-1">
+                  {[{ id: 'ai-news', label: 'AI News' }, { id: 'markets', label: 'Markets' }].map(st => (
+                    <button key={st.id} onClick={() => setNewsSubTab(st.id)}
+                      className={`px-4 py-2 text-sm font-medium transition-colors relative ${newsSubTab === st.id ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+                      {st.label}
+                      {newsSubTab === st.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-t" />}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 pb-1">
                   {newsSubTab === 'markets' && (
                     <>
-                      <div className="text-xs text-slate-400">{newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}</div>
-                      <button onClick={() => fetchNewsWithKey(apiKeys.newsApi)}
-                        className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2" disabled={loading}>
-                        {loading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                      <span className="text-xs text-slate-500">{newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}</span>
+                      <button onClick={() => fetchNewsWithKey(apiKeys.newsApi)} disabled={loading}
+                        className="text-slate-400 hover:text-white transition-colors disabled:opacity-40" title="Refresh">
+                        {loading ? <Loader className="animate-spin" size={15} /> : <RefreshCw size={15} />}
                       </button>
                     </>
                   )}
                   {newsSubTab === 'ai-news' && (
                     <>
-                      <div className="text-xs text-slate-400">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
-                      <button onClick={() => fetchAiNews()}
-                        className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2" disabled={aiNewsLoading}>
-                        {aiNewsLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
+                      <span className="text-xs text-slate-500">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</span>
+                      <button onClick={() => fetchAiNews()} disabled={aiNewsLoading}
+                        className="text-slate-400 hover:text-white transition-colors disabled:opacity-40" title="Refresh">
+                        {aiNewsLoading ? <Loader className="animate-spin" size={15} /> : <RefreshCw size={15} />}
                       </button>
                     </>
                   )}
                 </div>
-              </div>
-
-              {/* Sub-tabs */}
-              <div className="flex gap-1 mb-6 border-b border-slate-700">
-                {[{ id: 'ai-news', label: 'AI News' }, { id: 'markets', label: 'Markets' }].map(st => (
-                  <button key={st.id} onClick={() => setNewsSubTab(st.id)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors relative ${newsSubTab === st.id ? 'text-white news-subtab-active' : 'text-slate-400 hover:text-slate-200'}`}>
-                    {st.label}
-                    {newsSubTab === st.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-t" />}
-                  </button>
-                ))}
               </div>
 
               {/* AI News sub-tab */}
