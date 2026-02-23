@@ -714,8 +714,27 @@ function FinancialApp() {
           {activeTab === 'news' && (
             <div>
               {/* Header row */}
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Newspaper className="text-blue-400" />News</h2>
+              <div className="mb-4 flex flex-wrap items-center gap-4 justify-between">
+                {/* Title + index pills */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Newspaper className="text-blue-400" />News</h2>
+                  {!indicesLoading && marketIndices.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      {marketIndices.map((index) => (
+                        <button key={index.symbol}
+                          onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
+                          className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
+                          <span className="text-xs font-bold text-blue-400">{index.symbol}</span>
+                          <span className="text-xs font-semibold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className={'text-xs font-medium ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                            {index.change >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Refresh controls */}
                 <div className="flex items-center gap-3">
                   {newsSubTab === 'markets' && (
                     <>
@@ -796,26 +815,6 @@ function FinancialApp() {
               {/* Markets sub-tab */}
               {newsSubTab === 'markets' && (
                 <div>
-                  {!indicesLoading && marketIndices.length > 0 && (
-                    <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {marketIndices.map((index) => (
-                        <div key={index.symbol} className="lg-panel rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
-                          onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}>
-                          <div className="text-sm text-slate-400 mb-1 flex items-center justify-between">
-                            <div>{index.symbol} ({index.name})</div>
-                            <button onClick={(e) => { e.stopPropagation(); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
-                              className="text-xs lg-subpanel px-2 py-1 rounded hover:opacity-95 text-slate-200">News</button>
-                          </div>
-                          <div className="flex items-baseline justify-between">
-                            <div className="text-2xl font-bold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                            <div className={'text-sm font-semibold ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                              {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   {!newsStories || newsStories.length === 0
                     ? <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
                     : <div className="space-y-4">{newsCards}</div>
