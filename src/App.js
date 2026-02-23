@@ -914,29 +914,59 @@ function FinancialApp() {
                   ))}
                 </div>
 
-                {/* Current tickers for selected category */}
+                {/* Current tickers for selected category — with reorder controls */}
                 <div className="mb-4">
                   <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Tickers in "{aiStockEditCategory}"</div>
-                  <div className="flex flex-wrap gap-2">
-                    {(aiStocksConfig[aiStockEditCategory] || []).map(stock => (
-                      <div key={stock.symbol} className="lg-subpanel flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm">
-                        <span className="font-semibold text-blue-400">{stock.symbol}</span>
-                        <span className="text-slate-400">{stock.name}</span>
-                        <button
-                          onClick={() => {
-                            setAiStocksConfig(prev => ({
-                              ...prev,
-                              [aiStockEditCategory]: prev[aiStockEditCategory].filter(s => s.symbol !== stock.symbol),
-                            }));
-                          }}
-                          className="text-slate-500 hover:text-red-400 ml-1 font-bold leading-none"
-                          title="Remove">×</button>
-                      </div>
-                    ))}
-                    {(aiStocksConfig[aiStockEditCategory] || []).length === 0 && (
-                      <div className="text-slate-500 text-sm italic">No tickers — add one below.</div>
-                    )}
-                  </div>
+                  {(aiStocksConfig[aiStockEditCategory] || []).length === 0 ? (
+                    <div className="text-slate-500 text-sm italic">No tickers — add one below.</div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      {(aiStocksConfig[aiStockEditCategory] || []).map((stock, idx, arr) => (
+                        <div key={stock.symbol} className="lg-subpanel flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+                          {/* Order controls */}
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              disabled={idx === 0}
+                              onClick={() => {
+                                setAiStocksConfig(prev => {
+                                  const list = [...prev[aiStockEditCategory]];
+                                  [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]];
+                                  return { ...prev, [aiStockEditCategory]: list };
+                                });
+                              }}
+                              className="text-slate-500 hover:text-slate-200 disabled:opacity-20 disabled:cursor-not-allowed leading-none text-xs"
+                              title="Move up">▲</button>
+                            <button
+                              disabled={idx === arr.length - 1}
+                              onClick={() => {
+                                setAiStocksConfig(prev => {
+                                  const list = [...prev[aiStockEditCategory]];
+                                  [list[idx], list[idx + 1]] = [list[idx + 1], list[idx]];
+                                  return { ...prev, [aiStockEditCategory]: list };
+                                });
+                              }}
+                              className="text-slate-500 hover:text-slate-200 disabled:opacity-20 disabled:cursor-not-allowed leading-none text-xs"
+                              title="Move down">▼</button>
+                          </div>
+                          {/* Position number */}
+                          <span className="text-xs text-slate-600 w-4 text-right select-none">{idx + 1}</span>
+                          {/* Ticker info */}
+                          <span className="font-semibold text-blue-400 w-14">{stock.symbol}</span>
+                          <span className="text-slate-400 flex-1">{stock.name}</span>
+                          {/* Remove */}
+                          <button
+                            onClick={() => {
+                              setAiStocksConfig(prev => ({
+                                ...prev,
+                                [aiStockEditCategory]: prev[aiStockEditCategory].filter(s => s.symbol !== stock.symbol),
+                              }));
+                            }}
+                            className="text-slate-500 hover:text-red-400 font-bold leading-none ml-1"
+                            title="Remove">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Add new ticker */}
