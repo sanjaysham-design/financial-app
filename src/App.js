@@ -659,14 +659,33 @@ function FinancialApp() {
 
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">
-              <button onClick={() => setActiveTab('news')} className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
-                FireHorse Investor
+          <h1 className="text-4xl font-bold">
+            <button onClick={() => setActiveTab('news')} className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
+              FireHorse Investor
+            </button>
+          </h1>
+
+          {/* Desktop nav — lives in the header */}
+          <nav className="hidden md:flex items-center gap-6">
+            {[
+              { id: 'news', label: 'News' },
+              { id: 'sectors', label: 'Sector Trends' },
+              { id: 'charts', label: 'Technical Analysis' },
+              { id: 'screener', label: 'Stock Valuations' },
+              { id: 'ai', label: 'AI Tracker' },
+            ].map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className={`nav-link text-sm font-medium ${activeTab === t.id ? 'nav-link-active text-white' : 'text-slate-400'}`}>
+                {t.label}
               </button>
-            </h1>
-            <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
-          </div>
+            ))}
+            <button onClick={() => setActiveTab('settings')}
+              className={`nav-link nav-link-settings text-sm font-medium flex items-center gap-1.5 ${activeTab === 'settings' ? 'nav-link-active text-white' : 'text-slate-400'}`}>
+              <Settings size={14} /> Settings
+            </button>
+          </nav>
+
+          {/* Mobile hamburger */}
           <div className="md:hidden fixed top-4 right-6 z-60">
             <button onClick={() => setMobileNavOpen(prev => !prev)} aria-expanded={mobileNavOpen} aria-label="Toggle navigation"
               className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}>
@@ -679,27 +698,7 @@ function FinancialApp() {
         </header>
 
         <div className={`${theme === 'liquid-glass' ? 'lg-panel' : 'bg-slate-800'} rounded-xl shadow-2xl p-6`}>
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div className="hidden md:flex items-center gap-3">
-                {[
-                  { id: 'news', label: 'News' },
-                  { id: 'sectors', label: 'Sector Trends' },
-                  { id: 'charts', label: 'Technical Analysis' },
-                  { id: 'screener', label: 'Stock Valuations' },
-                  { id: 'ai', label: 'AI Tracker' },
-                ].map(t => (
-                  <button key={t.id} onClick={() => setActiveTab(t.id)}
-                    className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === t.id ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}>
-                    {t.label}
-                  </button>
-                ))}
-                <button onClick={() => setActiveTab('settings')}
-                  className={"px-3 py-2 rounded-md text-sm font-semibold flex items-center gap-2 " + (activeTab === 'settings' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}>
-                  <Settings size={16} /> Settings
-                </button>
-              </div>
-            </div>
+          <div>
             {mobileNavOpen && (
               <>
                 <MobileNavEscapeHandler onClose={() => setMobileNavOpen(false)} />
