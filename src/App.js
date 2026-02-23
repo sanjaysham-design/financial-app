@@ -80,6 +80,7 @@ function FinancialApp() {
     if (saved === 'default') return 'classic';
     return saved || 'liquid-glass';
   });
+  const [colorMode, setColorMode] = useState(() => localStorage.getItem('colorMode') || 'dark');
   const [loading, setLoading] = useState(false);
   const [, setError] = useState('');
   const [newsStories, setNewsStories] = useState([]);
@@ -98,6 +99,7 @@ function FinancialApp() {
   useEffect(() => { localStorage.setItem('chartWindow', chartWindow); }, [chartWindow]);
   useEffect(() => { localStorage.setItem('showSR', showSR ? 'true' : 'false'); }, [showSR]);
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('colorMode', colorMode); }, [colorMode]);
 
   const [aiStocksConfig, setAiStocksConfig] = useState(() => {
     try {
@@ -654,7 +656,7 @@ function FinancialApp() {
   });
 
   return (
-    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
+    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} ${colorMode === 'light' ? 'color-light' : ''} text-white`} data-theme={theme}>
       <div
         className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setMobileNavOpen(false)}
@@ -683,7 +685,8 @@ function FinancialApp() {
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
           <h1 className="text-4xl font-bold">
-            <button onClick={() => setActiveTab('news')} className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
+            <button onClick={() => setActiveTab('news')}
+              className={`bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer ${colorMode === 'light' ? 'bg-gradient-to-r from-blue-700 to-emerald-700' : 'bg-gradient-to-r from-blue-400 to-emerald-400'}`}>
               FireHorse Investor
             </button>
           </h1>
@@ -878,6 +881,27 @@ function FinancialApp() {
                 <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Settings className="text-blue-400" />Settings</h2>
                 <p className="text-slate-400 text-sm hidden md:block">Customize application behavior and appearance</p>
               </div>
+              {/* Dark / Light mode toggle */}
+              <div className="lg-panel rounded-lg p-4 mb-4">
+                <h3 className="text-lg font-semibold mb-3 text-slate-100">Colour Mode</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-slate-200">{colorMode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{colorMode === 'dark' ? 'Easy on the eyes at night' : 'Bright and clear for daytime'}</div>
+                  </div>
+                  {/* Toggle switch */}
+                  <button
+                    onClick={() => setColorMode(m => m === 'dark' ? 'light' : 'dark')}
+                    className={`relative inline-flex h-7 w-13 items-center rounded-full transition-colors focus:outline-none ${colorMode === 'light' ? 'bg-blue-500' : 'bg-slate-600'}`}
+                    style={{ width: '3.25rem' }}
+                    role="switch"
+                    aria-checked={colorMode === 'light'}>
+                    <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${colorMode === 'light' ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Visual style theme */}
               <div className="lg-panel rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 text-slate-100">Theme</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
