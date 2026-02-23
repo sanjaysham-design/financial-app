@@ -350,34 +350,23 @@
   fill: #64748b !important;
 }
 
-/* ---- Stock sentiment cards — lighter tints for light mode ---- */
-.color-light .stock-card-up,
-.color-light .stock-card-up.lg-panel,
-.color-light .stock-card-up.rounded-lg {
-  background: rgba(187, 247, 208, 0.7) !important;
-  border-color: rgba(21, 128, 61, 0.25) !important;
-}
-.color-light .stock-card-down,
-.color-light .stock-card-down.lg-panel,
-.color-light .stock-card-down.rounded-lg {
-  background: rgba(254, 202, 202, 0.7) !important;
-  border-color: rgba(185, 28, 28, 0.2) !important;
-}
-
-/* ---- Liquid Glass + light mode: swap glass tint to a light frosted look ---- */
+/* ---- Liquid Glass + light mode: frosted white panels ---- */
 .color-light.theme-liquid-glass {
   background: linear-gradient(180deg, #dde6f2 0%, #eaf0f9 100%) !important;
 }
-.color-light.theme-liquid-glass .rounded-lg,
-.color-light.theme-liquid-glass .rounded-xl,
-.color-light.theme-liquid-glass .rounded-md,
-.color-light.theme-liquid-glass .lg-panel {
+
+/* Apply frosted glass only to non-button, non-stock-card panel elements */
+.color-light.theme-liquid-glass .rounded-lg:not(button):not([class*="stock-card"]):not(.bg-blue-600):not(.bg-emerald-500):not(.bg-red-500),
+.color-light.theme-liquid-glass .rounded-xl:not(button):not([class*="stock-card"]):not(.bg-blue-600),
+.color-light.theme-liquid-glass .rounded-md:not(button):not([class*="stock-card"]):not(.bg-blue-600),
+.color-light.theme-liquid-glass .lg-panel:not([class*="stock-card"]) {
   background: rgba(255,255,255,0.72) !important;
   border: 1px solid rgba(0,0,0,0.08) !important;
   backdrop-filter: blur(12px) saturate(140%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
   box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
 }
+
 .color-light.theme-liquid-glass .lg-subpanel {
   background: rgba(241,245,249,0.8) !important;
   border: 1px solid rgba(0,0,0,0.06) !important;
@@ -397,11 +386,61 @@
   border: 1px solid rgba(0,0,0,0.1) !important;
   color: #0f172a !important;
 }
-/* ---- Charts tab: hardcoded bg-slate-700 panel needs explicit light treatment ---- */
+
+/* ---- Blue buttons: always blue bg + white text in light mode (both themes) ---- */
+.color-light .bg-blue-600,
+.color-light button.bg-blue-600,
+.color-light .bg-blue-600:not(:disabled) {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+.color-light .bg-blue-600:hover {
+  background: #1d4ed8 !important;
+}
+.color-light .bg-blue-600 *,
+.color-light .bg-blue-600 span,
+.color-light .bg-blue-600 svg {
+  color: #ffffff !important;
+}
+.color-light .bg-blue-600:disabled {
+  background: #93c5fd !important;
+  color: #ffffff !important;
+}
+
+/* ---- Stock sentiment cards: light mode shading in both classic and liquid-glass ---- */
+.color-light .stock-card-up,
+.color-light .stock-card-up.lg-panel,
+.color-light .stock-card-up.rounded-lg,
+.color-light.theme-liquid-glass .stock-card-up,
+.color-light.theme-liquid-glass .stock-card-up.lg-panel,
+.color-light.theme-liquid-glass .stock-card-up.rounded-lg {
+  background: rgba(187, 247, 208, 0.75) !important;
+  border-color: rgba(21, 128, 61, 0.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.color-light .stock-card-down,
+.color-light .stock-card-down.lg-panel,
+.color-light .stock-card-down.rounded-lg,
+.color-light.theme-liquid-glass .stock-card-down,
+.color-light.theme-liquid-glass .stock-card-down.lg-panel,
+.color-light.theme-liquid-glass .stock-card-down.rounded-lg {
+  background: rgba(254, 202, 202, 0.75) !important;
+  border-color: rgba(185, 28, 28, 0.25) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---- Charts tab: hardcoded bg-slate-700 panel ---- */
 .color-light .bg-slate-700.rounded-lg {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 /* Select inside chart panel */
 .color-light .bg-slate-600 {
@@ -412,13 +451,5 @@
 .color-light .disabled\:bg-slate-700:disabled {
   background: #e2e8f0 !important;
   color: #94a3b8 !important;
-}
-/* Ensure Analyze/Refresh button text stays white */
-.color-light .bg-blue-600:not(:disabled),
-.color-light button.bg-blue-600:not(:disabled) {
-  color: #ffffff !important;
-}
-.color-light .bg-blue-600:not(:disabled) * {
-  color: #ffffff !important;
 }
 /* ===================== END LIGHT MODE ===================== */
