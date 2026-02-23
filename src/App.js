@@ -402,18 +402,25 @@ function FinancialApp() {
     setIndicesLoading(true);
     try {
       const actualSymbols = [
-        { symbol: '^DJI',  name: 'Dow Jones',  shortName: 'DOW' },
-        { symbol: '^GSPC', name: 'S&P 500',    shortName: 'S&P' },
-        { symbol: '^IXIC', name: 'Nasdaq',      shortName: 'NDQ' },
+        { symbol: '%5EDJI',  name: 'Dow Jones', shortName: 'DOW' },
+        { symbol: '%5EGSPC', name: 'S&P 500',   shortName: 'S&P' },
+        { symbol: '%5EIXIC', name: 'Nasdaq',     shortName: 'NDQ' },
       ];
       const etfSymbols = [
         { symbol: 'DIA', name: 'Dow Jones' },
         { symbol: 'SPY', name: 'S&P 500' },
         { symbol: 'QQQ', name: 'Nasdaq' },
       ];
-      const fetchQuote = async (sym) => {
-        await new Promise(resolve => setTimeout(resolve, 400));
-        const response = await fetch(`/api/quote?ticker=${encodeURIComponent(sym.symbol)}`);
+      const fetchIndexQuote = async (sym) => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const response = await fetch(`/api/index-quote?ticker=${sym.symbol}`);
+        const data = await response.json();
+        if (data.error || data.price == null) return null;
+        return { ...sym, price: data.price, change: data.change, changePercent: data.changePercent };
+      };
+      const fetchEtfQuote = async (sym) => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const response = await fetch(`/api/quote?ticker=${sym.symbol}`);
         const data = await response.json();
         const quote = data['Global Quote'];
         if (!quote) return null;
@@ -426,12 +433,12 @@ function FinancialApp() {
       };
       const actualResults = [];
       for (const sym of actualSymbols) {
-        try { const r = await fetchQuote(sym); if (r) actualResults.push(r); }
+        try { const r = await fetchIndexQuote(sym); if (r) actualResults.push(r); }
         catch (err) { console.warn(`Failed to fetch ${sym.name}:`, err); }
       }
       const etfResults = [];
       for (const sym of etfSymbols) {
-        try { const r = await fetchQuote(sym); if (r) etfResults.push(r); }
+        try { const r = await fetchEtfQuote(sym); if (r) etfResults.push(r); }
         catch (err) { console.warn(`Failed to fetch ${sym.name}:`, err); }
       }
       setMarketIndexActuals(actualResults);
