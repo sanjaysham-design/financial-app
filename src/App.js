@@ -685,7 +685,8 @@ function FinancialApp() {
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
           <h1 className="text-4xl font-bold">
-            <button onClick={() => setActiveTab('news')} className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
+            <button onClick={() => setActiveTab('news')}
+              className={`bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer ${colorMode === 'light' ? 'bg-gradient-to-r from-blue-700 to-emerald-700' : 'bg-gradient-to-r from-blue-400 to-emerald-400'}`}>
               FireHorse Investor
             </button>
           </h1>

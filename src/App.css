@@ -246,6 +246,21 @@
 .color-light .text-slate-200 {
   color: #0f172a !important;
 }
+/* Keep white text on coloured backgrounds (blue buttons, badges etc.) */
+.color-light .bg-blue-600 .text-white,
+.color-light .bg-blue-600,
+.color-light button.bg-blue-600,
+.color-light button.bg-blue-600 span,
+.color-light button.bg-blue-600 * {
+  color: #ffffff !important;
+}
+/* Title gradient — use a deeper blue-to-teal so it's vivid on light bg */
+.color-light .bg-gradient-to-r.from-blue-400.to-emerald-400.bg-clip-text.text-transparent {
+  background-image: linear-gradient(to right, #1d4ed8, #047857) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
 .color-light .text-slate-300 {
   color: #334155 !important;
 }
@@ -381,5 +396,29 @@
   background: rgba(255,255,255,0.6) !important;
   border: 1px solid rgba(0,0,0,0.1) !important;
   color: #0f172a !important;
+}
+/* ---- Charts tab: hardcoded bg-slate-700 panel needs explicit light treatment ---- */
+.color-light .bg-slate-700.rounded-lg {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07) !important;
+}
+/* Select inside chart panel */
+.color-light .bg-slate-600 {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+/* Disabled Analyze button */
+.color-light .disabled\:bg-slate-700:disabled {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
+/* Ensure Analyze/Refresh button text stays white */
+.color-light .bg-blue-600:not(:disabled),
+.color-light button.bg-blue-600:not(:disabled) {
+  color: #ffffff !important;
+}
+.color-light .bg-blue-600:not(:disabled) * {
+  color: #ffffff !important;
 }
 /* ===================== END LIGHT MODE ===================== */
