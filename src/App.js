@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import { Newspaper, BarChart3, Target, Search, Loader, Menu, X, Settings, RefreshCw } from 'lucide-react';
 import {
@@ -112,6 +112,8 @@ function FinancialApp() {
   const [aiStockEditCategory, setAiStockEditCategory] = useState(Object.keys(AI_STOCKS)[0]);
   const [aiStockNewSymbol, setAiStockNewSymbol] = useState('');
   const [aiStockNewName, setAiStockNewName] = useState('');
+  const [aiStockDragOver, setAiStockDragOver] = useState(null);
+  const aiStockDragIdx = useRef(null);
 
   const analyzeChartData = useCallback(async () => {
     if (!stockTicker) return;
@@ -914,29 +916,76 @@ function FinancialApp() {
                   ))}
                 </div>
 
-                {/* Current tickers for selected category */}
+                {/* Current tickers for selected category — drag to reorder */}
                 <div className="mb-4">
-                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">Tickers in "{aiStockEditCategory}"</div>
-                  <div className="flex flex-wrap gap-2">
-                    {(aiStocksConfig[aiStockEditCategory] || []).map(stock => (
-                      <div key={stock.symbol} className="lg-subpanel flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm">
-                        <span className="font-semibold text-blue-400">{stock.symbol}</span>
-                        <span className="text-slate-400">{stock.name}</span>
-                        <button
-                          onClick={() => {
-                            setAiStocksConfig(prev => ({
+                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-2">
+                    Tickers in "{aiStockEditCategory}"
+                    <span className="ml-2 normal-case text-slate-600">— drag to reorder</span>
+                  </div>
+                  {(aiStocksConfig[aiStockEditCategory] || []).length === 0 ? (
+                    <div className="text-slate-500 text-sm italic">No tickers — add one below.</div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      {(aiStocksConfig[aiStockEditCategory] || []).map((stock, idx, arr) => (
+                        <div
+                          key={stock.symbol}
+                          draggable
+                          onDragStart={() => { aiStockDragIdx.current = idx; }}
+                          onDragOver={e => { e.preventDefault(); setAiStockDragOver(idx); }}
+                          onDrop={() => {
+                            const from = aiStockDragIdx.current;
+                            const to = idx;
+                            if (from === null || from === to) { setAiStockDragOver(null); return; }
+                            setAiStocksConfig(prev => {
+                              const list = [...prev[aiStockEditCategory]];
+                              const [moved] = list.splice(from, 1);
+                              list.splice(to, 0, moved);
+                              return { ...prev, [aiStockEditCategory]: list };
+                            });
+                            aiStockDragIdx.current = null;
+                            setAiStockDragOver(null);
+                          }}
+                          onDragEnd={() => { aiStockDragIdx.current = null; setAiStockDragOver(null); }}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-grab active:cursor-grabbing
+                            ${aiStockDragOver === idx ? 'border-2 border-blue-500 bg-blue-900/20' : 'lg-subpanel border-2 border-transparent'}`}>
+                          {/* Drag handle */}
+                          <span className="text-slate-600 select-none text-base leading-none" title="Drag to reorder">⠿</span>
+                          {/* Position number */}
+                          <span className="text-xs text-slate-600 w-4 text-right select-none">{idx + 1}</span>
+                          {/* Ticker info */}
+                          <span className="font-semibold text-blue-400 w-14">{stock.symbol}</span>
+                          <span className="text-slate-400 flex-1">{stock.name}</span>
+                          {/* Arrow controls (fallback for touch/keyboard) */}
+                          <div className="flex flex-col gap-0.5">
+                            <button disabled={idx === 0}
+                              onClick={() => setAiStocksConfig(prev => {
+                                const list = [...prev[aiStockEditCategory]];
+                                [list[idx - 1], list[idx]] = [list[idx], list[idx - 1]];
+                                return { ...prev, [aiStockEditCategory]: list };
+                              })}
+                              className="text-slate-500 hover:text-slate-200 disabled:opacity-20 disabled:cursor-not-allowed leading-none text-xs"
+                              title="Move up">▲</button>
+                            <button disabled={idx === arr.length - 1}
+                              onClick={() => setAiStocksConfig(prev => {
+                                const list = [...prev[aiStockEditCategory]];
+                                [list[idx], list[idx + 1]] = [list[idx + 1], list[idx]];
+                                return { ...prev, [aiStockEditCategory]: list };
+                              })}
+                              className="text-slate-500 hover:text-slate-200 disabled:opacity-20 disabled:cursor-not-allowed leading-none text-xs"
+                              title="Move down">▼</button>
+                          </div>
+                          {/* Remove */}
+                          <button
+                            onClick={() => setAiStocksConfig(prev => ({
                               ...prev,
                               [aiStockEditCategory]: prev[aiStockEditCategory].filter(s => s.symbol !== stock.symbol),
-                            }));
-                          }}
-                          className="text-slate-500 hover:text-red-400 ml-1 font-bold leading-none"
-                          title="Remove">×</button>
-                      </div>
-                    ))}
-                    {(aiStocksConfig[aiStockEditCategory] || []).length === 0 && (
-                      <div className="text-slate-500 text-sm italic">No tickers — add one below.</div>
-                    )}
-                  </div>
+                            }))}
+                            className="text-slate-500 hover:text-red-400 font-bold leading-none ml-1"
+                            title="Remove">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Add new ticker */}
