@@ -158,3 +158,38 @@
   background: rgba(127, 29, 29, 0.55) !important;
   border-color: rgba(127, 29, 29, 0.6) !important;
 }
+
+/* Header nav text links with left-to-right underline animation */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.nav-link-active::after {
+  width: 100%;
+}
+
+.nav-link.nav-link-active {
+  color: #fff;
+}
+
+/* Extra left margin to separate Settings from the main nav links */
+.nav-link-settings {
+  margin-left: 1.5rem;
+}
