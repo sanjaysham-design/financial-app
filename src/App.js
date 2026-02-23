@@ -660,7 +660,11 @@ function FinancialApp() {
       <div className="max-w-7xl mx-auto p-6">
         <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
           <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Financial Hub</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              <button onClick={() => setActiveTab('news')} className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer">
+                FireHorse Investor
+              </button>
+            </h1>
             <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
           </div>
           <div className="md:hidden fixed top-4 right-6 z-60">
