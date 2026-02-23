@@ -20,9 +20,11 @@ export default async function handler(req, res) {
     const data = await response.json();
     const meta = data.chart.result[0].meta;
 
-    const price = meta.regularMarketPrice;
-    const change = meta.regularMarketChange;
-    const changePercent = meta.regularMarketChangePercent;
+    const price = meta.regularMarketPrice ?? null;
+    const change = meta.regularMarketChange ?? null;
+    const changePercent = meta.regularMarketChangePercent ?? null;
+
+    if (price === null) throw new Error('No price data returned');
 
     return res.status(200).json({ price, change, changePercent });
   } catch (error) {

@@ -739,32 +739,42 @@ function FinancialApp() {
                   {!indicesLoading && (marketIndexActuals.length > 0 || marketIndices.length > 0) && (
                     <div className="flex items-center gap-2">
                       {/* Actual index values */}
-                      {marketIndexActuals.map((index) => (
-                        <div key={index.symbol}
-                          className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-300">{index.shortName}</span>
-                          <span className="text-xs font-semibold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          <span className={'text-xs font-medium ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                            {index.change >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%
-                          </span>
-                        </div>
-                      ))}
+                      {marketIndexActuals.map((index) => {
+                        const pct = index.changePercent ?? 0;
+                        const chg = index.change ?? 0;
+                        const price = index.price ?? 0;
+                        return (
+                          <div key={index.symbol}
+                            className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-300">{index.shortName}</span>
+                            <span className="text-xs font-semibold text-white">{price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className={'text-xs font-medium ' + (chg >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                              {chg >= 0 ? '+' : ''}{pct.toFixed(2)}%
+                            </span>
+                          </div>
+                        );
+                      })}
                       {/* Divider */}
                       {marketIndexActuals.length > 0 && marketIndices.length > 0 && (
                         <div className="w-px h-5 bg-slate-600 mx-1" />
                       )}
                       {/* ETF pills — clickable to charts */}
-                      {marketIndices.map((index) => (
-                        <button key={index.symbol}
-                          onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
-                          className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
-                          <span className="text-xs font-bold text-blue-400">{index.symbol}</span>
-                          <span className="text-xs font-semibold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          <span className={'text-xs font-medium ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                            {index.change >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%
-                          </span>
-                        </button>
-                      ))}
+                      {marketIndices.map((index) => {
+                        const pct = index.changePercent ?? 0;
+                        const chg = index.change ?? 0;
+                        const price = index.price ?? 0;
+                        return (
+                          <button key={index.symbol}
+                            onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
+                            className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
+                            <span className="text-xs font-bold text-blue-400">{index.symbol}</span>
+                            <span className="text-xs font-semibold text-white">{price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className={'text-xs font-medium ' + (chg >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                              {chg >= 0 ? '+' : ''}{pct.toFixed(2)}%
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
