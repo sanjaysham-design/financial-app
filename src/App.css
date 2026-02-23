@@ -193,3 +193,193 @@
 .nav-link-settings {
   margin-left: 1.5rem;
 }
+
+/* ===================== LIGHT MODE ===================== */
+.color-light {
+  --panel-bg: #ffffff;
+  --subpanel-bg: #f1f5f9;
+  --page-bg: linear-gradient(180deg, #e2e8f0 0%, #f1f5f9 100%);
+  --panel-border-default: rgba(0,0,0,0.08);
+  --heading-color: #0f172a;
+  color-scheme: light;
+
+  background: linear-gradient(180deg, #e8eef7 0%, #f1f5fb 100%) !important;
+  color: #0f172a !important;
+}
+
+/* Page text */
+.color-light,
+.color-light * {
+  color-scheme: light;
+}
+
+/* Override the dark gradient on the root wrapper */
+.color-light.bg-gradient-to-br {
+  background: linear-gradient(135deg, #dde6f2 0%, #eaf0f9 50%, #dde6f2 100%) !important;
+}
+
+/* ---- Panels ---- */
+.color-light .lg-panel {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+.color-light .lg-subpanel {
+  background: #f1f5f9 !important;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+/* Main content card */
+.color-light .bg-slate-800 {
+  background: #ffffff !important;
+}
+.color-light .bg-slate-700 {
+  background: #f8fafc !important;
+}
+.color-light .bg-slate-600 {
+  background: #e2e8f0 !important;
+}
+
+/* ---- Typography ---- */
+.color-light .text-white,
+.color-light .text-slate-100,
+.color-light .text-slate-200 {
+  color: #0f172a !important;
+}
+.color-light .text-slate-300 {
+  color: #334155 !important;
+}
+.color-light .text-slate-400 {
+  color: #64748b !important;
+}
+.color-light .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.color-light .text-slate-600 {
+  color: #94a3b8 !important;
+}
+.color-light .text-blue-400 {
+  color: #2563eb !important;
+}
+.color-light .text-blue-300 {
+  color: #3b82f6 !important;
+}
+
+/* ---- Borders & dividers ---- */
+.color-light .border-slate-700,
+.color-light .border-slate-600 {
+  border-color: #cbd5e1 !important;
+}
+.color-light .border-b {
+  border-color: #e2e8f0 !important;
+}
+
+/* ---- Inputs & selects ---- */
+.color-light input,
+.color-light select,
+.color-light textarea {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.color-light input::placeholder,
+.color-light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ---- Buttons ---- */
+.color-light .bg-blue-600 {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+.color-light .bg-blue-600:hover,
+.color-light .hover\:bg-blue-700:hover {
+  background: #1d4ed8 !important;
+}
+
+/* ---- Header ---- */
+.color-light header {
+  background: transparent !important;
+}
+
+/* ---- Mobile nav aside ---- */
+.color-light aside {
+  background: #ffffff !important;
+  border-left: 1px solid #e2e8f0 !important;
+}
+.color-light .border-slate-700 {
+  border-color: #e2e8f0 !important;
+}
+
+/* ---- Nav links ---- */
+.color-light .nav-link {
+  color: #475569 !important;
+}
+.color-light .nav-link.nav-link-active {
+  color: #0f172a !important;
+}
+.color-light .nav-link::after {
+  background: linear-gradient(to right, #2563eb, #059669) !important;
+}
+
+/* ---- Sub-tab indicator ---- */
+.color-light .bg-gradient-to-r.from-blue-400.to-emerald-400 {
+  background: linear-gradient(to right, #2563eb, #059669) !important;
+}
+
+/* ---- Charts ---- */
+.color-light .recharts-cartesian-grid line {
+  stroke: #e2e8f0 !important;
+}
+.color-light .recharts-text {
+  fill: #64748b !important;
+}
+
+/* ---- Stock sentiment cards — lighter tints for light mode ---- */
+.color-light .stock-card-up,
+.color-light .stock-card-up.lg-panel,
+.color-light .stock-card-up.rounded-lg {
+  background: rgba(187, 247, 208, 0.7) !important;
+  border-color: rgba(21, 128, 61, 0.25) !important;
+}
+.color-light .stock-card-down,
+.color-light .stock-card-down.lg-panel,
+.color-light .stock-card-down.rounded-lg {
+  background: rgba(254, 202, 202, 0.7) !important;
+  border-color: rgba(185, 28, 28, 0.2) !important;
+}
+
+/* ---- Liquid Glass + light mode: swap glass tint to a light frosted look ---- */
+.color-light.theme-liquid-glass {
+  background: linear-gradient(180deg, #dde6f2 0%, #eaf0f9 100%) !important;
+}
+.color-light.theme-liquid-glass .rounded-lg,
+.color-light.theme-liquid-glass .rounded-xl,
+.color-light.theme-liquid-glass .rounded-md,
+.color-light.theme-liquid-glass .lg-panel {
+  background: rgba(255,255,255,0.72) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
+}
+.color-light.theme-liquid-glass .lg-subpanel {
+  background: rgba(241,245,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+.color-light.theme-liquid-glass .text-slate-400,
+.color-light.theme-liquid-glass .text-slate-300,
+.color-light.theme-liquid-glass .text-slate-200 {
+  color: #475569 !important;
+}
+.color-light.theme-liquid-glass .text-blue-400 {
+  color: #2563eb !important;
+}
+.color-light.theme-liquid-glass input,
+.color-light.theme-liquid-glass select,
+.color-light.theme-liquid-glass textarea {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  color: #0f172a !important;
+}
+/* ===================== END LIGHT MODE ===================== */
