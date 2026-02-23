@@ -179,6 +179,7 @@ function FinancialApp() {
   const [stockInput, setStockInput] = useState('');
   const [selectedStocks, setSelectedStocks] = useState([]);
   const [marketIndices, setMarketIndices] = useState([]);
+  const [marketIndexActuals, setMarketIndexActuals] = useState([]);
   const [indicesLoading, setIndicesLoading] = useState(false);
   const [etfQuotes, setEtfQuotes] = useState({});
   const [, setEtfQuotesLoading] = useState(false);
@@ -400,31 +401,41 @@ function FinancialApp() {
   const fetchMarketIndices = useCallback(async () => {
     setIndicesLoading(true);
     try {
-      const symbols = [
+      const actualSymbols = [
+        { symbol: '^DJI',  name: 'Dow Jones',  shortName: 'DOW' },
+        { symbol: '^GSPC', name: 'S&P 500',    shortName: 'S&P' },
+        { symbol: '^IXIC', name: 'Nasdaq',      shortName: 'NDQ' },
+      ];
+      const etfSymbols = [
         { symbol: 'DIA', name: 'Dow Jones' },
         { symbol: 'SPY', name: 'S&P 500' },
-        { symbol: 'QQQ', name: 'Nasdaq' }
+        { symbol: 'QQQ', name: 'Nasdaq' },
       ];
-      const results = [];
-      for (const idx of symbols) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 400));
-          const response = await fetch(`/api/quote?ticker=${idx.symbol}`);
-          const data = await response.json();
-          const quote = data['Global Quote'];
-          if (quote) {
-            results.push({
-              name: idx.name, symbol: idx.symbol,
-              price: parseFloat(quote['05. price']),
-              change: parseFloat(quote['09. change']),
-              changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
-            });
-          }
-        } catch (err) {
-          console.warn(`Failed to fetch ${idx.name}:`, err);
-        }
+      const fetchQuote = async (sym) => {
+        await new Promise(resolve => setTimeout(resolve, 400));
+        const response = await fetch(`/api/quote?ticker=${encodeURIComponent(sym.symbol)}`);
+        const data = await response.json();
+        const quote = data['Global Quote'];
+        if (!quote) return null;
+        return {
+          ...sym,
+          price: parseFloat(quote['05. price']),
+          change: parseFloat(quote['09. change']),
+          changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+        };
+      };
+      const actualResults = [];
+      for (const sym of actualSymbols) {
+        try { const r = await fetchQuote(sym); if (r) actualResults.push(r); }
+        catch (err) { console.warn(`Failed to fetch ${sym.name}:`, err); }
       }
-      setMarketIndices(results);
+      const etfResults = [];
+      for (const sym of etfSymbols) {
+        try { const r = await fetchQuote(sym); if (r) etfResults.push(r); }
+        catch (err) { console.warn(`Failed to fetch ${sym.name}:`, err); }
+      }
+      setMarketIndexActuals(actualResults);
+      setMarketIndices(etfResults);
     } catch (err) {
       console.error('Failed to fetch market indices:', err);
     } finally {
@@ -718,8 +729,24 @@ function FinancialApp() {
                 {/* Title + index pills */}
                 <div className="flex flex-wrap items-center gap-4">
                   <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Newspaper className="text-blue-400" />News</h2>
-                  {!indicesLoading && marketIndices.length > 0 && (
+                  {!indicesLoading && (marketIndexActuals.length > 0 || marketIndices.length > 0) && (
                     <div className="flex items-center gap-2">
+                      {/* Actual index values */}
+                      {marketIndexActuals.map((index) => (
+                        <div key={index.symbol}
+                          className="lg-panel rounded-lg px-3 py-1.5 flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-300">{index.shortName}</span>
+                          <span className="text-xs font-semibold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className={'text-xs font-medium ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                            {index.change >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%
+                          </span>
+                        </div>
+                      ))}
+                      {/* Divider */}
+                      {marketIndexActuals.length > 0 && marketIndices.length > 0 && (
+                        <div className="w-px h-5 bg-slate-600 mx-1" />
+                      )}
+                      {/* ETF pills — clickable to charts */}
                       {marketIndices.map((index) => (
                         <button key={index.symbol}
                           onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}
