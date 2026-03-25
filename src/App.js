@@ -566,9 +566,9 @@ function FinancialApp() {
   }, [fetchNewsWithKey]);
 
   const newsCards = newsStories.map((story, idx) => {
-    let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
-    if (story.sentiment === 'positive') sentimentClass = 'bg-emerald-500/20 text-emerald-400';
-    else if (story.sentiment === 'negative') sentimentClass = 'bg-red-500/20 text-red-400';
+    let sentimentClass = 'text-[#f97316]';
+    if (story.sentiment === 'positive') sentimentClass = 'text-[#22c55e]';
+    else if (story.sentiment === 'negative') sentimentClass = 'text-[#ef4444]';
     let timeAgo = '';
     if (story.publishedAt) {
       const publishedDate = new Date(story.publishedAt);
@@ -583,25 +583,25 @@ function FinancialApp() {
       else timeAgo = publishedDate.toLocaleDateString();
     }
     return (
-      <div key={idx} className="relative glass-sheen overflow-hidden lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
+      <div key={idx} className="lg-panel rounded-xl p-4 hover:opacity-90 transition-opacity">
         <div className="flex justify-between items-start mb-2">
           <a href={story.url} target="_blank" rel="noopener noreferrer"
-            className="text-lg font-bold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors">
+            className="text-base font-semibold flex-1 text-blue-400 hover:text-blue-300 cursor-pointer transition-colors">
             {story.headline}
           </a>
-          <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
-          <span className={'px-3 py-1 rounded-full text-xs font-semibold ' + sentimentClass}>{story.sentiment}</span>
-          {story.source && <span className="text-xs text-slate-500">{story.source}</span>}
+          <div className="flex flex-col items-end gap-1.5 ml-4 shrink-0">
+          <span className={'text-xs font-medium ' + sentimentClass}>{story.sentiment}</span>
+          {story.source && <span className="text-xs text-[#6b7280]">{story.source}</span>}
           </div>
         </div>
-        {timeAgo && <div className="text-xs text-slate-400 mb-2">{timeAgo}</div>}
-        <p className="text-slate-300 mb-3">{story.summary}</p>
+        {timeAgo && <div className="text-xs text-[#6b7280] mb-2">{timeAgo}</div>}
+        <p className="text-sm text-[#9ca3af]">{story.summary}</p>
       </div>
     );
   });
 
   return (
-    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'} text-white`} data-theme={theme}>
+    <div className={`min-h-screen ${theme === 'liquid-glass' ? 'theme-liquid-glass' : 'theme-classic'} text-white`} data-theme={theme}>
       <div
         className={`fixed inset-0 ${theme === 'liquid-glass' ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/50'} z-40 transition-opacity duration-200 ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setMobileNavOpen(false)}
@@ -610,17 +610,17 @@ function FinancialApp() {
       <aside role="dialog" aria-modal="true"
         className="fixed top-0 right-0 h-full w-64 max-w-xs lg-panel z-50 md:hidden"
         style={{ transform: mobileNavOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 300ms ease-out' }}>
-        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-          <div className="text-lg font-bold">Menu</div>
+        <div className="p-4 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+          <div className="text-base font-semibold">Menu</div>
           <button onClick={() => setMobileNavOpen(false)} aria-label="Close menu"
-            className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}>
+            className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-[#1a1b1f] hover:bg-[#252629]'}`}>
             <X size={18} />
           </button>
         </div>
         <div className="p-4 space-y-2">
           {['news','sectors','charts','screener','ai','settings'].map(tab => (
             <button key={tab} onClick={() => { setActiveTab(tab); setMobileNavOpen(false); }}
-              className={`w-full text-left px-4 py-2 rounded text-sm font-semibold ${activeTab === tab ? (theme === 'liquid-glass' ? 'bg-white/6 text-slate-100' : 'bg-slate-700 text-white') : 'text-slate-200'}`}>
+              className={`w-full text-left px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeTab === tab ? (theme === 'liquid-glass' ? 'bg-white/6 text-blue-400' : 'bg-[#1a2035] text-blue-400') : 'text-[#6b7280] hover:text-white'}`}>
               {tab === 'news' ? 'News' : tab === 'sectors' ? 'Sector Trends' : tab === 'charts' ? 'Technical Analysis' : tab === 'screener' ? 'Stock Valuations' : tab === 'ai' ? 'AI Tracker' : 'Settings'}
             </button>
           ))}
@@ -628,14 +628,14 @@ function FinancialApp() {
       </aside>
 
       <div className="max-w-7xl mx-auto p-6">
-        <header className="mb-8 flex items-center justify-between relative glass-sheen overflow-hidden">
+        <header className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Financial Hub</h1>
-            <p className="text-slate-400 hidden md:block">Comprehensive market insights and stock analysis tools</p>
+            <h1 className="text-2xl font-bold text-white">Financial Hub</h1>
+            <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Market insights and stock analysis</p>
           </div>
           <div className="md:hidden fixed top-4 right-6 z-60">
             <button onClick={() => setMobileNavOpen(prev => !prev)} aria-expanded={mobileNavOpen} aria-label="Toggle navigation"
-              className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-700 hover:bg-slate-600'}`}>
+              className={`p-2 rounded ${theme === 'liquid-glass' ? 'bg-white/5 hover:bg-white/10' : 'bg-[#1a1b1f] hover:bg-[#252629]'}`}>
               <span className="relative inline-block w-5 h-5">
                 <Menu size={20} className={`absolute inset-0 transition-all duration-200 transform ${mobileNavOpen ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`} />
                 <X size={20} className={`absolute inset-0 transition-all duration-200 transform ${mobileNavOpen ? 'opacity-100 scale-105' : 'opacity-0 scale-90'}`} />
@@ -644,7 +644,7 @@ function FinancialApp() {
           </div>
         </header>
 
-        <div className={`${theme === 'liquid-glass' ? 'lg-panel' : 'bg-slate-800'} rounded-xl shadow-2xl p-6`}>
+        <div className="lg-panel rounded-xl p-6">
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div className="hidden md:flex items-center gap-3">
@@ -656,12 +656,12 @@ function FinancialApp() {
                   { id: 'ai', label: 'AI Tracker' },
                 ].map(t => (
                   <button key={t.id} onClick={() => setActiveTab(t.id)}
-                    className={"px-4 py-2 rounded-md text-sm font-semibold " + (activeTab === t.id ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}>
+                    className={"px-4 py-2 rounded-lg text-sm font-medium transition-colors " + (activeTab === t.id ? 'bg-[#1a2035] text-blue-400' : 'text-[#6b7280] hover:text-white hover:bg-[#1a1b1f]')}>
                     {t.label}
                   </button>
                 ))}
                 <button onClick={() => setActiveTab('settings')}
-                  className={"px-3 py-2 rounded-md text-sm font-semibold flex items-center gap-2 " + (activeTab === 'settings' ? 'bg-slate-700 text-white' : 'bg-transparent text-slate-400 hover:bg-slate-700')}>
+                  className={"px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors " + (activeTab === 'settings' ? 'bg-[#1a2035] text-blue-400' : 'text-[#6b7280] hover:text-white hover:bg-[#1a1b1f]')}>
                   <Settings size={16} /> Settings
                 </button>
               </div>
@@ -679,39 +679,42 @@ function FinancialApp() {
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Newspaper className="text-blue-400" />Market News</h2>
-                  <p className="text-slate-400 text-sm hidden md:block">Curated market-moving headlines and quick sentiment.</p>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Newspaper className="text-blue-400" size={16} />Market News</h2>
+                  <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Curated market-moving headlines and quick sentiment.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400">{newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}</div>
+                  <div className="text-xs text-[#6b7280]">{newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}</div>
                   <button onClick={() => fetchNewsWithKey(apiKeys.newsApi)}
-                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2" disabled={loading}>
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors" disabled={loading}>
                     {loading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
                   </button>
                 </div>
               </div>
               {!indicesLoading && marketIndices.length > 0 && (
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {marketIndices.map((index) => (
-                    <div key={index.symbol} className="lg-panel rounded-lg p-4 border border-slate-600 hover:shadow-lg transition-shadow cursor-pointer"
+                  {marketIndices.map((index) => {
+                    const accentColor = index.symbol === 'DIA' ? '#2dd4bf' : index.symbol === 'SPY' ? '#3b82f6' : '#a78bfa';
+                    return (
+                    <div key={index.symbol}
+                      className="lg-panel rounded-xl p-4 cursor-pointer hover:opacity-90 transition-opacity"
+                      style={{ borderBottom: `2px solid ${accentColor}` }}
                       onClick={() => { setStockTicker(index.symbol); setActiveTab('charts'); }}>
-                      <div className="text-sm text-slate-400 mb-1 flex items-center justify-between">
-                        <div>{index.symbol} ({index.name})</div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-[10px] uppercase tracking-widest text-[#6b7280]">{index.name} · {index.symbol}</div>
                         <button onClick={(e) => { e.stopPropagation(); fetchNewsWithKey(apiKeys.newsApi, index.symbol); }}
-                          className="text-xs lg-subpanel px-2 py-1 rounded hover:opacity-95 text-slate-200">News</button>
+                          className="text-[10px] uppercase tracking-wide bg-[#141418] px-2 py-1 rounded text-[#6b7280] hover:text-white transition-colors">News</button>
                       </div>
-                      <div className="flex items-baseline justify-between">
-                        <div className="text-2xl font-bold text-white">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                        <div className={'text-sm font-semibold ' + (index.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                          {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
-                        </div>
+                      <div className="text-2xl font-bold text-white mb-1">{index.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                      <div className={'text-sm font-medium ' + (index.change >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                        {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%)
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               {!newsStories || newsStories.length === 0
-                ? <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
+                ? <div className="lg-panel rounded-xl p-8 text-center text-[#9ca3af] text-sm">No news available. Try refreshing or check API keys.</div>
                 : <div className="space-y-4">{newsCards}</div>
               }
             </div>
@@ -721,18 +724,18 @@ function FinancialApp() {
           {activeTab === 'settings' && (
             <div>
               <div className="mb-4">
-                <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Settings className="text-blue-400" />Settings</h2>
-                <p className="text-slate-400 text-sm hidden md:block">Customize application behavior and appearance</p>
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Settings className="text-blue-400" size={16} />Settings</h2>
+                <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Customize application behavior and appearance</p>
               </div>
-              <div className="lg-panel rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 text-slate-100">Theme</h3>
+              <div className="lg-panel rounded-xl p-4">
+                <h3 className="text-sm font-semibold mb-3 text-white uppercase tracking-widest">Theme</h3>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {['classic', 'liquid-glass'].map(t => (
-                    <label key={t} className={`p-3 rounded-md cursor-pointer flex-1 border ${theme === t ? 'border-blue-500 bg-slate-600' : 'border-transparent lg-panel'}`}>
+                    <label key={t} className={`p-3 rounded-xl cursor-pointer flex-1 border ${theme === t ? 'border-blue-500 bg-[#1a2035]' : 'border-[rgba(255,255,255,0.05)] lg-panel'}`}>
                       <input type="radio" name="theme" value={t} checked={theme === t} onChange={() => setTheme(t)} className="mr-3" />
                       <div>
-                        <div className="font-semibold">{t === 'classic' ? 'Classic' : 'Liquid Glass'}</div>
-                        <div className="text-xs text-slate-400">{t === 'classic' ? 'Current application look' : 'A glassy, translucent aesthetic'}</div>
+                        <div className="font-semibold text-sm text-white">{t === 'classic' ? 'Classic' : 'Liquid Glass'}</div>
+                        <div className="text-xs text-[#6b7280] mt-0.5">{t === 'classic' ? 'Current application look' : 'A glassy, translucent aesthetic'}</div>
                       </div>
                     </label>
                   ))}
@@ -746,17 +749,17 @@ function FinancialApp() {
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><BarChart3 className="text-blue-400" />Sector Trends</h2>
-                  <p className="text-slate-400 text-sm hidden md:block">Current performance and near-term outlook for major sectors.</p>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2"><BarChart3 className="text-blue-400" size={16} />Sector Trends</h2>
+                  <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Current performance and near-term outlook for major sectors.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400">{sectorsLastUpdated ? `Last: ${new Date(sectorsLastUpdated).toLocaleString()}` : ''}</div>
-                  <button onClick={fetchSectors} className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2" disabled={sectorsLoading}>
+                  <div className="text-xs text-[#6b7280]">{sectorsLastUpdated ? `Last: ${new Date(sectorsLastUpdated).toLocaleString()}` : ''}</div>
+                  <button onClick={fetchSectors} className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors" disabled={sectorsLoading}>
                     {sectorsLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
                   </button>
                 </div>
               </div>
-              {sectorsError && <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4"><p className="text-red-300 text-sm">{sectorsError}</p></div>}
+              {sectorsError && <div className="bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-xl p-3 mb-4"><p className="text-[#ef4444] text-sm">{sectorsError}</p></div>}
               {sectorsLoading
                 ? <div className="flex items-center justify-center py-8"><Loader className="animate-spin text-blue-400" size={36} /></div>
                 : (
@@ -767,26 +770,26 @@ function FinancialApp() {
                       const isRecovery = outlook === 'Early Recovery';
                       const isWeak = outlook === 'Weak';
                       const etfTicker = SECTOR_ETF_MAP[sec.name] || null;
-                      const badgeClass = isStrong ? 'bg-emerald-500 text-emerald-900' : isRecovery ? 'bg-amber-300 text-amber-900' : isWeak ? 'bg-red-300 text-red-900' : 'bg-slate-700 text-slate-200';
+                      const badgeClass = isStrong ? 'text-[#22c55e] font-semibold' : isRecovery ? 'text-[#f97316] font-semibold' : isWeak ? 'text-[#ef4444] font-semibold' : 'text-[#6b7280] font-semibold';
                       return (
-                        <div key={sec.id} className={'p-4 rounded-lg relative overflow-hidden glass-sheen ' + (isStrong ? 'border-2 border-emerald-600' : 'lg-panel')}>
+                        <div key={sec.id} className="lg-panel p-4 rounded-xl relative overflow-hidden">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h3 className="text-lg font-semibold text-slate-100">{sec.name}</h3>
-                              <div className="text-xs text-slate-400">{sec.drivers}</div>
+                              <h3 className="text-base font-semibold text-white">{sec.name}</h3>
+                              <div className="text-xs text-[#6b7280] mt-0.5">{sec.drivers}</div>
                             </div>
-                            <div className="text-right"><div className={"inline-block px-2 py-1 rounded text-xs font-semibold " + badgeClass}>{outlook}</div></div>
+                            <div className="text-right"><div className={"text-xs " + badgeClass}>{outlook}</div></div>
                           </div>
                           {etfTicker && (
                             <div className="mt-2 flex items-center justify-between">
                               <button type="button" onClick={() => { setStockTicker(etfTicker); setActiveTab('charts'); }}
-                                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide px-2 py-1 rounded lg-subpanel text-slate-200 border border-slate-600 hover:opacity-95 transition-colors">
-                                ETF: <span className="font-semibold">{etfTicker}</span>
+                                className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wide px-2 py-1 rounded bg-[#141418] text-[#6b7280] hover:text-white transition-colors">
+                                ETF: <span className="font-semibold text-white">{etfTicker}</span>
                               </button>
                               {etfQuotes[etfTicker] && (
                                 <div className="text-right text-xs">
-                                  <div className="text-slate-200 font-semibold">${etfQuotes[etfTicker].price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                                  <div className={(etfQuotes[etfTicker].change ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                                  <div className="text-white font-semibold">${etfQuotes[etfTicker].price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  <div className={(etfQuotes[etfTicker].change ?? 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
                                     {(etfQuotes[etfTicker].change ?? 0) >= 0 ? '+' : ''}{(etfQuotes[etfTicker].change ?? 0).toFixed(2)} ({(etfQuotes[etfTicker].changePercent ?? 0) >= 0 ? '+' : ''}{(etfQuotes[etfTicker].changePercent ?? 0).toFixed(2)}%)
                                   </div>
                                 </div>
@@ -796,8 +799,8 @@ function FinancialApp() {
                           <div className="mt-3 flex items-center gap-4 text-sm">
                             {['1w','1m','3m'].map(p => (
                               <div key={p}>
-                                <div className="text-xs text-slate-400">{p.toUpperCase()}</div>
-                                <div className={sec.perf[p] >= 0 ? 'text-emerald-300' : 'text-red-300'}>{sec.perf[p]}%</div>
+                                <div className="text-[10px] uppercase tracking-wide text-[#6b7280]">{p}</div>
+                                <div className={'text-sm font-medium ' + (sec.perf[p] >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{sec.perf[p]}%</div>
                               </div>
                             ))}
                           </div>
@@ -815,36 +818,36 @@ function FinancialApp() {
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100"><Search className="text-blue-400" />Stock Valuations</h2>
-                  <p className="text-slate-400 text-sm hidden md:block">Comprehensive valuation analysis based on key fundamentals</p>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Search className="text-blue-400" size={16} />Stock Valuations</h2>
+                  <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Comprehensive valuation analysis based on key fundamentals</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-xs text-slate-400">{screenerLastUpdated ? `Last: ${new Date(screenerLastUpdated).toLocaleString()}` : ''}</div>
                 </div>
               </div>
-              {screenerError && <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 mb-4"><p className="text-red-300 text-sm">{screenerError}</p></div>}
+              {screenerError && <div className="bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-xl p-3 mb-4"><p className="text-[#ef4444] text-sm">{screenerError}</p></div>}
               {screenerLoading
                 ? <div className="flex items-center justify-center py-8"><Loader className="animate-spin text-blue-400" size={36} /></div>
                 : (
                   <div>
-                    <div className="mb-6 lg-panel rounded-lg p-4">
+                    <div className="mb-6 lg-panel rounded-xl p-4">
                       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-4">
                         <input type="text" value={stockInput} onChange={(e) => setStockInput(e.target.value.toUpperCase())}
                           onKeyPress={(e) => e.key === 'Enter' && addStock()} placeholder="Enter stock symbol (e.g., AAPL)"
-                          className="lg-subpanel text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
+                          className="bg-[#141418] border border-[rgba(255,255,255,0.06)] text-white placeholder-[#6b7280] px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto"
                           disabled={selectedStocks.length >= MAX_STOCKS} />
                         <button onClick={addStock} disabled={!stockInput || selectedStocks.length >= MAX_STOCKS}
                           className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded-lg font-medium w-full md:w-auto">Add Stock</button>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedStocks.map((stock) => (
-                          <div key={stock} className="lg-subpanel px-3 py-1 rounded-full flex items-center gap-2">
-                            <span className="text-sm">{stock}</span>
-                            <button onClick={() => removeStock(stock)} className="text-slate-400 hover:text-red-400">×</button>
+                          <div key={stock} className="bg-[#141418] border border-[rgba(255,255,255,0.06)] px-3 py-1 rounded-full flex items-center gap-2">
+                            <span className="text-sm text-white">{stock}</span>
+                            <button onClick={() => removeStock(stock)} className="text-[#6b7280] hover:text-[#ef4444] transition-colors">×</button>
                           </div>
                         ))}
                       </div>
-                      <div className="mt-2 text-xs text-slate-400">{selectedStocks.length}/{MAX_STOCKS} stocks selected</div>
+                      <div className="mt-2 text-xs text-[#6b7280]">{selectedStocks.length}/{MAX_STOCKS} stocks selected</div>
                       <div className="mt-4">
                         <button onClick={fetchScreener} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium w-full md:w-auto"
                           disabled={screenerLoading || selectedStocks.length === 0}>
@@ -854,28 +857,28 @@ function FinancialApp() {
                     </div>
                     <div className="space-y-4">
                       {screenerResults.length === 0
-                        ? <div className="text-slate-400 text-sm text-center py-8">Add stocks and click Submit to analyze fundamentals.</div>
+                        ? <div className="text-[#6b7280] text-sm text-center py-8">Add stocks and click Submit to analyze fundamentals.</div>
                         : screenerResults.map(s => {
                           let valuation = 'Fairly Valued';
-                          let valuationColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                          let valuationColor = 'text-[#f97316]';
                           let score = 0; let factors = 0;
                           if (s.peg != null) { if (s.peg < 1) score += 2; else if (s.peg < 2) score += 1; factors += 2; }
                           if (s.pe != null) { if (s.pe < 15) score += 1; else if (s.pe > 25) score -= 1; factors += 1; }
                           if (s.pb != null) { if (s.pb < 1) score += 1; else if (s.pb < 3) score += 0.5; factors += 1; }
                           if (s.profitMargin != null && s.profitMargin > 0) { if (s.profitMargin > 20) score += 1; else if (s.profitMargin > 15) score += 0.5; factors += 1; }
                           const avgScore = factors > 0 ? score / factors : 0.5;
-                          if (avgScore > 0.6) { valuation = 'Undervalued'; valuationColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'; }
-                          else if (avgScore < 0.3) { valuation = 'Overvalued'; valuationColor = 'bg-red-500/20 text-red-400 border-red-500/30'; }
+                          if (avgScore > 0.6) { valuation = 'Undervalued'; valuationColor = 'text-[#22c55e]'; }
+                          else if (avgScore < 0.3) { valuation = 'Overvalued'; valuationColor = 'text-[#ef4444]'; }
                           return (
-                            <div key={s.symbol} className="lg-panel rounded-lg p-5">
+                            <div key={s.symbol} className="lg-panel rounded-xl p-5">
                               <div className="flex justify-between items-start mb-4">
                                 <div className="flex-1">
-                                  <div className="flex items-baseline gap-4">
-                                    <div className="text-2xl font-bold text-blue-400">{s.symbol}</div>
+                                  <div className="flex items-baseline gap-3">
+                                    <div className="text-xl font-bold text-white">{s.symbol}</div>
+                                    <div className={'text-sm font-semibold hidden md:block ' + valuationColor}>{valuation}</div>
                                   </div>
-                                  <div className="text-slate-300 text-sm mt-1">{s.name}</div>
+                                  <div className="text-[#6b7280] text-xs mt-0.5">{s.name}</div>
                                 </div>
-                                <div className={'px-4 py-2 rounded border font-bold ' + valuationColor + ' hidden md:block'}>{valuation}</div>
                               </div>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {[
@@ -888,14 +891,14 @@ function FinancialApp() {
                                   { label: 'Profit Margin %', value: s.profitMargin != null ? (s.profitMargin * 100).toFixed(2) + '%' : 'N/A', sub: s.profitMargin != null ? (s.profitMargin * 100 > 20 ? '✓ Excellent' : s.profitMargin * 100 > 10 ? 'Good' : s.profitMargin * 100 > 0 ? 'Fair' : '⚠ Low') : '' },
                                   { label: 'EPS Growth', value: s.qEarningsGrowth != null ? (s.qEarningsGrowth > 0 ? '+' : '') + (s.qEarningsGrowth * 100).toFixed(2) + '%' : 'N/A', sub: s.qEarningsGrowth != null ? (s.qEarningsGrowth * 100 > 15 ? '✓ Strong' : s.qEarningsGrowth * 100 > 5 ? 'Good' : s.qEarningsGrowth * 100 > 0 ? 'Fair' : '⚠ Negative') : '' },
                                 ].map(m => (
-                                  <div key={m.label} className="lg-subpanel rounded-lg p-3">
-                                    <div className="text-xs text-slate-400 mb-1">{m.label}</div>
-                                    <div className="text-lg font-bold">{m.value}</div>
-                                    <div className="text-xs text-slate-500 mt-1">{m.sub}</div>
+                                  <div key={m.label} className="lg-subpanel rounded-xl p-3">
+                                    <div className="text-[10px] uppercase tracking-widest text-[#6b7280] mb-1">{m.label}</div>
+                                    <div className="text-base font-bold text-white">{m.value}</div>
+                                    <div className="text-xs text-[#6b7280] mt-1">{m.sub}</div>
                                   </div>
                                 ))}
                               </div>
-                              <div className={'mt-4 px-4 py-2 rounded border font-bold ' + valuationColor + ' md:hidden text-center'}>{valuation}</div>
+                              <div className={'mt-3 text-sm font-semibold ' + valuationColor + ' md:hidden text-center'}>{valuation}</div>
                             </div>
                           );
                         })
@@ -912,13 +915,13 @@ function FinancialApp() {
             <div>
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-100">🤖 AI Tracker</h2>
-                  <p className="text-slate-400 text-sm hidden md:block">Live AI stock prices and latest AI news from across the web</p>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">🤖 AI Tracker</h2>
+                  <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Live AI stock prices and latest AI news from across the web</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
+                  <div className="text-xs text-[#6b7280]">{aiLastUpdated ? `Last: ${new Date(aiLastUpdated).toLocaleString()}` : ''}</div>
                   <button onClick={() => { fetchAiNews(); fetchAiStocks(); }}
-                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center gap-2"
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors"
                     disabled={aiNewsLoading || aiStocksLoading}>
                     {aiNewsLoading || aiStocksLoading ? <Loader className="animate-spin" size={14} /> : 'Refresh'}
                   </button>
@@ -926,7 +929,7 @@ function FinancialApp() {
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-200 mb-4">AI Stocks</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-4">AI Stocks</h3>
                 {aiStocksLoading && Object.keys(aiStocks).length === 0 ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader className="animate-spin text-blue-400 mr-3" size={24} />
@@ -936,25 +939,26 @@ function FinancialApp() {
                   <div className="space-y-6">
                     {Object.entries(AI_STOCKS).map(([category, stocks]) => (
                       <div key={category}>
-                        <h4 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">{category}</h4>
+                        <h4 className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-widest mb-3">{category}</h4>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                           {stocks.map(stock => {
                             const data = aiStocks[stock.symbol];
                             return (
                               <div key={stock.symbol}
-                                className="lg-panel rounded-lg p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                                className="lg-panel rounded-xl p-3 cursor-pointer hover:opacity-90 transition-opacity"
+                                style={{ borderBottom: `2px solid ${(data?.change ?? 0) >= 0 ? '#22c55e' : '#ef4444'}` }}
                                 onClick={() => { setStockTicker(stock.symbol); setActiveTab('charts'); }}>
-                                <div className="text-xs text-slate-400 mb-1">{stock.name}</div>
-                                <div className="text-lg font-bold text-blue-400">{stock.symbol}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-[#6b7280] mb-1">{stock.name}</div>
+                                <div className="text-sm font-bold text-white">{stock.symbol}</div>
                                 {data ? (
                                   <>
-                                    <div className="text-sm font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
-                                    <div className={'text-xs font-medium mt-1 ' + (data.change >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                    <div className="text-base font-semibold text-white mt-1">${data.price.toFixed(2)}</div>
+                                    <div className={'text-xs font-medium mt-0.5 ' + (data.change >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                                       {data.change >= 0 ? '+' : ''}{data.change.toFixed(2)} ({data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%)
                                     </div>
                                   </>
                                 ) : (
-                                  <div className="text-xs text-slate-500 mt-1">Loading...</div>
+                                  <div className="text-xs text-[#6b7280] mt-1">—</div>
                                 )}
                               </div>
                             );
@@ -967,14 +971,14 @@ function FinancialApp() {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-200 mb-4">Latest AI News</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-4">Latest AI News</h3>
                 {aiNewsLoading && aiNews.length === 0 ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader className="animate-spin text-blue-400 mr-3" size={24} />
                     <span className="text-slate-400">Fetching AI news from across the web...</span>
                   </div>
                 ) : aiNews.length === 0 ? (
-                  <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No AI news found. Try refreshing.</div>
+                  <div className="lg-panel rounded-xl p-8 text-center text-[#9ca3af] text-sm">No AI news found. Try refreshing.</div>
                 ) : (
                   <div className="space-y-3">
                     {aiNews.map((article, idx) => {
@@ -991,16 +995,16 @@ function FinancialApp() {
                         else timeAgo = publishedDate.toLocaleDateString();
                       }
                       return (
-                        <div key={idx} className="lg-panel rounded-lg p-4 hover:opacity-95 transition-colors">
+                        <div key={idx} className="lg-panel rounded-xl p-4 hover:opacity-90 transition-opacity">
                           <div className="flex justify-between items-start mb-1">
                             <a href={article.link} target="_blank" rel="noopener noreferrer"
-                              className="text-base font-semibold text-blue-400 hover:text-blue-300 flex-1 transition-colors">
+                              className="text-sm font-semibold text-blue-400 hover:text-blue-300 flex-1 transition-colors">
                               {article.title}
                             </a>
-                            <span className="text-xs text-slate-500 ml-4 whitespace-nowrap">{article.source}</span>
+                            <span className="text-xs text-[#6b7280] ml-4 whitespace-nowrap">{article.source}</span>
                           </div>
-                          {timeAgo && <div className="text-xs text-slate-500 mb-1">{timeAgo}</div>}
-                          {article.summary && <p className="text-sm text-slate-400">{article.summary.slice(0, 200)}{article.summary.length > 200 ? '...' : ''}</p>}
+                          {timeAgo && <div className="text-xs text-[#6b7280] mb-1">{timeAgo}</div>}
+                          {article.summary && <p className="text-xs text-[#9ca3af]">{article.summary.slice(0, 200)}{article.summary.length > 200 ? '...' : ''}</p>}
                         </div>
                       );
                     })}
@@ -1015,13 +1019,13 @@ function FinancialApp() {
             <div>
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold flex items-center gap-2"><Target className="text-blue-400" />Technical Analysis</h2>
-                  <p className="text-slate-400 hidden md:block">Price, support/resistance, and pattern overlays</p>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Target className="text-blue-400" size={16} />Technical Analysis</h2>
+                  <p className="text-[#6b7280] text-xs mt-0.5 hidden md:block">Price, support/resistance, and pattern overlays</p>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center items-stretch gap-3 w-full md:w-auto">
                   <input type="text" value={stockTicker} onChange={e => setStockTicker(e.target.value.toUpperCase())}
                     placeholder="e.g. AAPL"
-                    className="bg-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto" />
+                    className="bg-[#141418] border border-[rgba(255,255,255,0.06)] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0 w-full md:w-auto" />
                   <button onClick={analyzeChartData} disabled={loading}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors w-full md:w-auto justify-center">
                     {loading ? <Loader className="animate-spin" size={18} /> : <Search size={18} />}
@@ -1031,20 +1035,20 @@ function FinancialApp() {
               </div>
 
               {technicalData && (
-                <div className="bg-slate-700 rounded-lg p-4 relative glass-sheen overflow-hidden">
-                  <div className="mb-6 pb-4 border-b border-slate-600">
+                <div className="lg-panel rounded-xl p-4">
+                  <div className="mb-6 pb-4 border-b border-[rgba(255,255,255,0.06)]">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="text-3xl font-bold text-blue-400">
+                        <h3 className="text-2xl font-bold text-white">
                           {stockTicker}
-                          {technicalData.companyName && <span className="text-xl font-normal text-slate-400 ml-3">{technicalData.companyName}</span>}
+                          {technicalData.companyName && <span className="text-base font-normal text-[#6b7280] ml-3">{technicalData.companyName}</span>}
                         </h3>
-                        <p className="text-xl text-slate-300 mt-2">Current Price: <span className="font-bold">${technicalData.currentPrice}</span></p>
+                        <p className="text-sm text-[#6b7280] mt-1">Current Price: <span className="font-semibold text-white">${technicalData.currentPrice}</span></p>
                       </div>
                       <div className="flex flex-col items-end gap-3">
                         <div className="flex items-center gap-3">
                           <label className="text-xs text-slate-400 mr-2 hidden md:inline">View:</label>
-                          <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-slate-600 text-sm text-white px-2 py-1 rounded">
+                          <select value={chartWindow} onChange={e => setChartWindow(Number(e.target.value))} className="bg-[#141418] border border-[rgba(255,255,255,0.06)] text-sm text-white px-2 py-1 rounded-lg">
                             <option value={200}>200 days</option>
                             <option value={30}>30 days</option>
                             <option value={10}>10 days</option>
@@ -1055,7 +1059,7 @@ function FinancialApp() {
                             <span className="hidden sm:inline">Show S/R</span>
                           </label>
                         </div>
-                        <span className={'px-4 py-2 rounded-full font-semibold text-lg ' + (trend === 'Bullish' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400')}>
+                        <span className={'text-sm font-semibold ' + (trend === 'Bullish' ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
                           {trend} Trend
                         </span>
                       </div>
@@ -1064,12 +1068,12 @@ function FinancialApp() {
                   <div className="h-96">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={technicalData.chartData.slice(-chartWindow)}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis dataKey="date" stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} />
-                        <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF' }} tickLine={{ stroke: '#4B5563' }} domain={['auto', 'auto']} />
-                        <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.375rem' }} labelStyle={{ color: '#9CA3AF' }} />
+                        <CartesianGrid strokeDasharray="0" stroke="#1e1f24" />
+                        <XAxis dataKey="date" stroke="#1e1f24" tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} />
+                        <YAxis stroke="#1e1f24" tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} domain={['auto', 'auto']} />
+                        <Tooltip contentStyle={{ backgroundColor: '#141418', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '0.5rem' }} labelStyle={{ color: '#6b7280' }} />
                         <Legend />
-                        <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} name="Price" />
+                        <Line type="monotone" dataKey="price" stroke="#3b82f6" dot={false} name="Price" />
                         {showSR && technicalData.analysis.supports.map((level, idx) => (
                           <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
                         ))}
@@ -1083,22 +1087,22 @@ function FinancialApp() {
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="mt-4 text-xs text-slate-400">
-                    <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
+                  <div className="mt-4 text-xs text-[#6b7280]">
+                    <span className="inline-block bg-blue-500/10 text-blue-400 px-2 py-1 rounded mr-2">Shaded band</span>
                     shows area between nearest support and resistance.
                   </div>
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="lg-subpanel rounded-lg p-4">
-                      <h4 className="text-lg font-semibold text-blue-400 mb-2">Key Levels</h4>
+                    <div className="lg-subpanel rounded-xl p-4">
+                      <h4 className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-3">Key Levels</h4>
                       <div className="space-y-2">
-                        <p className="text-slate-300">Support Levels: <span className="font-bold text-emerald-400">{technicalData.analysis.supports.join(', ')}</span></p>
-                        <p className="text-slate-300">Resistance Levels: <span className="font-bold text-red-400">{technicalData.analysis.resistances.join(', ')}</span></p>
-                        <p className="text-slate-300">Breakout Zone: <span className="font-bold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.support} - ${technicalData.srBand.resistance}` : 'N/A'}</span></p>
-                        <p className="text-slate-300">Pattern: <span className="font-bold text-yellow-400">{technicalData.analysis.pattern}</span></p>
+                        <p className="text-sm text-[#9ca3af]">Support: <span className="font-semibold text-[#22c55e]">{technicalData.analysis.supports.join(', ')}</span></p>
+                        <p className="text-sm text-[#9ca3af]">Resistance: <span className="font-semibold text-[#ef4444]">{technicalData.analysis.resistances.join(', ')}</span></p>
+                        <p className="text-sm text-[#9ca3af]">Breakout Zone: <span className="font-semibold text-blue-400">{technicalData.srBand ? `${technicalData.srBand.support} - ${technicalData.srBand.resistance}` : 'N/A'}</span></p>
+                        <p className="text-sm text-[#9ca3af]">Pattern: <span className="font-semibold text-[#f97316]">{technicalData.analysis.pattern}</span></p>
                       </div>
                     </div>
-                    <div className="lg-subpanel rounded-lg p-4">
-                      <h4 className="text-lg font-semibold text-blue-400 mb-2">Trading Strategy Insights</h4>
+                    <div className="lg-subpanel rounded-xl p-4">
+                      <h4 className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-3">Trading Strategy Insights</h4>
                       <div className="space-y-2">
                         {(() => {
                           const sup = technicalData.analysis.supports;
@@ -1109,9 +1113,9 @@ function FinancialApp() {
                           const highestRes = res.length > 0 ? Math.max(...res.map(Number)) : null;
                           return (
                             <>
-                              <p className="text-slate-300"><strong>Short-term:</strong> Watch for price action near support ({supText}) and resistance ({resText}). Potential entry near support, exit near resistance. Breakouts above {highestRes ? `$${highestRes.toFixed(2)}` : 'resistance'} may signal momentum trades.</p>
-                              <p className="text-slate-300"><strong>Long-term:</strong> Position entries near support zones ({supText}), with targets at resistance ({resText}). Consider stop-loss below {lowestSup ? `$${lowestSup.toFixed(2)}` : 'support'}.</p>
-                              <p className="text-slate-400 text-xs">These signals are based on recent pivots. Always confirm with broader market context and risk management.</p>
+                              <p className="text-sm text-[#9ca3af]"><strong className="text-white">Short-term:</strong> Watch for price action near support ({supText}) and resistance ({resText}). Potential entry near support, exit near resistance. Breakouts above {highestRes ? `$${highestRes.toFixed(2)}` : 'resistance'} may signal momentum trades.</p>
+                              <p className="text-sm text-[#9ca3af]"><strong className="text-white">Long-term:</strong> Position entries near support zones ({supText}), with targets at resistance ({resText}). Consider stop-loss below {lowestSup ? `$${lowestSup.toFixed(2)}` : 'support'}.</p>
+                              <p className="text-xs text-[#6b7280]">These signals are based on recent pivots. Always confirm with broader market context and risk management.</p>
                             </>
                           );
                         })()}
@@ -1121,17 +1125,17 @@ function FinancialApp() {
                 </div>
               )}
               {!technicalData && !loading && (
-                <div className="bg-slate-700 rounded-lg p-8 text-center">
-                  <Target className="mx-auto mb-3 text-slate-400" size={48} />
-                  <p className="text-slate-300">Enter a ticker and click Analyze to see technical analysis</p>
+                <div className="lg-panel rounded-xl p-8 text-center">
+                  <Target className="mx-auto mb-3 text-[#6b7280]" size={40} />
+                  <p className="text-[#9ca3af] text-sm">Enter a ticker and click Analyze to see technical analysis</p>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <footer className="mt-8 text-center text-slate-500 text-sm">
-          <p>Get your free API keys and start analyzing! This app connects to real market data.</p>
+        <footer className="mt-8 text-center text-[#6b7280] text-xs">
+          <p>Connect to real market data with free API keys.</p>
         </footer>
       </div>
     </div>
