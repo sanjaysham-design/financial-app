@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/collectors/rss",
+      "path": "/api/pipeline",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/agents/extract",
-      "schedule": "0 9 * * *"
     }
   ]
 }
