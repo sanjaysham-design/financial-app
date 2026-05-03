@@ -125,9 +125,12 @@ export default async function handler(req, res) {
     const claudeData = await claudeRes.json();
     let signals;
     try {
-      signals = JSON.parse(claudeData.content?.[0]?.text || '[]');
+      let raw = claudeData.content?.[0]?.text || '[]';
+      // Strip markdown code fences if present
+      raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+      signals = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Failed to parse Claude response' });
+      return res.status(500).json({ error: 'Failed to parse Claude response', raw: claudeData.content?.[0]?.text?.slice(0, 300) });
     }
 
     // 4. Store signals in Redis and mark URLs as seen
