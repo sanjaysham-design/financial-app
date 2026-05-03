@@ -193,6 +193,9 @@ function FinancialApp() {
   const [aiNewsLoading, setAiNewsLoading] = useState(false);
   const [aiLastUpdated, setAiLastUpdated] = useState(null);
   const [newsSubTab, setNewsSubTab] = useState('ai-news');
+  const [signals, setSignals] = useState([]);
+  const [signalsLoading, setSignalsLoading] = useState(false);
+  const [signalsLastUpdated, setSignalsLastUpdated] = useState(null);
 
   function MobileNavEscapeHandler({ onClose }) {
     useEffect(() => {
@@ -566,6 +569,20 @@ function FinancialApp() {
     }
   }, []);
 
+  const fetchSignals = useCallback(async () => {
+    setSignalsLoading(true);
+    try {
+      const resp = await fetch('/api/signals?minImportance=2');
+      const data = await resp.json();
+      if (data.signals) setSignals(data.signals);
+      setSignalsLastUpdated(new Date().toISOString());
+    } catch (err) {
+      console.error('Failed to fetch signals:', err);
+    } finally {
+      setSignalsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab === 'ai') {
       fetchAiStocks();
@@ -573,7 +590,10 @@ function FinancialApp() {
     if (activeTab === 'ai' || activeTab === 'news') {
       fetchAiNews();
     }
-  }, [activeTab, fetchAiNews, fetchAiStocks]);
+    if (activeTab === 'news') {
+      fetchSignals();
+    }
+  }, [activeTab, fetchAiNews, fetchAiStocks, fetchSignals]);
 
   const fetchNewsWithKey = useCallback(async function(newsApiKey, q) {
     setLoading(true);
@@ -788,7 +808,7 @@ function FinancialApp() {
               {/* Sub-tabs + refresh on same row */}
               <div className="flex items-center justify-between border-b border-slate-700 mb-6">
                 <div className="flex gap-1">
-                  {[{ id: 'ai-news', label: 'AI News' }, { id: 'markets', label: 'Markets' }].map(st => (
+                  {[{ id: 'ai-news', label: 'AI News' }, { id: 'markets', label: 'Markets' }, { id: 'signals', label: 'Signals' }].map(st => (
                     <button key={st.id} onClick={() => setNewsSubTab(st.id)}
                       className={`px-4 py-2 text-sm font-medium transition-colors relative ${newsSubTab === st.id ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>
                       {st.label}
@@ -812,6 +832,15 @@ function FinancialApp() {
                       <button onClick={() => fetchAiNews()} disabled={aiNewsLoading}
                         className="text-slate-400 hover:text-white transition-colors disabled:opacity-40" title="Refresh">
                         {aiNewsLoading ? <Loader className="animate-spin" size={15} /> : <RefreshCw size={15} />}
+                      </button>
+                    </>
+                  )}
+                  {newsSubTab === 'signals' && (
+                    <>
+                      <span className="text-xs text-slate-500">{signalsLastUpdated ? `Last: ${new Date(signalsLastUpdated).toLocaleString()}` : ''}</span>
+                      <button onClick={() => fetchSignals()} disabled={signalsLoading}
+                        className="text-slate-400 hover:text-white transition-colors disabled:opacity-40" title="Refresh">
+                        {signalsLoading ? <Loader className="animate-spin" size={15} /> : <RefreshCw size={15} />}
                       </button>
                     </>
                   )}
@@ -869,6 +898,63 @@ function FinancialApp() {
                     ? <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No news available. Try refreshing or check API keys.</div>
                     : <div className="space-y-4">{newsCards}</div>
                   }
+                </div>
+              )}
+
+              {/* Signals sub-tab */}
+              {newsSubTab === 'signals' && (
+                <div>
+                  {signalsLoading && signals.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader className="animate-spin text-blue-400 mr-3" size={24} />
+                      <span className="text-slate-400">Loading signals...</span>
+                    </div>
+                  ) : signals.length === 0 ? (
+                    <div className="lg-panel rounded-lg p-8 text-center text-slate-300">No signals yet. Run the pipeline to collect news.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {signals.map((signal, idx) => {
+                        const sentimentColor = signal.sentiment === 'bullish'
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : signal.sentiment === 'bearish'
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-yellow-500/20 text-yellow-400';
+                        const importanceDots = Array.from({ length: 5 }, (_, i) => (
+                          <span key={i} className={`inline-block w-1.5 h-1.5 rounded-full ${i < signal.importance ? 'bg-blue-400' : 'bg-slate-600'}`} />
+                        ));
+                        const timeAgo = (() => {
+                          const d = new Date(signal.collectedAt || signal.publishedAt);
+                          const mins = Math.floor((Date.now() - d) / 60000);
+                          if (mins < 60) return `${mins}m ago`;
+                          if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+                          return `${Math.floor(mins / 1440)}d ago`;
+                        })();
+                        return (
+                          <div key={idx} className="lg-panel rounded-lg p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${sentimentColor}`}>
+                                  {signal.sentiment}
+                                </span>
+                                {signal.tickers?.map(t => (
+                                  <span key={t} className="px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 text-xs font-mono font-semibold">{t}</span>
+                                ))}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">{importanceDots}</div>
+                            </div>
+                            <p className="text-sm text-slate-200 mb-1.5">{signal.summary}</p>
+                            <div className="flex items-center justify-between">
+                              <a href={signal.url} target="_blank" rel="noopener noreferrer"
+                                className="text-xs text-slate-500 hover:text-blue-400 transition-colors truncate flex-1">
+                                {signal.source} · {signal.title?.replace(/&amp;/g,'&').replace(/&#x2019;/g,"'").replace(/&#x2018;/g,"'").replace(/&[^;]+;/g,'').slice(0, 80)}
+                              </a>
+                              <span className="text-xs text-slate-500 ml-3 shrink-0">{timeAgo}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
