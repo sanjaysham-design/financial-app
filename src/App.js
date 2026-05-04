@@ -94,10 +94,15 @@ function FinancialApp() {
     const saved = localStorage.getItem('showSR');
     return saved !== null ? saved === 'true' : true;
   });
+  const [showMA, setShowMA] = useState(() => {
+    const saved = localStorage.getItem('showMA');
+    return saved !== null ? saved === 'true' : true;
+  });
   const trend = technicalData ? getTrend(technicalData.chartData) : 'Neutral';
 
   useEffect(() => { localStorage.setItem('chartWindow', chartWindow); }, [chartWindow]);
   useEffect(() => { localStorage.setItem('showSR', showSR ? 'true' : 'false'); }, [showSR]);
+  useEffect(() => { localStorage.setItem('showMA', showMA ? 'true' : 'false'); }, [showMA]);
   useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
   useEffect(() => { localStorage.setItem('colorMode', colorMode); }, [colorMode]);
 
@@ -1420,6 +1425,10 @@ function FinancialApp() {
                             <input type="checkbox" checked={showSR} onChange={e => setShowSR(e.target.checked)} className="w-4 h-4" />
                             <span className="hidden sm:inline">Show S/R</span>
                           </label>
+                          <label className="flex items-center gap-2 text-sm text-slate-300">
+                            <input type="checkbox" checked={showMA} onChange={e => setShowMA(e.target.checked)} className="w-4 h-4" />
+                            <span className="hidden sm:inline">Show MAs</span>
+                          </label>
                         </div>
                         <span className={'px-4 py-2 rounded-full font-semibold text-lg ' + (trend === 'Bullish' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400')}>
                           {trend} Trend
@@ -1436,6 +1445,8 @@ function FinancialApp() {
                         <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.375rem' }} labelStyle={{ color: '#9CA3AF' }} />
                         <Legend />
                         <Line type="monotone" dataKey="price" stroke="#60A5FA" dot={false} name="Price" />
+                        {showMA && <Line type="monotone" dataKey="sma50" stroke="#F59E0B" dot={false} strokeWidth={1.5} name="50-day MA" connectNulls />}
+                        {showMA && <Line type="monotone" dataKey="sma200" stroke="#A855F7" dot={false} strokeWidth={1.5} name="200-day MA" connectNulls />}
                         {showSR && technicalData.analysis.supports.map((level, idx) => (
                           <ReferenceLine key={`sup-${idx}`} y={Number(level)} stroke="#10B981" strokeDasharray="4 4" label={{ value: `S ${level}`, position: 'right', fill: '#10B981' }} />
                         ))}
