@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (!ticker) return res.status(400).json({ error: 'Ticker is required' });
 
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=6mo`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=2y`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0',
@@ -23,10 +23,23 @@ export default async function handler(req, res) {
     const closes = result.indicators.quote[0].close;
     const meta = result.meta;
 
-    const chartData = timestamps.map((ts, i) => ({
+    const rawData = timestamps.map((ts, i) => ({
       date: new Date(ts * 1000).toISOString().split('T')[0],
       price: closes[i] ? parseFloat(closes[i].toFixed(2)) : null,
     })).filter(d => d.price !== null);
+
+    const sma = (arr, i, period) => {
+      if (i + 1 < period) return null;
+      let sum = 0;
+      for (let j = i - period + 1; j <= i; j++) sum += arr[j].price;
+      return parseFloat((sum / period).toFixed(2));
+    };
+
+    const chartData = rawData.map((d, i) => ({
+      ...d,
+      sma50: sma(rawData, i, 50),
+      sma200: sma(rawData, i, 200),
+    }));
 
     const prices = chartData.map(d => d.price);
     const currentPrice = meta.regularMarketPrice || prices[prices.length - 1];
