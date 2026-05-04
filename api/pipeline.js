@@ -90,32 +90,54 @@ export default async function handler(req, res) {
       else feedErrors.push({ feed: FEEDS[i].name, error: feedResults[i].reason?.message });
     }
 
-    // 1b. Collect Reddit (r/wallstreetbets + r/stocks, top posts score > 50)
-    const SUBREDDITS = ['wallstreetbets', 'stocks'];
-    const redditResults = await Promise.allSettled(
-      SUBREDDITS.map(async (sub) => {
-        const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=30`, {
-          headers: { 'User-Agent': 'FinancialSignalBot/1.0 (by /u/signalbot)' },
-          signal: AbortSignal.timeout(6000),
+    // 1b. Collect Reddit via OAuth (r/wallstreetbets + r/stocks, score > 50)
+    if (process.env.REDDIT_CLIENT_ID && process.env.REDDIT_CLIENT_SECRET) {
+      const SUBREDDITS = ['wallstreetbets', 'stocks'];
+      try {
+        const creds = Buffer.from(`${process.env.REDDIT_CLIENT_ID}:${process.env.REDDIT_CLIENT_SECRET}`).toString('base64');
+        const tokenRes = await fetch('https://www.reddit.com/api/v1/access_token', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${creds}`,
+            'User-Agent': 'FinancialSignalBot/1.0',
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'grant_type=client_credentials',
+          signal: AbortSignal.timeout(5000),
         });
-        if (!r.ok) throw new Error(`r/${sub}: HTTP ${r.status}`);
-        const json = await r.json();
-        return (json.data?.children || [])
-          .map(c => c.data)
-          .filter(p => p.score > 50 && !p.stickied && p.title)
-          .map(p => ({
-            title: p.title,
-            url: `https://www.reddit.com${p.permalink}`,
-            publishedAt: new Date(p.created_utc * 1000).toISOString(),
-            summary: (p.selftext || '').slice(0, 300),
-            source: `r/${sub}`,
-          }));
-      })
-    );
+        const { access_token } = await tokenRes.json();
 
-    for (let i = 0; i < redditResults.length; i++) {
-      if (redditResults[i].status === 'fulfilled') allItems = allItems.concat(redditResults[i].value);
-      else feedErrors.push({ feed: `r/${SUBREDDITS[i]}`, error: redditResults[i].reason?.message });
+        const redditResults = await Promise.allSettled(
+          SUBREDDITS.map(async (sub) => {
+            const r = await fetch(`https://oauth.reddit.com/r/${sub}/hot?limit=30`, {
+              headers: {
+                'Authorization': `Bearer ${access_token}`,
+                'User-Agent': 'FinancialSignalBot/1.0',
+              },
+              signal: AbortSignal.timeout(6000),
+            });
+            if (!r.ok) throw new Error(`r/${sub}: HTTP ${r.status}`);
+            const json = await r.json();
+            return (json.data?.children || [])
+              .map(c => c.data)
+              .filter(p => p.score > 50 && !p.stickied && p.title)
+              .map(p => ({
+                title: p.title,
+                url: `https://www.reddit.com${p.permalink}`,
+                publishedAt: new Date(p.created_utc * 1000).toISOString(),
+                summary: (p.selftext || '').slice(0, 300),
+                source: `r/${sub}`,
+              }));
+          })
+        );
+
+        for (let i = 0; i < redditResults.length; i++) {
+          if (redditResults[i].status === 'fulfilled') allItems = allItems.concat(redditResults[i].value);
+          else feedErrors.push({ feed: `r/${SUBREDDITS[i]}`, error: redditResults[i].reason?.message });
+        }
+      } catch (e) {
+        feedErrors.push({ feed: 'Reddit OAuth', error: e.message });
+      }
     }
 
     // 2. Deduplicate against Redis seen-URLs set
