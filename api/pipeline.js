@@ -71,7 +71,7 @@ export default async function handler(req, res) {
   });
 
   try {
-    // 1. Collect RSS feeds
+    // 1a. Collect RSS feeds
     const feedResults = await Promise.allSettled(
       FEEDS.map(async (feed) => {
         const r = await fetch(feed.url, {
@@ -88,6 +88,34 @@ export default async function handler(req, res) {
     for (let i = 0; i < feedResults.length; i++) {
       if (feedResults[i].status === 'fulfilled') allItems = allItems.concat(feedResults[i].value);
       else feedErrors.push({ feed: FEEDS[i].name, error: feedResults[i].reason?.message });
+    }
+
+    // 1b. Collect Reddit (r/wallstreetbets + r/stocks, top posts score > 50)
+    const SUBREDDITS = ['wallstreetbets', 'stocks'];
+    const redditResults = await Promise.allSettled(
+      SUBREDDITS.map(async (sub) => {
+        const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=30`, {
+          headers: { 'User-Agent': 'FinancialSignalBot/1.0 (by /u/signalbot)' },
+          signal: AbortSignal.timeout(6000),
+        });
+        if (!r.ok) throw new Error(`r/${sub}: HTTP ${r.status}`);
+        const json = await r.json();
+        return (json.data?.children || [])
+          .map(c => c.data)
+          .filter(p => p.score > 50 && !p.stickied && p.title)
+          .map(p => ({
+            title: p.title,
+            url: `https://www.reddit.com${p.permalink}`,
+            publishedAt: new Date(p.created_utc * 1000).toISOString(),
+            summary: (p.selftext || '').slice(0, 300),
+            source: `r/${sub}`,
+          }));
+      })
+    );
+
+    for (let i = 0; i < redditResults.length; i++) {
+      if (redditResults[i].status === 'fulfilled') allItems = allItems.concat(redditResults[i].value);
+      else feedErrors.push({ feed: `r/${SUBREDDITS[i]}`, error: redditResults[i].reason?.message });
     }
 
     // 2. Deduplicate against Redis seen-URLs set
