@@ -171,8 +171,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, fetched: allItems.length, newItems: 0, extracted: 0, feedErrors });
     }
 
-    // 3. Extract signals with Claude Haiku
-    const batchInput = newItems.slice(0, 25).map((p, i) => ({ id: i, title: p.title, summary: p.summary.slice(0, 200) }));
+    // 3. Extract signals with Claude Haiku — shuffle so all sources are represented
+    const shuffled = newItems.sort(() => Math.random() - 0.5);
+    const batchInput = shuffled.slice(0, 25).map((p, i) => ({ id: i, title: p.title, summary: p.summary.slice(0, 200) }));
 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -210,7 +211,7 @@ export default async function handler(req, res) {
     const now = new Date().toISOString();
     let stored = 0;
     for (const signal of signals) {
-      const item = newItems[signal.id];
+      const item = shuffled[signal.id];
       if (!item) continue;
       const record = {
         tickers: Array.isArray(signal.tickers) ? signal.tickers : [],
