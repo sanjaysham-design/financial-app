@@ -90,7 +90,30 @@ export default async function handler(req, res) {
       else feedErrors.push({ feed: FEEDS[i].name, error: feedResults[i].reason?.message });
     }
 
-    // 1b. Collect Reddit via OAuth (r/wallstreetbets + r/stocks, score > 50)
+    // 1b. Collect StockTwits trending (no auth required)
+    try {
+      const stRes = await fetch('https://api.stocktwits.com/api/2/streams/trending.json?limit=30', {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(6000),
+      });
+      if (stRes.ok) {
+        const stData = await stRes.json();
+        const stItems = (stData.messages || []).map(m => ({
+          title: m.body?.slice(0, 200) || '',
+          url: `https://stocktwits.com/${m.user?.username}/message/${m.id}`,
+          publishedAt: m.created_at,
+          summary: `${m.entities?.sentiment?.basic || 'N/A'} sentiment — ${(m.symbols || []).map(s => s.symbol).join(', ')}`,
+          source: 'StockTwits',
+        })).filter(m => m.title);
+        allItems = allItems.concat(stItems);
+      } else {
+        feedErrors.push({ feed: 'StockTwits', error: `HTTP ${stRes.status}` });
+      }
+    } catch (e) {
+      feedErrors.push({ feed: 'StockTwits', error: e.message });
+    }
+
+    // 1c. Collect Reddit via OAuth (r/wallstreetbets + r/stocks, score > 50)
     if (process.env.REDDIT_CLIENT_ID && process.env.REDDIT_CLIENT_SECRET) {
       const SUBREDDITS = ['wallstreetbets', 'stocks'];
       try {
