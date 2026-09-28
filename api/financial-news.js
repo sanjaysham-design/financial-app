@@ -1,6 +1,4 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const feeds = [
@@ -81,7 +79,7 @@ export default async function handler(req, res) {
 
     // If all RSS feeds failed, fall back to News API
     if (successCount === 0) {
-      const { apikey } = req.query;
+      const apikey = process.env.DEFAULT_NEWS_API_KEY;
       if (apikey) {
         const fallback = await fetch(`https://newsapi.org/v2/top-headlines?category=business&language=en&pageSize=30&apiKey=${apikey}`);
         const data = await fallback.json();

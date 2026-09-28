@@ -1,6 +1,4 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { ticker } = req.query;
@@ -12,11 +10,11 @@ export default async function handler(req, res) {
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   try {
-    const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apikey}`);
+    const profileRes = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(ticker)}&token=${apikey}`);
     const profile = await profileRes.json();
     await delay(300);
 
-    const metricRes = await fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${apikey}`);
+    const metricRes = await fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${encodeURIComponent(ticker)}&metric=all&token=${apikey}`);
     const metricData = await metricRes.json();
 
     const m = metricData.metric || {};

@@ -74,7 +74,6 @@ function FinancialApp() {
   const [activeTab, setActiveTab] = useState('news');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [stockTicker, setStockTicker] = useState('');
-  const [apiKeys, setApiKeys] = useState({ alphaVantage: '', finnhub: '', newsApi: '' });
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
     if (saved === 'default') return 'classic';
@@ -361,11 +360,10 @@ function FinancialApp() {
   }
 
   const fetchSectors = useCallback(async () => {
-    if (!apiKeys.alphaVantage) { setSectorsError('Missing AlphaVantage API key'); return; }
     setSectorsLoading(true);
     setSectorsError('');
     try {
-      const resp = await fetch(`/api/sectors?apikey=${apiKeys.alphaVantage}`);
+      const resp = await fetch('/api/sectors');
       const data = await resp.json();
       const parsed = parseAlphaVantageSector(data);
       const merged = sectorsList.map(s => {
@@ -394,7 +392,7 @@ function FinancialApp() {
     } finally {
       setSectorsLoading(false);
     }
-  }, [apiKeys.alphaVantage]);
+  }, []);
 
   useEffect(() => {
     let id;
@@ -467,7 +465,6 @@ function FinancialApp() {
   }, [activeTab, fetchMarketIndices]);
 
   const fetchSectorEtfQuotes = useCallback(async () => {
-    if (!apiKeys.alphaVantage) return;
     try {
       setEtfQuotesLoading(true);
       const tickers = Array.from(new Set(Object.values(SECTOR_ETF_MAP)));
@@ -498,7 +495,7 @@ function FinancialApp() {
     } finally {
       setEtfQuotesLoading(false);
     }
-  }, [apiKeys.alphaVantage]);
+  }, []);
 
   useEffect(() => {
     let id;
@@ -595,14 +592,14 @@ function FinancialApp() {
     }
   }, [activeTab, fetchAiNews, fetchAiStocks, fetchSignals]);
 
-  const fetchNewsWithKey = useCallback(async function(newsApiKey, q) {
+  const fetchNews = useCallback(async function(q) {
     setLoading(true);
     setError('');
     try {
       // Try RSS feeds first
       const url = q
-        ? `/api/news?apikey=${newsApiKey}&q=${encodeURIComponent(q)}`
-        : `/api/financial-news?apikey=${newsApiKey}`;
+        ? `/api/news?q=${encodeURIComponent(q)}`
+        : '/api/financial-news';
       const response = await fetch(url);
       const data = await response.json();
       if (data.articles && data.articles.length > 0) {
@@ -625,20 +622,8 @@ function FinancialApp() {
   }, []);
 
   useEffect(function() {
-    async function loadDefaultKeysAndNews() {
-      try {
-        const response = await fetch('/api/default-keys');
-        const data = await response.json();
-        if (data && !data.error) {
-          setApiKeys(data);
-          if (data.newsApi) fetchNewsWithKey(data.newsApi);
-        }
-      } catch (err) {
-        console.error('Failed to load default keys:', err);
-      }
-    }
-    loadDefaultKeysAndNews();
-  }, [fetchNewsWithKey]);
+    fetchNews();
+  }, [fetchNews]);
 
   const newsCards = newsStories.map((story, idx) => {
     let sentimentClass = 'bg-yellow-500/20 text-yellow-400';
@@ -820,7 +805,7 @@ function FinancialApp() {
                   {newsSubTab === 'markets' && (
                     <>
                       <span className="text-xs text-slate-500">{newsLastUpdated ? `Last: ${new Date(newsLastUpdated).toLocaleString()}` : ''}</span>
-                      <button onClick={() => fetchNewsWithKey(apiKeys.newsApi)} disabled={loading}
+                      <button onClick={() => fetchNews()} disabled={loading}
                         className="text-slate-400 hover:text-white transition-colors disabled:opacity-40" title="Refresh">
                         {loading ? <Loader className="animate-spin" size={15} /> : <RefreshCw size={15} />}
                       </button>

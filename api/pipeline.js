@@ -51,13 +51,15 @@ function parseRSS(xml, sourceName) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const isVercelCron = req.headers['x-vercel-cron'] === '1';
-  const authHeader = req.headers['authorization'];
-  if (process.env.CRON_SECRET && !isVercelCron && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Vercel Cron sends "Authorization: Bearer <CRON_SECRET>" automatically when the
+  // CRON_SECRET environment variable is set. Fail closed if it isn't configured,
+  // so nobody else can trigger this job (it spends Anthropic API credits).
+  if (!process.env.CRON_SECRET) {
+    return res.status(500).json({ error: 'CRON_SECRET not set' });
+  }
+  if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

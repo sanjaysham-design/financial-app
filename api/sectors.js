@@ -1,15 +1,12 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  const { apikey } = req.query;
-
+  const apikey = process.env.DEFAULT_ALPHA_VANTAGE_KEY;
   if (!apikey) {
-    return res.status(400).json({ error: 'Missing apikey' });
+    return res.status(500).json({ error: 'Alpha Vantage API key not configured' });
   }
 
   try {

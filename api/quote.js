@@ -1,6 +1,4 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -12,7 +10,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apikey}`
+      `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${apikey}`
     );
     const data = await response.json();
 
